@@ -31,14 +31,10 @@
     <img src="assets/logo.png" alt="Administra" class="splash-img">
 
     <script>
-        // Redirigir al Dashboard después de 1.5 segundos
         setTimeout(function() {
             window.location.href = 'dashboard.html';
         }, 1500);
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
@@ -50,8 +46,6 @@
                     });
             });
         }
-
-        console.log('[Splash] Pantalla de bienvenida');
     </script>
 </body>
 </html>

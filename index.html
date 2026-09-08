@@ -9,12 +9,8 @@
 </head>
 <body>
     <script>
-        // Redirigir al Splash Screen
         window.location.href = 'splash.html';
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
@@ -26,8 +22,6 @@
                     });
             });
         }
-
-        console.log('[Index] Redirigiendo al Splash');
     </script>
 </body>
 </html>
