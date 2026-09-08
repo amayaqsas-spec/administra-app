@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Administra - Sin conexión</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Styles personalizados -->
+    <link rel="stylesheet" href="css/styles.css" />
+    
+    <!-- Favicon -->
+    <link rel="icon" href="assets/logo.png" type="image/png" />
+    
+    <style>
+        /* Estilos adicionales para la página offline */
+        .offline-icon {
+            font-size: 5rem;
+            line-height: 1;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .pulse-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #f97316;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
+        }
+        
+        .retry-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .retry-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .retry-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Efecto de carga para el botón */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .retry-btn.loading .loading-spinner {
+            display: inline-block;
+        }
+        
+        .retry-btn.loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-pink-100 via-blue-50 to-purple-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="text-center max-w-md w-full">
+        <!-- Contenedor principal con efecto Claymorphism -->
+        <div class="bg-white/70 backdrop-blur-md rounded-3xl p-8 md:p-10 shadow-2xl border border-white/30 clay"
+             style="box-shadow: 8px 8px 24px rgba(0,0,0,0.08), -8px -8px 24px rgba(255,255,255,0.7);">
+            
+            <!-- Logo -->
+            <div class="flex justify-center mb-6">
+                <img src="assets/logo.png" alt="Administra Logo" 
+                     class="w-20 h-20 md:w-24 md:h-24 object-contain rounded-full shadow-lg border-2 border-white/50" 
+                     onerror="this.style.display='none'" />
+            </div>
+            
+            <!-- Icono de estado offline -->
+            <div class="mb-4">
+                <span class="offline-icon">📡</span>
+            </div>
+            
+            <!-- Título -->
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-700 mb-2">
+                Sin conexión
+            </h1>
+            
+            <!-- Subtítulo -->
+            <p class="text-gray-500 text-sm md:text-base mb-2">
+                No se puede establecer conexión con el servidor
+            </p>
+            
+            <!-- Indicador de estado -->
+            <div class="flex items-center justify-center gap-2 mb-6">
+                <span class="pulse-dot"></span>
+                <span class="text-sm text-orange-600 font-medium">Offline</span>
+            </div>
+            
+            <!-- Línea decorativa -->
+            <div class="w-16 h-1 bg-gradient-to-r from-pink-400 to-purple-400 mx-auto rounded-full mb-6"></div>
+            
+            <!-- Mensaje descriptivo -->
+            <div class="text-sm text-gray-600 space-y-2 mb-6">
+                <p>📱 Estás trabajando sin conexión a internet.</p>
+                <p>💾 Los datos se guardarán localmente y se sincronizarán automáticamente cuando recuperes la señal.</p>
+                <p class="text-xs text-gray-400 mt-2">
+                    ⚡ Las operaciones realizadas offline se sincronizarán al volver a conectar
+                </p>
+            </div>
+            
+            <!-- Botón de reintentar -->
+            <button onclick="retryConnection()" 
+                    class="retry-btn btn-clay w-full py-3 md:py-4 text-sm md:text-base flex items-center justify-center gap-2">
+                <span class="btn-text">🔄 Reintentar conexión</span>
+                <span class="loading-spinner"></span>
+            </button>
+            
+            <!-- Botón para ir a la versión offline -->
+            <button onclick="goToOfflineMode()" 
+                    class="mt-3 text-xs md:text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                📂 Continuar en modo offline
+            </button>
+            
+            <!-- Pie de página -->
+            <div class="mt-6 pt-4 border-t border-gray-200/50">
+                <p class="text-xs text-gray-400">
+                    Administra v1.0.0 • Gestión financiera y escolar
+                </p>
+                <p class="text-xs text-gray-300 mt-1">
+                    amayasily
+                </p>
+            </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="mt-4 text-xs text-gray-400">
+            <p>💡 Consejo: Puedes seguir usando la app sin conexión</p>
+            <p class="mt-1">Los cambios se guardarán y sincronizarán automáticamente</p>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // FUNCIONES DE LA PÁGINA OFFLINE
+        // ============================================
+        
+        /**
+         * Reintenta la conexión verificando si hay internet
+         */
+        function retryConnection() {
+            const btn = document.querySelector('.retry-btn');
+            
+            // Mostrar estado de carga
+            btn.classList.add('loading');
+            btn.disabled = true;
+            
+            // Verificar conexión
+            checkConnection()
+                .then((isConnected) => {
+                    if (isConnected) {
+                        // Si hay conexión, redirigir a la app
+                        showToast('✅ Conexión restablecida. Redirigiendo...', 'success');
+                        setTimeout(() => {
+                            window.location.href = 'index.html?view=dashboard';
+                        }, 1000);
+                    } else {
+                        // Si no hay conexión, mostrar mensaje
+                        showToast('❌ No se pudo establecer conexión. Intenta de nuevo.', 'error');
+                        btn.classList.remove('loading');
+                        btn.disabled = false;
+                    }
+                })
+                .catch(() => {
+                    showToast('❌ Error al verificar la conexión', 'error');
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                });
+        }
+        
+        /**
+         * Verifica la conexión a internet
+         */
+        function checkConnection() {
+            return new Promise((resolve) => {
+                // Primero verificar con navigator.onLine
+                if (!navigator.onLine) {
+                    resolve(false);
+                    return;
+                }
+                
+                // Intentar fetch a un recurso confiable
+                const timeout = 5000;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), timeout);
+                
+                fetch('https://cdn.tailwindcss.com', {
+                    method: 'HEAD',
+                    mode: 'no-cors',
+                    signal: controller.signal
+                })
+                .then(() => {
+                    clearTimeout(timeoutId);
+                    resolve(true);
+                })
+                .catch(() => {
+                    clearTimeout(timeoutId);
+                    // Si falla, intentar con otro recurso
+                    fetch('https://unpkg.com/lucide@latest', {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        signal: AbortSignal.timeout(3000)
+                    })
+                    .then(() => resolve(true))
+                    .catch(() => resolve(false));
+                });
+            });
+        }
+        
+        /**
+         * Ir al modo offline (continuar usando la app)
+         */
+        function goToOfflineMode() {
+            // Verificar si hay datos en LocalStorage
+            const hasLocalData = localStorage.getItem('pendingSync') !== null || 
+                                localStorage.getItem('students') !== null ||
+                                localStorage.getItem('groups') !== null;
+            
+            if (hasLocalData) {
+                // Si hay datos locales, ir al dashboard
+                showToast('📂 Cargando datos locales...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html?view=dashboard';
+                }, 500);
+            } else {
+                // Si no hay datos, ir al login
+                showToast('📱 Iniciando modo offline...', 'info');
+                setTimeout(() => {
+                    window.location.href = 'index.html?view=login';
+                }, 500);
+            }
+        }
+        
+        /**
+         * Sistema de notificaciones toast
+         */
+        function showToast(message, type = 'info') {
+            // Eliminar toast existente
+            const existingToast = document.querySelector('.toast-notification');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Crear nuevo toast
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification fixed top-4 left-4 right-4 max-w-md mx-auto z-50 p-4 rounded-2xl shadow-lg backdrop-blur-md transition-all duration-300';
+            
+            // Colores según tipo
+            const colors = {
+                success: 'bg-green-100/80 border border-green-300 text-green-800',
+                error: 'bg-red-100/80 border border-red-300 text-red-800',
+                info: 'bg-blue-100/80 border border-blue-300 text-blue-800',
+                warning: 'bg-yellow-100/80 border border-yellow-300 text-yellow-800'
+            };
+            
+            toast.className += ` ${colors[type] || colors.info}`;
+            toast.textContent = message;
+            
+            // Añadir al DOM
+            document.body.appendChild(toast);
+            
+            // Auto-cerrar después de 3 segundos
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, 3000);
+        }
+        
+        /**
+         * Detectar cambios en la conexión mientras se está en la página offline
+         */
+        window.addEventListener('online', () => {
+            showToast('📶 ¡Conexión recuperada!', 'success');
+            
+            // Mostrar botón de reconexión más prominente
+            const btn = document.querySelector('.retry-btn');
+            if (btn) {
+                btn.innerHTML = '<span class="btn-text">✅ ¡Conectado! Ir a la app</span>';
+                btn.classList.remove('loading');
+                btn.disabled = false;
+                btn.onclick = () => {
+                    window.location.href = 'index.html?view=dashboard';
+                };
+            }
+        });
+        
+        window.addEventListener('offline', () => {
+            showToast('📡 Conexión perdida. Continuando en modo offline.', 'warning');
+        });
+        
+        /**
+         * Verificar conexión al cargar la página
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Verificar si hay conexión al cargar
+            if (navigator.onLine) {
+                // Si hay conexión, intentar redirigir después de un momento
+                setTimeout(() => {
+                    checkConnection().then((isConnected) => {
+                        if (isConnected) {
+                            window.location.href = 'index.html?view=dashboard';
+                        }
+                    });
+                }, 1000);
+            }
+            
+            // Mostrar estado de almacenamiento local
+            const storageInfo = document.createElement('div');
+            storageInfo.className = 'mt-2 text-xs text-gray-400';
+            
+            // Verificar datos almacenados
+            let storageCount = 0;
+            try {
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes('pending') || key.includes('sync') || 
+                               key === 'students' || key === 'groups' || key === 'expenses')) {
+                        storageCount++;
+                    }
+                }
+            } catch (e) {
+                // Ignorar errores
+            }
+            
+            if (storageCount > 0) {
+                storageInfo.innerHTML = `💾 ${storageCount} elementos guardados localmente`;
+                document.querySelector('.text-gray-400.mt-1')?.after(storageInfo);
+            }
+        });
+        
+        /**
+         * Prevenir que el usuario salga accidentalmente
+         */
+        window.addEventListener('beforeunload', (e) => {
+            // Solo mostrar confirmación si hay cambios pendientes
+            const hasPending = localStorage.getItem('pendingSync') !== null;
+            if (hasPending) {
+                e.preventDefault();
+                e.returnValue = 'Tienes cambios pendientes de sincronizar. ¿Seguro que quieres salir?';
+            }
+        });
+        
+        // ============================================
+        // MODO OSCURO AUTOMÁTICO (opcional)
+        // ============================================
+        
+        // Detectar preferencia de tema del sistema
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Ajustar colores para modo oscuro
+            document.body.className = 'bg-gradient-to-br from-gray-900 via-gray-800 to-purple-900 min-h-screen flex items-center justify-center p-4';
+            document.querySelector('.bg-white\\/70')?.classList.remove('bg-white/70');
+            document.querySelector('.bg-white\\/70')?.classList.add('bg-gray-800/70');
+            
+            const title = document.querySelector('h1');
+            if (title) title.className = 'text-2xl md:text-3xl font-bold text-gray-100 mb-2';
+            
+            const subtitle = document.querySelector('.text-gray-500');
+            if (subtitle) subtitle.className = 'text-gray-300 text-sm md:text-base mb-2';
+        }
+    </script>
+</body>
+</html>

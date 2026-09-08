@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administra - Acerca de</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #ede9fe 50%, #dbeafe 75%, #fce7f3 100%);
+            background-attachment: fixed;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.06);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                background: rgba(255, 255, 255, 0.96);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+
+        .sidebar .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .sidebar .logo-area .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo-area h1 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .sidebar .logo-area .version {
+            font-size: 9px;
+            color: #7c3aed;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+
+        .sidebar .btn-cerrar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+        .sidebar .btn-cerrar-menu:hover {
+            color: #1e1b4b;
+        }
+        @media (max-width: 768px) {
+            .sidebar .btn-cerrar-menu {
+                display: block;
+            }
+        }
+
+        .sidebar .menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar .menu .menu-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px 12px;
+        }
+
+        .sidebar .menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu .menu-item:hover {
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+        }
+
+        .sidebar .menu .menu-item.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: #5b21b6;
+            font-weight: 600;
+        }
+
+        .sidebar .menu .menu-item i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar .menu .divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 8px 12px;
+        }
+
+        .sidebar .user-area {
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar .user-area .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar .user-area .user-info .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .sidebar .user-area .user-info .user-email {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .sidebar .user-area .btn-logout-sidebar i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 16px;
+            flex: 1;
+            min-height: 100vh;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                margin-left: 240px;
+                padding: 24px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .clay {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 10px 10px 28px rgba(0, 0, 0, 0.05), -10px -10px 28px rgba(255, 255, 255, 0.6),
+                        inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .clay-md { padding: 14px 16px; border-radius: 20px; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-header .titulo h2 {
+            font-size: 20px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .dashboard-header .titulo p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .hamburger {
+            display: block;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            color: #1e1b4b;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none !important;
+            }
+        }
+
+        .dashboard-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .connection {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .connection .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connection .dot.green {
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .logo-grande {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            color: white;
+            font-size: 32px;
+            font-weight: 700;
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .app-nombre {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e1b4b;
+        }
+
+        .app-version {
+            text-align: center;
+            font-size: 13px;
+            color: #7c3aed;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .app-subtitulo {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+
+        .caracteristicas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 12px 0 16px 0;
+        }
+
+        .caracteristica {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .caracteristica:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(1.01);
+        }
+
+        .caracteristica .icono {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .caracteristica .icono.gestion { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+        .caracteristica .icono.finanzas { background: linear-gradient(135deg, #059669, #047857); }
+        .caracteristica .icono.offline { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .caracteristica .icono.pdf { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .caracteristica .icono.pwa { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .caracteristica .icono.seguridad { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .caracteristica .icono.reportes { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .caracteristica .icono.backup { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .caracteristica .icono.notas { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+        .caracteristica .info h4 {
+            font-size: 13px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .caracteristica .info p {
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .tecnologias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin: 12px 0 8px 0;
+        }
+
+        .tecnologia {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #4a4a6a;
+        }
+
+        .tecnologia.destacada {
+            background: rgba(124, 58, 237, 0.12);
+            border-color: #c4b5fd;
+            color: #5b21b6;
+        }
+
+        .btn-volver {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-volver:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
+        }
+
+        .btn-volver i { font-size: 12px; }
+
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding: 8px 0;
+        }
+
+        .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
+
+        .separador {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(167, 139, 250, 0.3), transparent);
+            margin: 12px 0;
+        }
+
+        .creditos {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 8px;
+        }
+
+        .creditos .nombre {
+            color: #7c3aed;
+            font-weight: 700;
+        }
+
+        @media (max-width: 380px) {
+            .main-content { padding: 10px; }
+            .logo-grande { width: 64px; height: 64px; font-size: 26px; }
+            .app-nombre { font-size: 20px; }
+            .caracteristica { padding: 8px 10px; }
+            .caracteristica .info h4 { font-size: 12px; }
+        }
+
+        @media (min-width: 600px) {
+            .main-content { padding: 24px; }
+            .container { max-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">A</div>
+            <div>
+                <h1>Administra <span class="version">v2.0</span></h1>
+            </div>
+            <button class="btn-cerrar-menu" onclick="cerrarSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-label">Menú principal</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='dashboard.html'">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='grupos.html'">
+                <i class="fas fa-users"></i>
+                Grupos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='alumnos.html'">
+                <i class="fas fa-user-graduate"></i>
+                Alumnos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='gastos.html'">
+                <i class="fas fa-credit-card"></i>
+                Gastos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='reportes.html'">
+                <i class="fas fa-file-alt"></i>
+                Reportes
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
+                <i class="fas fa-sticky-note"></i>
+                Extra Notas
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="menu-label">Sistema</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </button>
+
+            <button class="menu-item active" onclick="cerrarSidebar(); location.href='acerca.html'">
+                <i class="fas fa-info-circle"></i>
+                Acerca de
+            </button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="user-name">Administrador</div>
+                    <div class="user-email">admin@escuela.com</div>
+                </div>
+            </div>
+            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="titulo">
+                    <button class="hamburger" onclick="abrirSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2>ℹ️ Acerca de</h2>
+                        <p>Información de la aplicación</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection">
+                        <span class="dot green"></span>
+                        <span>En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clay clay-md">
+                <div class="logo-grande">A</div>
+                <div class="app-nombre">Administra</div>
+                <div class="app-version">✨ Versión 2.0</div>
+                <div class="app-subtitulo">Gestión financiera y escolar</div>
+
+                <div class="separador"></div>
+
+                <div class="caracteristicas">
+                    <div class="caracteristica">
+                        <div class="icono gestion">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📚 Gestión de grupos y alumnos</h4>
+                            <p>Crea, edita y elimina grupos. Registra alumnos con su colegiatura, pagos y saldo disponible.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono finanzas">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                        <div class="info">
+                            <h4>💰 Control financiero</h4>
+                            <p>Lleva un registro detallado de pagos, gastos compartidos y saldos disponibles por grupo.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono offline">
+                            <i class="fas fa-wifi-slash"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📶 Funciona sin internet</h4>
+                            <p>Modo offline completo. Los datos se guardan localmente y se sincronizan automáticamente al recuperar la conexión.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono pdf">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📄 Reportes en PDF</h4>
+                            <p>Genera reportes profesionales con listados de alumnos y resúmenes financieros por grupo.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono pwa">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📱 PWA instalable</h4>
+                            <p>Instala la app en tu dispositivo móvil o computadora. Funciona como una aplicación nativa.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono seguridad">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="info">
+                            <h4>🔒 Datos seguros</h4>
+                            <p>Todos los datos se almacenan en Supabase (nube) con autenticación segura.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono reportes">
+                            <i class="fas fa-chart-bar"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📊 Dashboard inteligente</h4>
+                            <p>Visualiza estadísticas en tiempo real: total recaudado, disponible, gastos y alumnos en riesgo.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono backup">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div class="info">
+                            <h4>💾 Exportar / Importar datos</h4>
+                            <p>Respaldos en archivos JSON. Exporta tu base de datos y restaura cuando necesites.</p>
+                        </div>
+                    </div>
+
+                    <div class="caracteristica">
+                        <div class="icono notas">
+                            <i class="fas fa-sticky-note"></i>
+                        </div>
+                        <div class="info">
+                            <h4>📝 Extra Notas</h4>
+                            <p>Registro independiente de notas adicionales con fecha, descripción, nombre y monto.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="separador"></div>
+
+                <div style="text-align:center;margin:8px 0 4px 0;">
+                    <span style="font-size:11px;color:#6b7280;font-weight:600;">TECNOLOGÍAS</span>
+                </div>
+                <div class="tecnologias">
+                    <span class="tecnologia destacada">🌐 HTML5</span>
+                    <span class="tecnologia destacada">🎨 CSS3</span>
+                    <span class="tecnologia destacada">⚡ JavaScript</span>
+                    <span class="tecnologia">📦 LocalStorage</span>
+                    <span class="tecnologia">📱 PWA</span>
+                    <span class="tecnologia">📄 html2canvas</span>
+                    <span class="tecnologia">📊 jsPDF</span>
+                    <span class="tecnologia">🎯 Font Awesome</span>
+                    <span class="tecnologia">☁️ Supabase</span>
+                    <span class="tecnologia">🚀 Vercel</span>
+                </div>
+
+                <div class="separador"></div>
+
+                <div class="creditos">
+                    <p>Desarrollado con ❤️ por <span class="nombre">amayasily</span></p>
+                    <p style="font-size:11px;color:#9ca3af;margin-top:2px;">
+                        <i class="fas fa-code"></i> Código abierto · <i class="fas fa-sync-alt"></i> Actualización constante
+                    </p>
+                </div>
+
+                <div style="text-align:center;margin-top:12px;">
+                    <button class="btn-volver" onclick="location.href='dashboard.html'">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span class="brand">amayasily</span>
+                <span style="color:#d1d5db;margin:0 4px;">·</span>
+                <span style="color:#9ca3af;">Administra v2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script>
+        function abrirSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function cerrarSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
+                    cerrarSidebar();
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                cerrarSidebar();
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        window.abrirSidebar = abrirSidebar;
+        window.cerrarSidebar = cerrarSidebar;
+        window.logout = logout;
+
+        // ============================================
+        // REGISTRO DEL SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[Service Worker] Registrado correctamente');
+                    })
+                    .catch(function(error) {
+                        console.log('[Service Worker] Error al registrar:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

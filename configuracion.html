@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administra - Configuración</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #ede9fe 50%, #dbeafe 75%, #fce7f3 100%);
+            background-attachment: fixed;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.06);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                background: rgba(255, 255, 255, 0.96);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+
+        .sidebar .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .sidebar .logo-area .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo-area h1 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .sidebar .logo-area .version {
+            font-size: 9px;
+            color: #7c3aed;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+
+        .sidebar .btn-cerrar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+        .sidebar .btn-cerrar-menu:hover {
+            color: #1e1b4b;
+        }
+        @media (max-width: 768px) {
+            .sidebar .btn-cerrar-menu {
+                display: block;
+            }
+        }
+
+        .sidebar .menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar .menu .menu-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px 12px;
+        }
+
+        .sidebar .menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu .menu-item:hover {
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+        }
+
+        .sidebar .menu .menu-item.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: #5b21b6;
+            font-weight: 600;
+        }
+
+        .sidebar .menu .menu-item i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar .menu .divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 8px 12px;
+        }
+
+        .sidebar .user-area {
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar .user-area .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar .user-area .user-info .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .sidebar .user-area .user-info .user-email {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .sidebar .user-area .btn-logout-sidebar i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 16px;
+            flex: 1;
+            min-height: 100vh;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                margin-left: 240px;
+                padding: 24px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .clay {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 10px 10px 28px rgba(0, 0, 0, 0.05), -10px -10px 28px rgba(255, 255, 255, 0.6),
+                        inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .clay-md { padding: 14px 16px; border-radius: 20px; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-header .titulo h2 {
+            font-size: 20px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .dashboard-header .titulo p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .hamburger {
+            display: block;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            color: #1e1b4b;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none !important;
+            }
+        }
+
+        .dashboard-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .connection {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .connection .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connection .dot.green {
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .opcion-card {
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .opcion-card:hover {
+            background: rgba(255, 255, 255, 0.8);
+            border-color: rgba(167, 139, 250, 0.3);
+        }
+
+        .opcion-card .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .opcion-card .card-header .icono {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .opcion-card .card-header .icono.exportar {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .opcion-card .card-header .icono.importar {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        }
+
+        .opcion-card .card-header .icono.limpiar {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .opcion-card .card-header h3 {
+            font-size: 14px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .opcion-card .card-desc {
+            font-size: 12px;
+            color: #6b7280;
+            margin-left: 46px;
+            margin-bottom: 10px;
+        }
+
+        .opcion-card .card-actions {
+            margin-left: 46px;
+        }
+
+        .btn-opcion {
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-opcion:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-opcion:active { transform: scale(0.97); }
+
+        .btn-opcion.exportar-btn {
+            background: linear-gradient(135deg, #059669, #047857);
+        }
+
+        .btn-opcion.importar-btn {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        }
+
+        .btn-opcion.limpiar-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        .btn-opcion i { font-size: 14px; }
+
+        .btn-volver {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-volver:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
+        }
+
+        .btn-volver i { font-size: 12px; }
+
+        #fileInput {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            z-index: 9999;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            animation: toastIn 0.3s ease;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.success { background: rgba(5, 150, 105, 0.9); }
+        .toast.error { background: rgba(220, 38, 38, 0.9); }
+        .toast.info { background: rgba(59, 130, 246, 0.9); }
+        .toast.warning { background: rgba(217, 119, 6, 0.9); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .toast.out {
+            animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(-50%) translateY(0); }
+            to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+            animation: modalFadeIn 0.25s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px 20px 20px;
+            max-width: 360px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .modal-icono {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 22px;
+            color: white;
+        }
+
+        .modal-icono.peligro { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .modal-icono.advertencia { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .modal-titulo {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin-bottom: 4px;
+        }
+
+        .modal-subtitulo {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .modal-acciones {
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-acciones .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .modal-acciones .btn-confirmar {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 3px 12px rgba(220, 38, 38, 0.2);
+        }
+
+        .modal-acciones .btn-confirmar:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        }
+
+        .modal-acciones .btn-cancelar {
+            background: rgba(255, 255, 255, 0.7);
+            color: #4a4a6a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-acciones .btn-cancelar:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.02);
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding: 8px 0;
+        }
+
+        .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
+
+        .info-badge {
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        @media (max-width: 380px) {
+            .main-content { padding: 10px; }
+            .opcion-card { padding: 12px; }
+            .opcion-card .card-desc { margin-left: 0; }
+            .opcion-card .card-actions { margin-left: 0; }
+            .modal-content { padding: 18px 14px 14px; }
+        }
+
+        @media (min-width: 600px) {
+            .main-content { padding: 24px; }
+            .container { max-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">A</div>
+            <div>
+                <h1>Administra <span class="version">v2.0</span></h1>
+            </div>
+            <button class="btn-cerrar-menu" onclick="cerrarSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-label">Menú principal</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='dashboard.html'">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='grupos.html'">
+                <i class="fas fa-users"></i>
+                Grupos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='alumnos.html'">
+                <i class="fas fa-user-graduate"></i>
+                Alumnos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='gastos.html'">
+                <i class="fas fa-credit-card"></i>
+                Gastos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='reportes.html'">
+                <i class="fas fa-file-alt"></i>
+                Reportes
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
+                <i class="fas fa-sticky-note"></i>
+                Extra Notas
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="menu-label">Sistema</div>
+
+            <button class="menu-item active" onclick="cerrarSidebar(); location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='acerca.html'">
+                <i class="fas fa-info-circle"></i>
+                Acerca de
+            </button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="user-name">Administrador</div>
+                    <div class="user-email">admin@escuela.com</div>
+                </div>
+            </div>
+            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="titulo">
+                    <button class="hamburger" onclick="abrirSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2>⚙️ Configuración</h2>
+                        <p>Gestión de datos y respaldos</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection">
+                        <span class="dot green"></span>
+                        <span>En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clay clay-md">
+                <div class="opcion-card">
+                    <div class="card-header">
+                        <div class="icono exportar">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <h3>Exportar base de datos</h3>
+                    </div>
+                    <div class="card-desc">
+                        Descarga un archivo <strong>.json</strong> con todos los datos:
+                        grupos, alumnos, gastos y extra notas.
+                        <div class="info-badge" id="exportInfo">📊 Sin datos</div>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-opcion exportar-btn" onclick="exportarDatos()">
+                            <i class="fas fa-download"></i>
+                            Exportar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="opcion-card">
+                    <div class="card-header">
+                        <div class="icono importar">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>Importar base de datos</h3>
+                    </div>
+                    <div class="card-desc">
+                        Carga un archivo <strong>.json</strong> con datos previamente exportados.
+                        <strong style="color:#dc2626;">⚠️ Sobrescribirá los datos actuales.</strong>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-opcion importar-btn" onclick="document.getElementById('fileInput').click()">
+                            <i class="fas fa-upload"></i>
+                            Seleccionar archivo
+                        </button>
+                        <input type="file" id="fileInput" accept=".json" onchange="importarDatos(event)">
+                    </div>
+                </div>
+
+                <div class="opcion-card">
+                    <div class="card-header">
+                        <div class="icono limpiar">
+                            <i class="fas fa-trash-alt"></i>
+                        </div>
+                        <h3>Limpiar todos los datos</h3>
+                    </div>
+                    <div class="card-desc">
+                        Elimina <strong>todos</strong> los datos almacenados: grupos, alumnos, gastos y extra notas.
+                        <strong style="color:#dc2626;">⚠️ Esta acción no se puede deshacer.</strong>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn-opcion limpiar-btn" onclick="mostrarModalLimpiar()">
+                            <i class="fas fa-trash-alt"></i>
+                            Limpiar todo
+                        </button>
+                    </div>
+                </div>
+
+                <div style="text-align:center;margin-top:12px;">
+                    <button class="btn-volver" onclick="location.href='dashboard.html'">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span class="brand">amayasily</span>
+                <span style="color:#d1d5db;margin:0 4px;">·</span>
+                <span style="color:#9ca3af;">Administra v2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script>
+        function abrirSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function cerrarSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
+                    cerrarSidebar();
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                cerrarSidebar();
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE DATOS
+        // ============================================
+        async function obtenerTodosLosDatos() {
+            const grupos = await getGrupos();
+            const alumnos = await getAlumnos();
+            const gastos = await getGastos();
+            const extraNotas = await getExtraNotas();
+            return { grupos, alumnos, gastos, extraNotas };
+        }
+
+        async function exportarDatos() {
+            const { grupos, alumnos, gastos, extraNotas } = await obtenerTodosLosDatos();
+
+            const datos = {
+                version: '2.0.0',
+                fechaExportacion: new Date().toISOString(),
+                app: 'Administra',
+                grupos: grupos,
+                alumnos: alumnos,
+                gastos: gastos,
+                extraNotas: extraNotas
+            };
+
+            const total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
+
+            if (total === 0) {
+                mostrarToast('⚠️ No hay datos para exportar', 'warning');
+                return;
+            }
+
+            const json = JSON.stringify(datos, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            const fecha = new Date().toISOString().split('T')[0];
+            a.download = `administra_backup_${fecha}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            mostrarToast(`✅ Exportados ${total} registros correctamente`, 'success');
+        }
+
+        async function importarDatos(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+
+                    if (!datos.grupos || !datos.alumnos || !datos.gastos) {
+                        mostrarToast('❌ Archivo inválido: falta estructura de datos', 'error');
+                        return;
+                    }
+
+                    if (!Array.isArray(datos.grupos) || !Array.isArray(datos.alumnos) || !Array.isArray(datos.gastos)) {
+                        mostrarToast('❌ Archivo inválido: los datos deben ser arreglos', 'error');
+                        return;
+                    }
+
+                    const totalRegistros = datos.grupos.length + datos.alumnos.length + datos.gastos.length + (datos.extraNotas ? datos.extraNotas.length : 0);
+                    const mensaje = 
+                        `📊 Resumen del archivo:\n\n` +
+                        `• Grupos: ${datos.grupos.length}\n` +
+                        `• Alumnos: ${datos.alumnos.length}\n` +
+                        `• Gastos: ${datos.gastos.length}\n` +
+                        `• Extra Notas: ${datos.extraNotas ? datos.extraNotas.length : 0}\n` +
+                        `• Total: ${totalRegistros} registros\n\n` +
+                        `⚠️ Esto SOBRESCRIBIRÁ todos los datos actuales.\n` +
+                        `¿Deseas continuar?`;
+
+                    if (!confirm(mensaje)) {
+                        mostrarToast('❌ Importación cancelada', 'info');
+                        return;
+                    }
+
+                    // Guardar cada tabla
+                    for (const grupo of datos.grupos) {
+                        await crearGrupo(grupo.nombre, grupo.profesor);
+                    }
+
+                    for (const alumno of datos.alumnos) {
+                        await crearAlumno(alumno);
+                    }
+
+                    for (const gasto of datos.gastos) {
+                        await crearGasto(gasto);
+                    }
+
+                    if (datos.extraNotas) {
+                        for (const nota of datos.extraNotas) {
+                            await crearExtraNota(nota);
+                        }
+                    }
+
+                    mostrarToast(`✅ Importados ${totalRegistros} registros correctamente`, 'success');
+                    actualizarInfoExportacion();
+                    event.target.value = '';
+
+                } catch (error) {
+                    mostrarToast('❌ Error al leer el archivo: ' + error.message, 'error');
+                }
+            };
+
+            reader.onerror = function() {
+                mostrarToast('❌ Error al leer el archivo', 'error');
+            };
+
+            reader.readAsText(file);
+        }
+
+        function mostrarModalLimpiar() {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono peligro">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="modal-titulo">⚠️ ¿Eliminar todos los datos?</div>
+                    <div class="modal-subtitulo">
+                        Se eliminarán <strong>todos</strong> los grupos, alumnos, gastos y extra notas.
+                        <br><br>
+                        <strong style="color:#dc2626;">Esta acción no se puede deshacer.</strong>
+                    </div>
+                    <div class="modal-acciones">
+                        <button class="btn btn-confirmar" onclick="limpiarDatos()">
+                            <i class="fas fa-trash-alt"></i>
+                            Sí, eliminar todo
+                        </button>
+                        <button class="btn btn-cancelar" onclick="cerrarModal()">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        async function limpiarDatos() {
+            // Obtener todos los IDs para eliminar
+            const grupos = await getGrupos();
+            const alumnos = await getAlumnos();
+            const gastos = await getGastos();
+            const extraNotas = await getExtraNotas();
+
+            for (const grupo of grupos) {
+                await eliminarGrupo(grupo.id);
+            }
+
+            for (const alumno of alumnos) {
+                await eliminarAlumno(alumno.id);
+            }
+
+            for (const gasto of gastos) {
+                await eliminarGasto(gasto.id);
+            }
+
+            for (const nota of extraNotas) {
+                await eliminarExtraNota(nota.id);
+            }
+
+            cerrarModal();
+            mostrarToast('🗑️ Todos los datos han sido eliminados', 'warning');
+            actualizarInfoExportacion();
+        }
+
+        function cerrarModal() {
+            const modal = document.getElementById('modalOverlay');
+            if (modal) modal.remove();
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('modalOverlay');
+            if (modal && e.target === modal) {
+                cerrarModal();
+            }
+        });
+
+        async function actualizarInfoExportacion() {
+            const { grupos, alumnos, gastos, extraNotas } = await obtenerTodosLosDatos();
+            const total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
+            const info = document.getElementById('exportInfo');
+
+            if (total === 0) {
+                info.textContent = '📊 Sin datos';
+                info.style.color = '#6b7280';
+            } else {
+                info.textContent = `📊 ${grupos.length} grupos · ${alumnos.length} alumnos · ${gastos.length} gastos · ${extraNotas.length} notas`;
+                info.style.color = '#059669';
+            }
+        }
+
+        function mostrarToast(mensaje, tipo = 'info') {
+            const existing = document.querySelectorAll('.toast');
+            existing.forEach(t => t.remove());
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${tipo}`;
+            toast.textContent = mensaje;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('out');
+                setTimeout(() => toast.remove(), 400);
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarInfoExportacion();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            actualizarInfoExportacion();
+        }
+
+        window.abrirSidebar = abrirSidebar;
+        window.cerrarSidebar = cerrarSidebar;
+        window.logout = logout;
+        window.exportarDatos = exportarDatos;
+        window.importarDatos = importarDatos;
+        window.mostrarModalLimpiar = mostrarModalLimpiar;
+        window.limpiarDatos = limpiarDatos;
+        window.cerrarModal = cerrarModal;
+
+        // ============================================
+        // REGISTRO DEL SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[Service Worker] Registrado correctamente');
+                    })
+                    .catch(function(error) {
+                        console.log('[Service Worker] Error al registrar:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

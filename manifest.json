@@ -1,0 +1,21 @@
+{
+    "name": "Administra",
+    "short_name": "Administra",
+    "description": "Gestión financiera y escolar",
+    "start_url": "splash.html",
+    "display": "standalone",
+    "background_color": "#f8f4ff",
+    "theme_color": "#c4b5fd",
+    "icons": [
+        {
+            "src": "assets/logo.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/logo.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

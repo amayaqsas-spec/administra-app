@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administra - Alumnos</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Librerías para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #ede9fe 50%, #dbeafe 75%, #fce7f3 100%);
+            background-attachment: fixed;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.06);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                background: rgba(255, 255, 255, 0.96);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+
+        .sidebar .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .sidebar .logo-area .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo-area h1 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .sidebar .logo-area .version {
+            font-size: 9px;
+            color: #7c3aed;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+
+        .sidebar .btn-cerrar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+        .sidebar .btn-cerrar-menu:hover {
+            color: #1e1b4b;
+        }
+        @media (max-width: 768px) {
+            .sidebar .btn-cerrar-menu {
+                display: block;
+            }
+        }
+
+        .sidebar .menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar .menu .menu-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px 12px;
+        }
+
+        .sidebar .menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu .menu-item:hover {
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+        }
+
+        .sidebar .menu .menu-item.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: #5b21b6;
+            font-weight: 600;
+        }
+
+        .sidebar .menu .menu-item i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar .menu .divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 8px 12px;
+        }
+
+        .sidebar .user-area {
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar .user-area .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar .user-area .user-info .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .sidebar .user-area .user-info .user-email {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .sidebar .user-area .btn-logout-sidebar i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 16px;
+            flex: 1;
+            min-height: 100vh;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                margin-left: 240px;
+                padding: 24px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .clay {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 10px 10px 28px rgba(0, 0, 0, 0.05), -10px -10px 28px rgba(255, 255, 255, 0.6),
+                        inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .clay-sm { padding: 10px 12px; border-radius: 16px; }
+        .clay-md { padding: 14px 16px; border-radius: 20px; }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-header .titulo h2 {
+            font-size: 20px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .dashboard-header .titulo p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .hamburger {
+            display: block;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            color: #1e1b4b;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none !important;
+            }
+        }
+
+        .dashboard-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .connection {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .connection .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connection .dot.green {
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .top-bar h2 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .btn-nuevo {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-nuevo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+        }
+
+        .btn-nuevo i { font-size: 12px; }
+
+        .resumen {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .resumen-item {
+            text-align: center;
+            padding: 8px 6px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .resumen-item .num {
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        .resumen-item .label {
+            font-size: 9px;
+            color: #6b7280;
+            margin-top: 1px;
+        }
+
+        .num-azul { color: #2563eb; }
+        .num-verde { color: #059669; }
+
+        .input-search {
+            width: 100%;
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 18px;
+            font-size: 12px;
+            color: #1a1a2e;
+            outline: none;
+            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+            margin-bottom: 8px;
+        }
+
+        .input-search:focus {
+            border-color: #a78bfa;
+            background: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .input-search::placeholder {
+            color: #a0a0b8;
+            font-size: 11px;
+        }
+
+        .student-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .student-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: scale(1.01);
+        }
+
+        .student-item:active { transform: scale(0.98); }
+        .student-item:last-child { margin-bottom: 0; }
+
+        .student-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .student-item .info .nombre {
+            font-size: 13px;
+            color: #1e1b4b;
+            font-weight: 600;
+        }
+
+        .student-item .info .detalle {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 1px;
+        }
+
+        .student-item .info .nota {
+            font-size: 10px;
+            color: #92400e;
+            background: rgba(252, 211, 77, 0.15);
+            padding: 2px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 2px;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .student-item .info .nota i {
+            margin-right: 4px;
+            font-size: 9px;
+        }
+
+        .student-item .info .saldo {
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .student-item .info .saldo .restan-rojo {
+            color: #dc2626;
+            font-weight: 700;
+        }
+
+        .student-item .info .saldo .restan-verde {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        .student-item .info .saldo .disponible-verde {
+            color: #059669;
+            font-weight: 700;
+        }
+
+        .student-item .actions {
+            display: flex;
+            gap: 3px;
+            flex-shrink: 0;
+            margin-left: 6px;
+        }
+
+        .btn-sm {
+            border: none;
+            border-radius: 30px;
+            padding: 3px 8px;
+            font-size: 9px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            min-width: 24px;
+        }
+
+        .btn-sm i { font-size: 10px; }
+        .btn-sm:hover { transform: scale(1.08); }
+
+        .btn-editar { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 3px 8px; }
+        .btn-eliminar { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 3px 8px; }
+        .btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); padding: 3px 8px; }
+
+        .btn-pdf {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 8px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-pdf:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-pdf i { font-size: 14px; }
+
+        .btn-volver {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+            margin-top: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-volver:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
+        }
+
+        .btn-volver i { font-size: 12px; }
+
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding: 8px 0;
+        }
+
+        .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
+
+        .empty-message {
+            text-align: center;
+            padding: 30px 16px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .empty-message i {
+            font-size: 32px;
+            color: #c4b5fd;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+            animation: modalFadeIn 0.25s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px 16px 16px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+            border-radius: 10px;
+        }
+
+        .modal-icono {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+        }
+
+        .modal-icono i { font-size: 20px; color: white; }
+
+        .modal-titulo {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin-bottom: 2px;
+        }
+
+        .modal-subtitulo {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 14px;
+        }
+
+        .modal-grupo {
+            margin-bottom: 12px;
+        }
+
+        .modal-grupo label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a4a6a;
+            margin-bottom: 3px;
+        }
+
+        .modal-grupo label .obligatorio { color: #ef4444; }
+
+        .modal-grupo input, .modal-grupo select, .modal-grupo textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #1a1a2e;
+            outline: none;
+            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .modal-grupo textarea {
+            resize: vertical;
+            min-height: 50px;
+            font-size: 13px;
+        }
+
+        .modal-grupo input:focus, .modal-grupo select:focus, .modal-grupo textarea:focus {
+            border-color: #a78bfa;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+        }
+
+        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder {
+            color: #a0a0b8;
+            font-size: 13px;
+        }
+
+        .modal-grupo select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .modal-info {
+            font-size: 12px;
+            color: #6b7280;
+            padding: 8px 12px;
+            background: rgba(243, 244, 246, 0.5);
+            border-radius: 12px;
+            margin-top: 4px;
+            line-height: 1.5;
+        }
+
+        .modal-info .verde { color: #059669; font-weight: 700; }
+        .modal-info .rojo { color: #dc2626; font-weight: 700; }
+
+        .modal-acciones {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .modal-acciones .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .modal-acciones .btn i { font-size: 14px; }
+
+        .modal-acciones .btn-guardar {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            box-shadow: 0 3px 12px rgba(124, 58, 237, 0.2);
+        }
+
+        .modal-acciones .btn-guardar:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+        }
+
+        .modal-acciones .btn-cancelar {
+            background: rgba(255, 255, 255, 0.7);
+            color: #4a4a6a;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-acciones .btn-cancelar:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.02);
+        }
+
+        .modal-acciones .btn-editar-modal {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.2);
+        }
+
+        .modal-acciones .btn-editar-modal:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+        }
+
+        .modal-detalle .modal-content {
+            max-width: 400px;
+        }
+
+        .modal-detalle .detalle-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .modal-detalle .detalle-item:last-child {
+            border-bottom: none;
+        }
+
+        .modal-detalle .detalle-item .etiqueta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .modal-detalle .detalle-item .valor {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e1b4b;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .modal-detalle .detalle-item .valor.verde { color: #059669; }
+        .modal-detalle .detalle-item .valor.rojo { color: #dc2626; }
+        .modal-detalle .detalle-item .valor.nota-valor {
+            font-weight: 400;
+            font-size: 12px;
+            color: #92400e;
+            text-align: right;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .modal-detalle .detalle-whatsapp {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 8px;
+        }
+
+        .modal-detalle .detalle-whatsapp .btn-whatsapp-modal {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            box-shadow: 0 3px 12px rgba(37, 211, 102, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .modal-detalle .detalle-whatsapp .btn-whatsapp-modal:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
+        }
+
+        .modal-detalle .detalle-whatsapp .btn-cerrar-detalle {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a4a6a;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.02);
+        }
+
+        #contenidoPDF {
+            display: none;
+            background: white;
+            padding: 30px 35px;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 10px;
+            line-height: 1.4;
+            color: #1a1a2e;
+            width: 100%;
+            max-width: 210mm;
+        }
+
+        #contenidoPDF .pdf-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #1a1a2e;
+            padding-bottom: 10px;
+        }
+
+        #contenidoPDF .pdf-header .escudo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        #contenidoPDF .pdf-header .titulo-area {
+            flex: 1;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        #contenidoPDF .pdf-header .titulo-area h2 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 2px;
+            letter-spacing: 1px;
+        }
+
+        #contenidoPDF .pdf-header .titulo-area .subtitulo {
+            font-size: 11px;
+            color: #4a4a6a;
+            font-weight: normal;
+        }
+
+        #contenidoPDF .pdf-header .fecha {
+            font-size: 10px;
+            color: #4a4a6a;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        #contenidoPDF table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 9px;
+        }
+
+        #contenidoPDF table th {
+            background: #f3f4f6;
+            border: 1px solid #9ca3af;
+            padding: 4px 6px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #1a1b2e;
+            letter-spacing: 0.5px;
+        }
+
+        #contenidoPDF table td {
+            border: 1px solid #9ca3af;
+            padding: 3px 6px;
+            font-size: 9px;
+            color: #1a1a2e;
+        }
+
+        #contenidoPDF table .numero-col {
+            text-align: center;
+            width: 25px;
+        }
+
+        #contenidoPDF table .nombre-col {
+            text-align: left;
+        }
+
+        #contenidoPDF table .telefono-col {
+            text-align: center;
+            width: 70px;
+        }
+
+        #contenidoPDF table .pago-col {
+            text-align: center;
+            width: 65px;
+        }
+
+        #contenidoPDF table .pagado-col {
+            text-align: right;
+            width: 60px;
+        }
+
+        #contenidoPDF table .disponible-col {
+            text-align: right;
+            width: 60px;
+        }
+
+        #contenidoPDF table .restan-col {
+            text-align: right;
+            width: 60px;
+        }
+
+        #contenidoPDF table .nota-pdf-col {
+            text-align: left;
+            width: 80px;
+        }
+
+        #contenidoPDF table .blanco-col {
+            width: 35px;
+        }
+
+        #contenidoPDF .pdf-footer {
+            margin-top: 15px;
+            padding-top: 8px;
+            border-top: 1px solid #d1d5db;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+        #contenidoPDF .pdf-footer .totales {
+            font-weight: 600;
+            color: #1a1b2e;
+        }
+
+        .modal-pdf .modal-content {
+            max-width: 400px;
+        }
+
+        .col-toggle {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .col-toggle .toggle-btn {
+            padding: 6px 14px;
+            border: 2px solid #d1d5db;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #6b7280;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .col-toggle .toggle-btn.active {
+            border-color: #7c3aed;
+            background: rgba(124, 58, 237, 0.15);
+            color: #5b21b6;
+        }
+
+        .col-toggle .toggle-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .col-toggle .toggle-btn:active {
+            transform: scale(0.95);
+        }
+
+        .modal-pdf .modal-grupo-columnas {
+            margin-top: 8px;
+        }
+
+        .modal-pdf .modal-grupo-columnas label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #4a4a6a;
+        }
+
+        .modal-pdf .modal-grupo-columnas select {
+            padding: 6px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(8px);
+            font-size: 13px;
+            color: #1a1a2e;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .modal-pdf .btn-generar-pdf {
+            border: none;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 12px rgba(220, 38, 38, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .modal-pdf .btn-generar-pdf:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
+        }
+
+        .modal-pdf .btn-cancelar-pdf {
+            border: none;
+            border-radius: 24px;
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4a4a6a;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            flex: 1;
+        }
+
+        .modal-pdf .btn-cancelar-pdf:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: scale(1.02);
+        }
+
+        .modal-pdf .pdf-acciones {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        @media (max-width: 380px) {
+            .main-content { padding: 10px; }
+            .top-bar h2 { font-size: 14px; }
+            .btn-nuevo { font-size: 10px; padding: 4px 12px; }
+            .student-item { padding: 6px 10px; }
+            .student-item .info .nombre { font-size: 12px; }
+            .modal-content { padding: 16px 12px 12px; max-width: 100%; }
+            .modal-titulo { font-size: 16px; }
+            .modal-acciones .btn { font-size: 13px; padding: 8px 10px; }
+            .resumen { grid-template-columns: 1fr 1fr; }
+            .resumen-item .num { font-size: 14px; }
+            .modal-detalle .detalle-item .valor {
+                max-width: 50%;
+                font-size: 12px;
+            }
+            .modal-detalle .detalle-item .valor.nota-valor {
+                max-width: 50%;
+                font-size: 11px;
+            }
+        }
+
+        @media (min-width: 600px) {
+            .main-content { padding: 24px; }
+            .container { max-width: 600px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">A</div>
+            <div>
+                <h1>Administra <span class="version">v2.0</span></h1>
+            </div>
+            <button class="btn-cerrar-menu" onclick="cerrarSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-label">Menú principal</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='dashboard.html'">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='grupos.html'">
+                <i class="fas fa-users"></i>
+                Grupos
+            </button>
+
+            <button class="menu-item active" onclick="cerrarSidebar(); location.href='alumnos.html'">
+                <i class="fas fa-user-graduate"></i>
+                Alumnos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='gastos.html'">
+                <i class="fas fa-credit-card"></i>
+                Gastos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='reportes.html'">
+                <i class="fas fa-file-alt"></i>
+                Reportes
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
+                <i class="fas fa-sticky-note"></i>
+                Extra Notas
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="menu-label">Sistema</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='acerca.html'">
+                <i class="fas fa-info-circle"></i>
+                Acerca de
+            </button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="user-name">Administrador</div>
+                    <div class="user-email">admin@escuela.com</div>
+                </div>
+            </div>
+            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="titulo">
+                    <button class="hamburger" onclick="abrirSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2>👨‍🎓 Alumnos</h2>
+                        <p id="grupoSubtitulo">Gestión de alumnos</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection">
+                        <span class="dot green"></span>
+                        <span>En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clay clay-md">
+                <div class="top-bar">
+                    <h2 id="grupoTitulo">Alumnos del Grupo</h2>
+                    <button class="btn-nuevo" onclick="mostrarModalCrear()">
+                        <i class="fas fa-plus"></i>
+                        Nuevo
+                    </button>
+                </div>
+
+                <div class="resumen">
+                    <div class="resumen-item">
+                        <div class="num num-azul" id="totalAlumnos">0</div>
+                        <div class="label">Total Alumnos</div>
+                    </div>
+                    <div class="resumen-item">
+                        <div class="num num-verde" id="totalRecaudado">$0</div>
+                        <div class="label">Recaudado</div>
+                    </div>
+                </div>
+
+                <input type="text" class="input-search" id="searchStudent" placeholder="🔍 Buscar por nombre..." oninput="filtrarAlumnos()">
+
+                <div id="studentsList"></div>
+
+                <button class="btn-pdf" onclick="mostrarModalPDF()">
+                    <i class="fas fa-file-pdf"></i>
+                    Imprimir Listado PDF
+                </button>
+
+                <div style="text-align:center;margin-top:8px;">
+                    <button class="btn-volver" onclick="location.href='grupos.html'">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver a grupos
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span class="brand">amayasily</span>
+                <span style="color:#d1d5db;margin:0 4px;">·</span>
+                <span style="color:#9ca3af;">Administra v2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="contenidoPDF"></div>
+
+    <script src="js/supabase.js"></script>
+    <script>
+        // ============================================
+        // SIDEBAR CONTROLS
+        // ============================================
+        function abrirSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function cerrarSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
+                    cerrarSidebar();
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                cerrarSidebar();
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // DATOS
+        // ============================================
+        function getGrupoId() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('grupo') || '1';
+        }
+
+        let todosLosAlumnos = [];
+        let grupos = [];
+        let nextId = 1;
+        let grupoId = parseInt(getGrupoId());
+
+        async function cargarDatos() {
+            grupos = await getGrupos();
+            todosLosAlumnos = await getAlumnos();
+            if (todosLosAlumnos.length > 0) {
+                nextId = Math.max(...todosLosAlumnos.map(a => a.id)) + 1;
+            }
+            renderizarAlumnos();
+        }
+
+        function actualizarDashboard() {
+            localStorage.setItem('dashboardUpdate', Date.now().toString());
+        }
+
+        function actualizarGrupo() {
+            const alumnosDelGrupo = todosLosAlumnos.filter(a => a.grupo_id === grupoId);
+            const totalRecaudado = alumnosDelGrupo.reduce((sum, a) => sum + (a.pagado || 0), 0);
+
+            const grupo = grupos.find(g => g.id === grupoId);
+            if (grupo) {
+                // No actualizamos dinero en Supabase aquí, se calcula en tiempo real
+            }
+
+            return { totalRecaudado };
+        }
+
+        function getAlumnosDelGrupo() {
+            return todosLosAlumnos.filter(a => a.grupo_id === grupoId);
+        }
+
+        function getNombreGrupo() {
+            const grupo = grupos.find(g => g.id === grupoId);
+            return grupo ? grupo.nombre : 'Grupo ' + grupoId;
+        }
+
+        // ============================================
+        // INICIALIZAR
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatos();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            cargarDatos();
+        }
+
+        // ============================================
+        // RENDERIZAR ALUMNOS
+        // ============================================
+        async function renderizarAlumnos() {
+            const container = document.getElementById('studentsList');
+            const titulo = document.getElementById('grupoTitulo');
+            const subtitulo = document.getElementById('grupoSubtitulo');
+            const totalAlumnos = document.getElementById('totalAlumnos');
+            const totalRecaudado = document.getElementById('totalRecaudado');
+
+            titulo.textContent = '👨‍🎓 Alumnos - ' + getNombreGrupo();
+            subtitulo.textContent = 'Gestión de alumnos - ' + getNombreGrupo();
+
+            const alumnos = getAlumnosDelGrupo();
+            const stats = actualizarGrupo();
+
+            totalAlumnos.textContent = alumnos.length;
+            totalRecaudado.textContent = '$' + stats.totalRecaudado.toLocaleString();
+
+            actualizarDashboard();
+
+            if (alumnos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <i class="fas fa-users"></i>
+                        No hay alumnos registrados
+                        <br><br>
+                        <button class="btn-nuevo" onclick="mostrarModalCrear()" style="margin:0 auto;">
+                            <i class="fas fa-plus"></i>
+                            Registrar alumno
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+            let html = '';
+            sorted.forEach((alumno, index) => {
+                const restan = alumno.total - alumno.pagado;
+                const disponible = alumno.disponible || 0;
+                const restanClass = restan > 0 ? 'restan-rojo' : 'restan-verde';
+                const tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+
+                html += `
+                    <div class="student-item" data-id="${alumno.id}" onclick="verDetalle(${alumno.id})">
+                        <div class="info">
+                            <div class="nombre">${index + 1}. ${alumno.nombre}</div>
+                            <div class="detalle">📞 ${alumno.telefono} | 💰 Colegiatura: $${alumno.total}</div>
+                            ${tieneNota ? `<div class="nota"><i class="fas fa-pen"></i> ${alumno.nota}</div>` : ''}
+                            <div class="saldo">
+                                💵 Pagado: $${alumno.pagado.toLocaleString()} | 
+                                <span class="disponible-verde">Disponible: $${disponible.toLocaleString()}</span> | 
+                                <span class="${restanClass}">⚠️ Restan: $${restan.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-sm btn-whatsapp" onclick="event.stopPropagation();abrirWhatsApp('${alumno.telefono}')">
+                                <i class="fab fa-whatsapp"></i>
+                            </button>
+                            <button class="btn-sm btn-editar" onclick="event.stopPropagation();mostrarModalEditar(${alumno.id})">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn-sm btn-eliminar" onclick="event.stopPropagation();eliminarAlumno(${alumno.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // FILTRAR ALUMNOS
+        // ============================================
+        function filtrarAlumnos() {
+            const input = document.getElementById('searchStudent');
+            const filter = input.value.toLowerCase().trim();
+            const items = document.querySelectorAll('.student-item');
+
+            items.forEach(item => {
+                const nombre = item.querySelector('.nombre')?.textContent?.toLowerCase() || '';
+                if (nombre.includes(filter)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // ============================================
+        // ABRIR WHATSAPP
+        // ============================================
+        function abrirWhatsApp(telefono) {
+            const numero = telefono.replace(/\s/g, '').replace(/-/g, '');
+            if (numero) {
+                window.open('https://wa.me/52' + numero, '_blank');
+            } else {
+                alert('⚠️ No hay número de teléfono registrado');
+            }
+        }
+
+        // ============================================
+        // VER DETALLE DEL ALUMNO (con Nota)
+        // ============================================
+        function verDetalle(id) {
+            const alumno = todosLosAlumnos.find(a => a.id === id);
+            if (!alumno) return;
+
+            const restan = alumno.total - alumno.pagado;
+            const disponible = alumno.disponible || 0;
+            const tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay modal-detalle';
+            overlay.id = 'modalDetalleOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="modal-titulo">${alumno.nombre}</div>
+                    <div class="modal-subtitulo">Información del alumno</div>
+
+                    <div class="detalle-item">
+                        <span class="etiqueta">📞 Teléfono</span>
+                        <span class="valor">${alumno.telefono}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">💰 Colegiatura</span>
+                        <span class="valor">$${alumno.total.toLocaleString()}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">💵 Pagado</span>
+                        <span class="valor verde">$${alumno.pagado.toLocaleString()}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">💳 Disponible</span>
+                        <span class="valor verde">$${disponible.toLocaleString()}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">⚠️ Restan</span>
+                        <span class="valor ${restan > 0 ? 'rojo' : 'verde'}">$${restan.toLocaleString()}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">💳 Pago con</span>
+                        <span class="valor">${alumno.pago_con}</span>
+                    </div>
+                    ${tieneNota ? `
+                    <div class="detalle-item" style="border-bottom: none; padding-bottom: 4px;">
+                        <span class="etiqueta">📝 Nota</span>
+                        <span class="valor nota-valor">${alumno.nota}</span>
+                    </div>
+                    ` : ''}
+
+                    <div class="detalle-whatsapp">
+                        <button class="btn-whatsapp-modal" onclick="abrirWhatsApp('${alumno.telefono}')">
+                            <i class="fab fa-whatsapp"></i>
+                            WhatsApp
+                        </button>
+                        <button class="btn-cerrar-detalle" onclick="cerrarModalDetalle()">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function cerrarModalDetalle() {
+            const modal = document.getElementById('modalDetalleOverlay');
+            if (modal) modal.remove();
+        }
+
+        // ============================================
+        // CREAR ALUMNO (con campo Nota)
+        // ============================================
+        function mostrarModalCrear() {
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="modal-titulo">Registrar Alumno</div>
+                    <div class="modal-subtitulo">Ingresa los datos del alumno</div>
+                    <form id="formAlumnoModal">
+                        <div class="modal-grupo">
+                            <label>Nombre completo <span class="obligatorio">*</span></label>
+                            <input type="text" id="nombreAlumnoInput" placeholder="Ej: García Pérez, Ana" required autofocus>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Teléfono <span class="obligatorio">*</span></label>
+                            <input type="text" id="telefonoAlumnoInput" placeholder="Ej: 555-1234" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Colegiatura <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoAlumnoInput" placeholder="1500" value="1500" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Pagado <span class="obligatorio">*</span></label>
+                            <input type="number" id="pagadoAlumnoInput" placeholder="0" value="0" required>
+                            <div class="modal-info" id="restanteInfo">Restan: <span class="rojo" id="restanteDisplay">$0</span></div>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Disponible <span class="obligatorio">*</span></label>
+                            <input type="number" id="disponibleAlumnoInput" placeholder="0" value="0" required readonly style="background:#f3f4f6;cursor:not-allowed;">
+                            <div class="modal-info" style="font-size:10px;color:#6b7280;">
+                                <i class="fas fa-info-circle" style="color:#7c3aed;"></i> 
+                                Este campo se llena automáticamente con el valor de "Pagado"
+                            </div>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Pago con <span class="obligatorio">*</span></label>
+                            <select id="pagoConInput" required>
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Depósito">Depósito</option>
+                            </select>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Notas (opcional)</label>
+                            <textarea id="notaAlumnoInput" placeholder="Ej: Alumno con beca, debe pagar en dos parcialidades..." rows="2"></textarea>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-guardar">
+                                <i class="fas fa-check"></i>
+                                Registrar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Calcular restan y disponible
+            const totalInput = document.getElementById('montoAlumnoInput');
+            const pagadoInput = document.getElementById('pagadoAlumnoInput');
+            const disponibleInput = document.getElementById('disponibleAlumnoInput');
+            const restanteDisplay = document.getElementById('restanteDisplay');
+
+            function actualizarCampos() {
+                const total = parseInt(totalInput.value) || 0;
+                const pagado = parseInt(pagadoInput.value) || 0;
+                const restan = total - pagado;
+
+                restanteDisplay.textContent = '$' + restan.toLocaleString();
+                restanteDisplay.className = restan > 0 ? 'rojo' : 'verde';
+
+                disponibleInput.value = pagado;
+            }
+
+            totalInput.addEventListener('input', actualizarCampos);
+            pagadoInput.addEventListener('input', actualizarCampos);
+            actualizarCampos();
+
+            setTimeout(() => {
+                const input = document.getElementById('nombreAlumnoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formAlumnoModal').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const nombre = document.getElementById('nombreAlumnoInput').value.trim();
+                const telefono = document.getElementById('telefonoAlumnoInput').value.trim();
+                const total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
+                const pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
+                const disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
+                const pagoCon = document.getElementById('pagoConInput').value;
+                const nota = document.getElementById('notaAlumnoInput').value.trim();
+
+                if (!nombre) {
+                    alert('⚠️ El nombre del alumno es obligatorio');
+                    return;
+                }
+                if (!telefono) {
+                    alert('⚠️ El teléfono es obligatorio');
+                    return;
+                }
+                if (pagado > total) {
+                    alert('⚠️ El total pagado no puede ser mayor a la colegiatura');
+                    return;
+                }
+
+                const nuevoAlumno = {
+                    id: nextId++,
+                    grupoId: grupoId,
+                    nombre: nombre,
+                    telefono: telefono,
+                    total: total,
+                    pagado: pagado,
+                    disponible: disponible,
+                    pagoCon: pagoCon,
+                    nota: nota || ''
+                };
+
+                const result = await crearAlumno(nuevoAlumno);
+                if (result.success) {
+                    await cargarDatos();
+                    cerrarModal();
+                    alert('✅ Alumno "' + nombre + '" registrado');
+                } else {
+                    alert('❌ Error al registrar alumno: ' + result.error);
+                }
+            });
+        }
+
+        // ============================================
+        // EDITAR ALUMNO (con campo Nota)
+        // ============================================
+        function mostrarModalEditar(id) {
+            const alumno = todosLosAlumnos.find(a => a.id === id);
+            if (!alumno) return;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="modal-titulo">Editar Alumno</div>
+                    <div class="modal-subtitulo">Actualiza los datos</div>
+                    <form id="formAlumnoModal">
+                        <div class="modal-grupo">
+                            <label>Nombre completo <span class="obligatorio">*</span></label>
+                            <input type="text" id="nombreAlumnoInput" value="${alumno.nombre}" required autofocus>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Teléfono <span class="obligatorio">*</span></label>
+                            <input type="text" id="telefonoAlumnoInput" value="${alumno.telefono}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Colegiatura <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoAlumnoInput" value="${alumno.total}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Pagado <span class="obligatorio">*</span></label>
+                            <input type="number" id="pagadoAlumnoInput" value="${alumno.pagado}" required>
+                            <div class="modal-info" id="restanteInfo">Restan: <span class="${alumno.total - alumno.pagado > 0 ? 'rojo' : 'verde'}" id="restanteDisplay">$${(alumno.total - alumno.pagado).toLocaleString()}</span></div>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Disponible <span class="obligatorio">*</span></label>
+                            <input type="number" id="disponibleAlumnoInput" value="${alumno.disponible || 0}" readonly style="background:#f3f4f6;cursor:not-allowed;">
+                            <div class="modal-info" style="font-size:10px;color:#6b7280;">
+                                <i class="fas fa-info-circle" style="color:#7c3aed;"></i> 
+                                Este campo se actualiza automáticamente con el valor de "Pagado"
+                            </div>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Pago con <span class="obligatorio">*</span></label>
+                            <select id="pagoConInput" required>
+                                <option value="Efectivo" ${alumno.pago_con === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+                                <option value="Transferencia" ${alumno.pago_con === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
+                                <option value="Depósito" ${alumno.pago_con === 'Depósito' ? 'selected' : ''}>Depósito</option>
+                            </select>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Notas</label>
+                            <textarea id="notaAlumnoInput" placeholder="Ej: Alumno con beca..." rows="2">${alumno.nota || ''}</textarea>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-editar-modal">
+                                <i class="fas fa-check"></i>
+                                Actualizar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Calcular restan y disponible
+            const totalInput = document.getElementById('montoAlumnoInput');
+            const pagadoInput = document.getElementById('pagadoAlumnoInput');
+            const disponibleInput = document.getElementById('disponibleAlumnoInput');
+            const restanteDisplay = document.getElementById('restanteDisplay');
+
+            function actualizarCampos() {
+                const total = parseInt(totalInput.value) || 0;
+                const pagado = parseInt(pagadoInput.value) || 0;
+                const restan = total - pagado;
+
+                restanteDisplay.textContent = '$' + restan.toLocaleString();
+                restanteDisplay.className = restan > 0 ? 'rojo' : 'verde';
+
+                disponibleInput.value = pagado;
+            }
+
+            totalInput.addEventListener('input', actualizarCampos);
+            pagadoInput.addEventListener('input', actualizarCampos);
+            actualizarCampos();
+
+            setTimeout(() => {
+                const input = document.getElementById('nombreAlumnoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formAlumnoModal').addEventListener('submit', async function(e) {
+                e.preventDefault();
+
+                const nombre = document.getElementById('nombreAlumnoInput').value.trim();
+                const telefono = document.getElementById('telefonoAlumnoInput').value.trim();
+                const total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
+                const pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
+                const disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
+                const pagoCon = document.getElementById('pagoConInput').value;
+                const nota = document.getElementById('notaAlumnoInput').value.trim();
+
+                if (!nombre) {
+                    alert('⚠️ El nombre del alumno es obligatorio');
+                    return;
+                }
+                if (!telefono) {
+                    alert('⚠️ El teléfono es obligatorio');
+                    return;
+                }
+                if (pagado > total) {
+                    alert('⚠️ El total pagado no puede ser mayor a la colegiatura');
+                    return;
+                }
+
+                alumno.nombre = nombre;
+                alumno.telefono = telefono;
+                alumno.total = total;
+                alumno.pagado = pagado;
+                alumno.disponible = disponible;
+                alumno.pagoCon = pagoCon;
+                alumno.nota = nota || '';
+
+                const result = await actualizarAlumno(alumno);
+                if (result.success) {
+                    await cargarDatos();
+                    cerrarModal();
+                    alert('✅ Alumno "' + nombre + '" actualizado');
+                } else {
+                    alert('❌ Error al actualizar alumno: ' + result.error);
+                }
+            });
+        }
+
+        // ============================================
+        // ELIMINAR ALUMNO
+        // ============================================
+        async function eliminarAlumno(id) {
+            const alumno = todosLosAlumnos.find(a => a.id === id);
+            if (!alumno) return;
+
+            if (confirm('⚠️ ¿Eliminar a "' + alumno.nombre + '"?')) {
+                const result = await eliminarAlumno(id);
+                if (result.success) {
+                    await cargarDatos();
+                    alert('✅ Alumno eliminado');
+                } else {
+                    alert('❌ Error al eliminar alumno: ' + result.error);
+                }
+            }
+        }
+
+        // ============================================
+        // CERRAR MODAL
+        // ============================================
+        function cerrarModal() {
+            const modal = document.getElementById('modalOverlay');
+            if (modal) modal.remove();
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('modalOverlay');
+            if (modal && e.target === modal) {
+                cerrarModal();
+            }
+            const modalDetalle = document.getElementById('modalDetalleOverlay');
+            if (modalDetalle && e.target === modalDetalle) {
+                cerrarModalDetalle();
+            }
+        });
+
+        // ============================================
+        // PDF - CON COLUMNA DE NOTAS
+        // ============================================
+        let columnasSeleccionadas = {
+            telefono: true,
+            pagoCon: true,
+            pagado: true,
+            disponible: true,
+            restan: true,
+            nota: true
+        };
+
+        function toggleColumna(columna) {
+            columnasSeleccionadas[columna] = !columnasSeleccionadas[columna];
+            const btn = document.querySelector(`.toggle-btn[data-columna="${columna}"]`);
+            if (btn) {
+                btn.classList.toggle('active');
+            }
+        }
+
+        async function generarPDF(titulo, opciones, columnasVacias) {
+            const alumnos = getAlumnosDelGrupo();
+
+            if (alumnos.length === 0) {
+                alert("No hay alumnos para imprimir");
+                return;
+            }
+
+            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+            const fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const grupoNombre = getNombreGrupo();
+
+            const totalPagado = sorted.reduce((sum, a) => sum + a.pagado, 0);
+            const totalDisponible = sorted.reduce((sum, a) => sum + (a.disponible || 0), 0);
+            const totalRestan = sorted.reduce((sum, a) => sum + (a.total - a.pagado), 0);
+
+            let columnasVaciasHtml = '';
+            let columnasVaciasBody = '';
+            for (let i = 0; i < columnasVacias; i++) {
+                columnasVaciasHtml += '<th class="blanco-col"></th>';
+                columnasVaciasBody += '<td class="blanco-col"></td>';
+            }
+
+            let html = `
+                <div class="pdf-header">
+                    <img src="assets/escuela.png" class="escudo" alt="Escudo Escuela" onerror="this.style.display='none'">
+                    <div class="titulo-area">
+                        <h2>${titulo || 'Listado de Alumnos'}</h2>
+                        <div class="subtitulo">${grupoNombre}</div>
+                    </div>
+                    <div class="fecha">Fecha: ${fechaActual}</div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="numero-col">#</th>
+                            <th class="nombre-col">Nombre del Alumno</th>
+                            ${opciones.telefono ? '<th class="telefono-col">Teléfono</th>' : ''}
+                            ${opciones.pagoCon ? '<th class="pago-col">Pago con</th>' : ''}
+                            ${opciones.pagado ? '<th class="pagado-col">Pagado</th>' : ''}
+                            ${opciones.disponible ? '<th class="disponible-col">Disponible</th>' : ''}
+                            ${opciones.restan ? '<th class="restan-col">Restan</th>' : ''}
+                            ${opciones.nota ? '<th class="nota-pdf-col">Nota</th>' : ''}
+                            ${columnasVaciasHtml}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            sorted.forEach((alumno, index) => {
+                const restan = alumno.total - alumno.pagado;
+                const disponible = alumno.disponible || 0;
+                const nota = alumno.nota || '';
+                html += `
+                    <tr>
+                        <td class="numero-col">${index + 1}</td>
+                        <td class="nombre-col">${alumno.nombre}</td>
+                        ${opciones.telefono ? '<td class="telefono-col">' + alumno.telefono + '</td>' : ''}
+                        ${opciones.pagoCon ? '<td class="pago-col">' + alumno.pago_con + '</td>' : ''}
+                        ${opciones.pagado ? '<td class="pagado-col">$' + alumno.pagado.toLocaleString() + '</td>' : ''}
+                        ${opciones.disponible ? '<td class="disponible-col">$' + disponible.toLocaleString() + '</td>' : ''}
+                        ${opciones.restan ? '<td class="restan-col">$' + restan.toLocaleString() + '</td>' : ''}
+                        ${opciones.nota ? '<td class="nota-pdf-col">' + nota + '</td>' : ''}
+                        ${columnasVaciasBody}
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+
+                <div class="pdf-footer">
+                    <div>
+                        <span class="totales">Total Alumnos: ${sorted.length}</span>
+                    </div>
+                    <div>
+                        ${opciones.pagado ? '<span class="totales">Total Pagado: $' + totalPagado.toLocaleString() + '</span>' : ''}
+                        ${opciones.disponible ? ' | <span class="totales">Total Disponible: $' + totalDisponible.toLocaleString() + '</span>' : ''}
+                        ${opciones.restan ? ' | <span class="totales">Total Restan: $' + totalRestan.toLocaleString() + '</span>' : ''}
+                    </div>
+                </div>
+            `;
+
+            const contenedor = document.getElementById('contenidoPDF');
+            contenedor.innerHTML = html;
+            contenedor.style.display = 'block';
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const canvas = await html2canvas(contenedor, {
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: 210 * 3.78,
+                    height: 297 * 3.78,
+                    windowWidth: 210 * 3.78,
+                    windowHeight: 297 * 3.78
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height / canvas.width) * pageWidth;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
+
+                contenedor.style.display = 'none';
+
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Ocurrió un error al generar el PDF: ' + error.message);
+                contenedor.style.display = 'none';
+            }
+        }
+
+        function mostrarModalPDF() {
+            const alumnos = getAlumnosDelGrupo();
+
+            if (alumnos.length === 0) {
+                alert('⚠️ No hay alumnos para imprimir');
+                return;
+            }
+
+            columnasSeleccionadas = {
+                telefono: true,
+                pagoCon: true,
+                pagado: true,
+                disponible: true,
+                restan: true,
+                nota: true
+            };
+
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay modal-pdf';
+            overlay.id = 'modalPDFOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="modal-titulo">Configurar PDF</div>
+                    <div class="modal-subtitulo">Elige las opciones para el listado</div>
+
+                    <div class="modal-grupo">
+                        <label>Título del listado</label>
+                        <input type="text" id="tituloPDFInput" placeholder="Ej: Listado de Alumnos - Evento Especial" value="Listado de Alumnos">
+                    </div>
+
+                    <div class="modal-grupo">
+                        <label>Columnas a incluir (toca para activar/desactivar)</label>
+                        <div class="col-toggle">
+                            <button class="toggle-btn active" data-columna="telefono" onclick="toggleColumna('telefono')">
+                                <i class="fas fa-phone"></i> Teléfono
+                            </button>
+                            <button class="toggle-btn active" data-columna="pagoCon" onclick="toggleColumna('pagoCon')">
+                                <i class="fas fa-credit-card"></i> Pago con
+                            </button>
+                            <button class="toggle-btn active" data-columna="pagado" onclick="toggleColumna('pagado')">
+                                <i class="fas fa-dollar-sign"></i> Pagado
+                            </button>
+                            <button class="toggle-btn active" data-columna="disponible" onclick="toggleColumna('disponible')">
+                                <i class="fas fa-coins"></i> Disponible
+                            </button>
+                            <button class="toggle-btn active" data-columna="restan" onclick="toggleColumna('restan')">
+                                <i class="fas fa-exclamation-triangle"></i> Restan
+                            </button>
+                            <button class="toggle-btn active" data-columna="nota" onclick="toggleColumna('nota')">
+                                <i class="fas fa-pen"></i> Nota
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="modal-grupo modal-grupo-columnas">
+                        <label>
+                            Columnas vacías al final:
+                            <select id="columnasVacias">
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="pdf-acciones">
+                        <button class="btn-generar-pdf" onclick="generarPDFDesdeModal()">
+                            <i class="fas fa-file-pdf"></i>
+                            Generar PDF
+                        </button>
+                        <button class="btn-cancelar-pdf" onclick="cerrarModalPDF()">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function generarPDFDesdeModal() {
+            const titulo = document.getElementById('tituloPDFInput').value.trim() || 'Listado de Alumnos';
+            const opciones = {
+                telefono: columnasSeleccionadas.telefono,
+                pagoCon: columnasSeleccionadas.pagoCon,
+                pagado: columnasSeleccionadas.pagado,
+                disponible: columnasSeleccionadas.disponible,
+                restan: columnasSeleccionadas.restan,
+                nota: columnasSeleccionadas.nota
+            };
+            const columnasVacias = parseInt(document.getElementById('columnasVacias').value) || 0;
+
+            cerrarModalPDF();
+            generarPDF(titulo, opciones, columnasVacias);
+        }
+
+        function cerrarModalPDF() {
+            const modal = document.getElementById('modalPDFOverlay');
+            if (modal) modal.remove();
+        }
+
+        // ============================================
+        // EXPONER FUNCIONES GLOBALES
+        // ============================================
+        window.abrirSidebar = abrirSidebar;
+        window.cerrarSidebar = cerrarSidebar;
+        window.logout = logout;
+        window.mostrarModalCrear = mostrarModalCrear;
+        window.mostrarModalEditar = mostrarModalEditar;
+        window.eliminarAlumno = eliminarAlumno;
+        window.cerrarModal = cerrarModal;
+        window.filtrarAlumnos = filtrarAlumnos;
+        window.toggleColumna = toggleColumna;
+        window.generarPDFDesdeModal = generarPDFDesdeModal;
+        window.cerrarModalPDF = cerrarModalPDF;
+        window.abrirWhatsApp = abrirWhatsApp;
+        window.verDetalle = verDetalle;
+        window.cerrarModalDetalle = cerrarModalDetalle;
+
+        // ============================================
+        // REGISTRO DEL SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[Service Worker] Registrado correctamente');
+                    })
+                    .catch(function(error) {
+                        console.log('[Service Worker] Error al registrar:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>

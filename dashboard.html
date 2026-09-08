@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administra - Dashboard</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/logo.png" type="image/png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #ede9fe 50%, #dbeafe 75%, #fce7f3 100%);
+            background-attachment: fixed;
+            display: flex;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.06);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                background: rgba(255, 255, 255, 0.96);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar {
+                transform: translateX(0) !important;
+            }
+        }
+
+        .sidebar .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            margin-bottom: 16px;
+        }
+
+        .sidebar .logo-area .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo-area h1 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .sidebar .logo-area .version {
+            font-size: 9px;
+            color: #7c3aed;
+            font-weight: 600;
+            background: rgba(124, 58, 237, 0.1);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+
+        .sidebar .btn-cerrar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+        .sidebar .btn-cerrar-menu:hover {
+            color: #1e1b4b;
+        }
+        @media (max-width: 768px) {
+            .sidebar .btn-cerrar-menu {
+                display: block;
+            }
+        }
+
+        .sidebar .menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .sidebar .menu .menu-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px 12px;
+        }
+
+        .sidebar .menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+
+        .sidebar .menu .menu-item:hover {
+            background: rgba(124, 58, 237, 0.08);
+            color: #5b21b6;
+        }
+
+        .sidebar .menu .menu-item.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: #5b21b6;
+            font-weight: 600;
+        }
+
+        .sidebar .menu .menu-item i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .sidebar .menu .divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.06);
+            margin: 8px 12px;
+        }
+
+        .sidebar .user-area {
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        .sidebar .user-area .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sidebar .user-area .user-info .user-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .sidebar .user-area .user-info .user-email {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            background: transparent;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .sidebar .user-area .btn-logout-sidebar:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .sidebar .user-area .btn-logout-sidebar i {
+            width: 20px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+        @media (min-width: 769px) {
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 16px;
+            flex: 1;
+            min-height: 100vh;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+
+        @media (min-width: 769px) {
+            .main-content {
+                margin-left: 240px;
+                padding: 24px;
+                width: calc(100% - 240px);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .dashboard-header .titulo h2 {
+            font-size: 20px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+
+        .dashboard-header .titulo p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .hamburger {
+            display: block;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-size: 20px;
+            color: #1e1b4b;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        @media (min-width: 769px) {
+            .hamburger {
+                display: none !important;
+            }
+        }
+
+        .dashboard-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .connection {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .connection .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .connection .dot.green {
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        @media (min-width: 600px) {
+            .stats {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+        }
+
+        .stat {
+            text-align: center;
+            padding: 14px 10px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+
+        .stat:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .stat .num {
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        @media (min-width: 600px) {
+            .stat .num {
+                font-size: 26px;
+            }
+        }
+
+        .stat .label {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        @media (min-width: 600px) {
+            .stat .label {
+                font-size: 11px;
+            }
+        }
+
+        .stat-purple .num { color: #7c3aed; }
+        .stat-pink .num { color: #db2777; }
+        .stat-blue .num { color: #2563eb; }
+        .stat-red .num { color: #dc2626; }
+
+        .balance {
+            text-align: center;
+            padding: 16px;
+            border-radius: 18px;
+            margin-bottom: 16px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .balance .num {
+            font-size: 24px;
+            font-weight: 800;
+            color: #059669;
+        }
+
+        @media (min-width: 600px) {
+            .balance .num {
+                font-size: 32px;
+            }
+        }
+
+        .balance .label {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .alumnos-riesgo {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .alumnos-riesgo .titulo {
+            font-size: 13px;
+            font-weight: 700;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .alumnos-riesgo .titulo i {
+            font-size: 16px;
+        }
+
+        .alumnos-riesgo .lista {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .alumnos-riesgo .alumno-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 12px;
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 3px solid #dc2626;
+            font-size: 12px;
+        }
+
+        .alumnos-riesgo .alumno-item .nombre {
+            font-weight: 600;
+            color: #1e1b4b;
+        }
+
+        .alumnos-riesgo .alumno-item .disponible {
+            font-weight: 700;
+            color: #dc2626;
+        }
+
+        .alumnos-riesgo .alumno-item .grupo {
+            font-size: 10px;
+            color: #6b7280;
+            margin-left: 8px;
+        }
+
+        .alumnos-riesgo .sin-alumnos {
+            text-align: center;
+            color: #6b7280;
+            font-size: 12px;
+            padding: 12px 0;
+        }
+
+        .alumnos-riesgo .sin-alumnos i {
+            color: #10b981;
+            margin-right: 6px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 24px;
+            padding: 8px 0;
+        }
+
+        .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
+    </style>
+</head>
+<body>
+    <!-- OVERLAY PARA MÓVIL -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+
+    <!-- MENÚ LATERAL -->
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">A</div>
+            <div>
+                <h1>Administra <span class="version">v2.0</span></h1>
+            </div>
+            <button class="btn-cerrar-menu" onclick="cerrarSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-label">Menú principal</div>
+
+            <button class="menu-item active" onclick="cerrarSidebar(); location.href='dashboard.html'">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='grupos.html'">
+                <i class="fas fa-users"></i>
+                Grupos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='alumnos.html'">
+                <i class="fas fa-user-graduate"></i>
+                Alumnos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='gastos.html'">
+                <i class="fas fa-credit-card"></i>
+                Gastos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='reportes.html'">
+                <i class="fas fa-file-alt"></i>
+                Reportes
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
+                <i class="fas fa-sticky-note"></i>
+                Extra Notas
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="menu-label">Sistema</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='acerca.html'">
+                <i class="fas fa-info-circle"></i>
+                Acerca de
+            </button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="user-name">Administrador</div>
+                    <div class="user-email">admin@escuela.com</div>
+                </div>
+            </div>
+            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Cerrar sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="main-content">
+        <div class="container">
+            <!-- HEADER -->
+            <div class="dashboard-header">
+                <div class="titulo">
+                    <button class="hamburger" onclick="abrirSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2>Dashboard</h2>
+                        <p>Resumen general de tu escuela</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection">
+                        <span class="dot green"></span>
+                        <span>En línea</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STATS -->
+            <div class="stats">
+                <div class="stat stat-purple">
+                    <div class="num" id="totalGrupos">0</div>
+                    <div class="label">Grupos</div>
+                </div>
+                <div class="stat stat-pink">
+                    <div class="num" id="totalPagado">$0</div>
+                    <div class="label">Pagado</div>
+                </div>
+                <div class="stat stat-blue">
+                    <div class="num" id="totalAlumnos">0</div>
+                    <div class="label">Alumnos</div>
+                </div>
+                <div class="stat stat-red">
+                    <div class="num" id="totalGastos">$0</div>
+                    <div class="label">Gastos</div>
+                </div>
+            </div>
+
+            <!-- DISPONIBLE TOTAL -->
+            <div class="balance">
+                <div class="num" id="totalDisponible">$0</div>
+                <div class="label">Disponible total</div>
+            </div>
+
+            <!-- ALUMNOS EN RIESGO -->
+            <div class="alumnos-riesgo" id="alumnosRiesgo">
+                <div class="titulo">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Alumnos con mínimo de ingresos
+                </div>
+                <div class="lista" id="listaRiesgo">
+                    <div class="sin-alumnos">
+                        <i class="fas fa-check-circle"></i>
+                        No hay alumnos con saldo bajo
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <span class="brand">amayasily</span>
+                <span style="color:#d1d5db;margin:0 4px;">·</span>
+                <span style="color:#9ca3af;">Administra v2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/supabase.js"></script>
+    <script>
+        // ============================================
+        // SIDEBAR CONTROLS
+        // ============================================
+        function abrirSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function cerrarSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
+                    cerrarSidebar();
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                cerrarSidebar();
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // DATOS
+        // ============================================
+        async function actualizarDashboard() {
+            const grupos = await getGrupos();
+            const alumnos = await getAlumnos();
+            const gastos = await getGastos();
+            
+            const idsGrupos = grupos.map(g => g.id);
+            const alumnosValidos = alumnos.filter(a => idsGrupos.includes(a.grupo_id));
+
+            document.getElementById('totalGrupos').textContent = grupos.length;
+
+            const totalPagado = alumnosValidos.reduce((sum, a) => sum + (a.pagado || 0), 0);
+            document.getElementById('totalPagado').textContent = '$' + totalPagado.toLocaleString();
+
+            const totalDisponible = alumnosValidos.reduce((sum, a) => sum + (a.disponible || 0), 0);
+            document.getElementById('totalDisponible').textContent = '$' + totalDisponible.toLocaleString();
+
+            document.getElementById('totalAlumnos').textContent = alumnosValidos.length;
+
+            const totalGastos = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
+            document.getElementById('totalGastos').textContent = '$' + totalGastos.toLocaleString();
+
+            actualizarAlumnosRiesgo(alumnosValidos, grupos);
+        }
+
+        function actualizarAlumnosRiesgo(alumnosValidos, grupos) {
+            const enRiesgo = alumnosValidos.filter(a => {
+                const disponible = a.disponible || 0;
+                return disponible > 0 && disponible <= 500;
+            });
+            enRiesgo.sort((a, b) => (a.disponible || 0) - (b.disponible || 0));
+
+            const container = document.getElementById('listaRiesgo');
+
+            if (enRiesgo.length === 0) {
+                container.innerHTML = `
+                    <div class="sin-alumnos">
+                        <i class="fas fa-check-circle"></i>
+                        No hay alumnos con saldo bajo
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            enRiesgo.forEach(alumno => {
+                const grupo = grupos.find(g => g.id === alumno.grupo_id);
+                const nombreGrupo = grupo ? grupo.nombre : 'Sin grupo';
+                const disponible = alumno.disponible || 0;
+
+                html += `
+                    <div class="alumno-item">
+                        <div>
+                            <span class="nombre">${alumno.nombre}</span>
+                            <span class="grupo">(${nombreGrupo})</span>
+                        </div>
+                        <span class="disponible">$${disponible.toLocaleString()}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // INICIALIZAR
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarDashboard();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            actualizarDashboard();
+        }
+
+        setInterval(actualizarDashboard, 5000);
+
+        window.abrirSidebar = abrirSidebar;
+        window.cerrarSidebar = cerrarSidebar;
+        window.logout = logout;
+
+        // ============================================
+        // REGISTRO DEL SERVICE WORKER
+        // ============================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[Service Worker] Registrado correctamente');
+                    })
+                    .catch(function(error) {
+                        console.log('[Service Worker] Error al registrar:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
