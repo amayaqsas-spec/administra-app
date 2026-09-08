@@ -191,9 +191,50 @@ function eliminarExtraNotaLocal(id) {
 }
 
 // ============================================
+// FUNCIONES CRUD - INGRESOS EXTERNOS
+// ============================================
+function getIngresosExternos() {
+    const data = localStorage.getItem('ingresosExternos');
+    return data ? JSON.parse(data) : [];
+}
+
+function guardarIngresosExternos(ingresos) {
+    localStorage.setItem('ingresosExternos', JSON.stringify(ingresos));
+}
+
+function crearIngresoExternoLocal(ingreso) {
+    const ingresos = getIngresosExternos();
+    const nextId = ingresos.length > 0 ? Math.max(...ingresos.map(i => i.id)) + 1 : 1;
+    const nuevoIngreso = {
+        id: nextId,
+        fecha: ingreso.fecha,
+        descripcion: ingreso.descripcion,
+        monto: ingreso.monto || 0
+    };
+    ingresos.push(nuevoIngreso);
+    guardarIngresosExternos(ingresos);
+    return { success: true, data: nuevoIngreso };
+}
+
+function actualizarIngresoExternoLocal(ingreso) {
+    const ingresos = getIngresosExternos();
+    const index = ingresos.findIndex(i => i.id === ingreso.id);
+    if (index === -1) return { success: false, error: 'Ingreso no encontrado' };
+    ingresos[index] = ingreso;
+    guardarIngresosExternos(ingresos);
+    return { success: true, data: ingreso };
+}
+
+function eliminarIngresoExternoLocal(id) {
+    let ingresos = getIngresosExternos();
+    ingresos = ingresos.filter(i => i.id !== id);
+    guardarIngresosExternos(ingresos);
+    return { success: true };
+}
+
+// ============================================
 // EXPORTAR FUNCIONES
 // ============================================
-// Reemplazar funciones de Supabase con funciones locales
 window.getGrupos = getGrupos;
 window.crearGrupo = crearGrupoLocal;
 window.actualizarGrupo = actualizarGrupoLocal;
@@ -212,5 +253,9 @@ window.getExtraNotas = getExtraNotas;
 window.crearExtraNota = crearExtraNotaLocal;
 window.actualizarExtraNota = actualizarExtraNotaLocal;
 window.eliminarExtraNota = eliminarExtraNotaLocal;
+window.getIngresosExternos = getIngresosExternos;
+window.crearIngresoExterno = crearIngresoExternoLocal;
+window.actualizarIngresoExterno = actualizarIngresoExternoLocal;
+window.eliminarIngresoExterno = eliminarIngresoExternoLocal;
 
 console.log('[Storage] Modo LOCAL activado - Sin Supabase');

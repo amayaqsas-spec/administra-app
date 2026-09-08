@@ -554,6 +554,11 @@
                 Extra Notas
             </button>
 
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
+            </button>
+
             <div class="divider"></div>
 
             <div class="menu-label">Sistema</div>
@@ -673,10 +678,31 @@
             }
         });
 
+        function getGrupos() {
+            var data = localStorage.getItem('grupos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getAlumnos() {
+            var data = localStorage.getItem('alumnos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getGastos() {
+            var data = localStorage.getItem('gastos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getIngresosExternos() {
+            var data = localStorage.getItem('ingresosExternos');
+            return data ? JSON.parse(data) : [];
+        }
+
         function actualizarDashboard() {
             var grupos = getGrupos();
             var alumnos = getAlumnos();
             var gastos = getGastos();
+            var ingresosExternos = getIngresosExternos();
 
             var idsGrupos = grupos.map(function(g) { return g.id; });
             var alumnosValidos = alumnos.filter(function(a) { return idsGrupos.includes(a.grupoId); });
@@ -686,7 +712,11 @@
             var totalPagado = alumnosValidos.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
             document.getElementById('totalPagado').textContent = '$' + totalPagado.toLocaleString();
 
-            var totalDisponible = alumnosValidos.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+            // DISPONIBLE TOTAL = Inscripción (disponible de alumnos) + Ingresos Externos
+            var totalDisponibleInscripcion = alumnosValidos.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+            var totalIngresosExternos = ingresosExternos.reduce(function(sum, i) { return sum + (i.monto || 0); }, 0);
+            var totalDisponible = totalDisponibleInscripcion + totalIngresosExternos;
+
             document.getElementById('totalDisponible').textContent = '$' + totalDisponible.toLocaleString();
 
             document.getElementById('totalAlumnos').textContent = alumnosValidos.length;
@@ -734,7 +764,7 @@
         setInterval(actualizarDashboard, 5000);
 
         window.addEventListener('storage', function(e) {
-            if (e.key === 'alumnos' || e.key === 'grupos' || e.key === 'gastos') {
+            if (e.key === 'alumnos' || e.key === 'grupos' || e.key === 'gastos' || e.key === 'ingresosExternos') {
                 actualizarDashboard();
             }
         });

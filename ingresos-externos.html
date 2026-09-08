@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Administra - Ingresos Externos</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 25%, #ede9fe 50%, #dbeafe 75%, #fce7f3 100%);
+            background-attachment: fixed;
+            display: flex;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 240px;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 4px 0 32px rgba(0, 0, 0, 0.06);
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); width: 280px; background: rgba(255,255,255,0.96); }
+            .sidebar.open { transform: translateX(0); }
+        }
+        @media (min-width: 769px) { .sidebar { transform: translateX(0) !important; } }
+        .sidebar .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            margin-bottom: 16px;
+        }
+        .sidebar .logo-area .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            border: 2px solid rgba(255,255,255,0.5);
+            flex-shrink: 0;
+        }
+        .sidebar .logo-area h1 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
+        .sidebar .logo-area .version {
+            font-size: 9px;
+            color: #7c3aed;
+            font-weight: 600;
+            background: rgba(124,58,237,0.1);
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-left: 2px;
+        }
+        .sidebar .btn-cerrar-menu {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 4px;
+            margin-left: auto;
+            transition: all 0.2s;
+        }
+        .sidebar .btn-cerrar-menu:hover { color: #1e1b4b; }
+        @media (max-width: 768px) { .sidebar .btn-cerrar-menu { display: block; } }
+        .sidebar .menu {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .sidebar .menu .menu-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            color: #9ca3af;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            padding: 8px 12px 4px 12px;
+        }
+        .sidebar .menu .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            color: #4a4a6a;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+        }
+        .sidebar .menu .menu-item:hover { background: rgba(124,58,237,0.08); color: #5b21b6; }
+        .sidebar .menu .menu-item.active { background: rgba(124,58,237,0.12); color: #5b21b6; font-weight: 600; }
+        .sidebar .menu .menu-item i { width: 20px; font-size: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar .menu .divider { height: 1px; background: rgba(0,0,0,0.06); margin: 8px 12px; }
+        .sidebar .user-area {
+            padding-top: 12px;
+            border-top: 1px solid rgba(0,0,0,0.06);
+            margin-top: 4px;
+        }
+        .sidebar .user-area .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.4);
+        }
+        .sidebar .user-area .user-info .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #c084fc, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+        }
+        .sidebar .user-area .user-info .user-name { font-size: 12px; font-weight: 600; color: #1e1b4b; }
+        .sidebar .user-area .user-info .user-email { font-size: 10px; color: #6b7280; }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        @media (min-width: 769px) { .sidebar-overlay { display: none !important; } }
+        .main-content {
+            margin-left: 0;
+            padding: 16px;
+            flex: 1;
+            min-height: 100vh;
+            width: 100%;
+            transition: margin-left 0.3s ease;
+        }
+        @media (min-width: 769px) {
+            .main-content { margin-left: 240px; padding: 24px; width: calc(100% - 240px); }
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .clay {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 10px 10px 28px rgba(0,0,0,0.05), -10px -10px 28px rgba(255,255,255,0.6),
+                        inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.02);
+        }
+        .clay-md { padding: 14px 16px; border-radius: 20px; }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .dashboard-header .titulo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dashboard-header .titulo h2 { font-size: 20px; color: #1e1b4b; font-weight: 700; }
+        .dashboard-header .titulo p { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .hamburger {
+            display: block;
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            font-size: 20px;
+            color: #1e1b4b;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .hamburger:hover { background: rgba(255,255,255,0.8); }
+        @media (min-width: 769px) { .hamburger { display: none !important; } }
+        .dashboard-header .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .connection {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            color: #6b7280;
+            background: rgba(255,255,255,0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .connection .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .connection .dot.green {
+            background: #34d399;
+            box-shadow: 0 0 8px rgba(52,211,153,0.4);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .btn-nuevo {
+            border: none;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 3px 12px rgba(16,185,129,0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-nuevo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(16,185,129,0.4); }
+        .btn-nuevo i { font-size: 14px; }
+        .ingreso-item {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ingreso-item:hover { background: rgba(255,255,255,0.8); border-color: rgba(16,185,129,0.3); }
+        .ingreso-item .info { flex: 1; }
+        .ingreso-item .info .descripcion { font-size: 14px; font-weight: 600; color: #1e1b4b; }
+        .ingreso-item .info .detalle { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .ingreso-item .info .detalle span { margin-right: 12px; }
+        .ingreso-item .monto {
+            font-size: 16px;
+            font-weight: 700;
+            color: #059669;
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+        .ingreso-item .acciones {
+            display: flex;
+            gap: 4px;
+        }
+        .btn-sm {
+            border: none;
+            border-radius: 30px;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .btn-sm:hover { transform: scale(1.08); }
+        .btn-sm i { font-size: 11px; }
+        .btn-editar { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .btn-eliminar { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .total-box {
+            margin-top: 16px;
+            padding: 16px 20px;
+            border-radius: 18px;
+            background: rgba(16,185,129,0.12);
+            border: 2px solid #10b981;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(16,185,129,0.15);
+        }
+        .total-box .label {
+            font-size: 13px;
+            color: #065f46;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .total-box .numero {
+            font-size: 28px;
+            font-weight: 800;
+            color: #059669;
+            margin-top: 2px;
+        }
+        .btn-volver {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #6b7280, #4b5563);
+            box-shadow: 0 2px 8px rgba(107,114,128,0.3);
+            margin-top: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-volver:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(107,114,128,0.4); }
+        .btn-volver i { font-size: 12px; }
+        .footer {
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            margin-top: 20px;
+            padding: 8px 0;
+        }
+        .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
+        .empty-message {
+            text-align: center;
+            padding: 30px 16px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+        .empty-message i { font-size: 32px; color: #6ee7b7; display: block; margin: 0 auto 10px; }
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 16px;
+            animation: modalFadeIn 0.25s ease;
+        }
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.92); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-content {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 24px 20px 20px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+        }
+        .modal-icono {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            box-shadow: 0 4px 16px rgba(16,185,129,0.2);
+        }
+        .modal-icono i { font-size: 20px; color: white; }
+        .modal-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
+        .modal-subtitulo { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+        .modal-grupo { margin-bottom: 12px; }
+        .modal-grupo label { display: block; font-size: 12px; font-weight: 600; color: #4a4a6a; margin-bottom: 3px; }
+        .modal-grupo label .obligatorio { color: #ef4444; }
+        .modal-grupo input, .modal-grupo textarea {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #1a1a2e;
+            outline: none;
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.02), inset -3px -3px 10px rgba(255,255,255,0.4);
+            transition: all 0.25s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .modal-grupo textarea { resize: vertical; min-height: 60px; }
+        .modal-grupo input:focus, .modal-grupo textarea:focus {
+            border-color: #10b981;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 0 3px rgba(16,185,129,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
+        }
+        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder { color: #a0a0b8; font-size: 13px; }
+        .modal-acciones {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .modal-acciones .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .modal-acciones .btn i { font-size: 14px; }
+        .modal-acciones .btn-guardar {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 3px 12px rgba(16,185,129,0.2);
+        }
+        .modal-acciones .btn-guardar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+        .modal-acciones .btn-cancelar {
+            background: rgba(255,255,255,0.7);
+            color: #4a4a6a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .modal-acciones .btn-cancelar:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
+        .modal-acciones .btn-editar-modal {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 3px 12px rgba(245,158,11,0.2);
+        }
+        .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        @media (max-width: 480px) {
+            .ingreso-item { flex-wrap: wrap; padding: 10px 12px; }
+            .ingreso-item .monto { font-size: 14px; margin-right: 8px; }
+            .ingreso-item .info .descripcion { font-size: 13px; }
+            .ingreso-item .info .detalle { font-size: 11px; }
+            .total-box .numero { font-size: 22px; }
+            .modal-content { padding: 18px 14px 14px; }
+            .modal-titulo { font-size: 18px; }
+            .modal-acciones .btn { font-size: 13px; padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">A</div>
+            <div>
+                <h1>Administra <span class="version">v2.0</span></h1>
+            </div>
+            <button class="btn-cerrar-menu" onclick="cerrarSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="menu">
+            <div class="menu-label">Menú principal</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='dashboard.html'">
+                <i class="fas fa-th-large"></i>
+                Dashboard
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='grupos.html'">
+                <i class="fas fa-users"></i>
+                Grupos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='alumnos.html'">
+                <i class="fas fa-user-graduate"></i>
+                Alumnos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='gastos.html'">
+                <i class="fas fa-credit-card"></i>
+                Gastos
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='reportes.html'">
+                <i class="fas fa-file-alt"></i>
+                Reportes
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
+                <i class="fas fa-sticky-note"></i>
+                Extra Notas
+            </button>
+
+            <button class="menu-item active" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
+            </button>
+
+            <div class="divider"></div>
+
+            <div class="menu-label">Sistema</div>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='configuracion.html'">
+                <i class="fas fa-cog"></i>
+                Configuración
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='acerca.html'">
+                <i class="fas fa-info-circle"></i>
+                Acerca de
+            </button>
+        </div>
+
+        <div class="user-area">
+            <div class="user-info">
+                <div class="avatar">A</div>
+                <div>
+                    <div class="user-name">Administrador</div>
+                    <div class="user-email">Modo Local</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container">
+            <div class="dashboard-header">
+                <div class="titulo">
+                    <button class="hamburger" onclick="abrirSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h2>💰 Ingresos Externos</h2>
+                        <p>Registro de ingresos adicionales</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="connection">
+                        <span class="dot green"></span>
+                        <span>Local</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clay clay-md">
+                <div class="top-bar">
+                    <span style="font-size:14px;color:#6b7280;">Listado de ingresos</span>
+                    <button class="btn-nuevo" onclick="mostrarModalCrear()">
+                        <i class="fas fa-plus"></i>
+                        Nuevo Ingreso
+                    </button>
+                </div>
+
+                <div id="ingresosList"></div>
+
+                <div class="total-box" id="totalBox">
+                    <div class="label">💰 Total de ingresos externos</div>
+                    <div class="numero" id="totalIngresos">$0.00</div>
+                </div>
+
+                <div style="text-align:center;margin-top:12px;">
+                    <button class="btn-volver" onclick="location.href='dashboard.html'">
+                        <i class="fas fa-arrow-left"></i>
+                        Volver al Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <div class="footer">
+                <span class="brand">amayasily</span>
+                <span style="color:#d1d5db;margin:0 4px;">·</span>
+                <span style="color:#9ca3af;">Administra v2.0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function abrirSidebar() {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        }
+
+        function cerrarSidebar() {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            if (window.innerWidth <= 768) {
+                if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
+                    cerrarSidebar();
+                }
+            }
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                cerrarSidebar();
+            }
+        });
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                localStorage.removeItem('user_session');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // DATOS - INGRESOS EXTERNOS
+        // ============================================
+        function getIngresosExternos() {
+            const data = localStorage.getItem('ingresosExternos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function guardarIngresosExternos(ingresos) {
+            localStorage.setItem('ingresosExternos', JSON.stringify(ingresos));
+            // Notificar al dashboard que los ingresos externos cambiaron
+            localStorage.setItem('ingresosExternosActualizado', Date.now().toString());
+        }
+
+        var ingresos = getIngresosExternos();
+        var nextId = ingresos.length > 0 ? Math.max(...ingresos.map(function(i) { return i.id; })) + 1 : 1;
+
+        // ============================================
+        // RENDERIZAR INGRESOS
+        // ============================================
+        function renderizarIngresos() {
+            var container = document.getElementById('ingresosList');
+            var totalIngresos = document.getElementById('totalIngresos');
+
+            if (ingresos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <i class="fas fa-coins"></i>
+                        No hay ingresos externos registrados
+                        <br><br>
+                        <button class="btn-nuevo" onclick="mostrarModalCrear()" style="margin:0 auto;font-size:12px;padding:6px 14px;">
+                            <i class="fas fa-plus"></i>
+                            Registrar primer ingreso
+                        </button>
+                    </div>
+                `;
+                totalIngresos.textContent = '$0.00';
+                return;
+            }
+
+            var sorted = [...ingresos].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+            var html = '';
+            sorted.forEach(function(ingreso) {
+                html += `
+                    <div class="ingreso-item" data-id="${ingreso.id}">
+                        <div class="info">
+                            <div class="descripcion">${ingreso.descripcion}</div>
+                            <div class="detalle">
+                                <span>📅 ${ingreso.fecha}</span>
+                            </div>
+                        </div>
+                        <div class="monto">+$${ingreso.monto.toFixed(2)}</div>
+                        <div class="acciones">
+                            <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${ingreso.id})">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn-sm btn-eliminar" onclick="eliminarIngreso(${ingreso.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            var total = ingresos.reduce(function(sum, i) { return sum + i.monto; }, 0);
+            totalIngresos.textContent = '$' + total.toFixed(2);
+        }
+
+        // ============================================
+        // CREAR INGRESO
+        // ============================================
+        function mostrarModalCrear() {
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <div class="modal-titulo">Nuevo Ingreso Externo</div>
+                    <div class="modal-subtitulo">Registra un ingreso adicional</div>
+                    <form id="formIngresoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaIngresoInput" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionIngresoInput" placeholder="Ej: Venta de materiales" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoIngresoInput" placeholder="Ej: 500.00" step="0.01" required>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-guardar">
+                                <i class="fas fa-check"></i>
+                                Guardar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            var fechaInput = document.getElementById('fechaIngresoInput');
+            if (fechaInput) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionIngresoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formIngresoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaIngresoInput').value;
+                var descripcion = document.getElementById('descripcionIngresoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoIngresoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                var nuevoIngreso = {
+                    id: nextId++,
+                    fecha: fecha,
+                    descripcion: descripcion,
+                    monto: monto
+                };
+
+                ingresos.push(nuevoIngreso);
+                guardarIngresosExternos(ingresos);
+                renderizarIngresos();
+                cerrarModal();
+                alert('✅ Ingreso registrado correctamente');
+            });
+        }
+
+        // ============================================
+        // EDITAR INGRESO
+        // ============================================
+        function mostrarModalEditar(id) {
+            var ingreso = ingresos.find(function(i) { return i.id === id; });
+            if (!ingreso) return;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="modal-titulo">Editar Ingreso</div>
+                    <div class="modal-subtitulo">Actualiza los datos</div>
+                    <form id="formIngresoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaIngresoInput" value="${ingreso.fecha}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionIngresoInput" value="${ingreso.descripcion}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoIngresoInput" value="${ingreso.monto}" step="0.01" required>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-editar-modal">
+                                <i class="fas fa-check"></i>
+                                Actualizar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionIngresoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formIngresoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaIngresoInput').value;
+                var descripcion = document.getElementById('descripcionIngresoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoIngresoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                ingreso.fecha = fecha;
+                ingreso.descripcion = descripcion;
+                ingreso.monto = monto;
+
+                guardarIngresosExternos(ingresos);
+                renderizarIngresos();
+                cerrarModal();
+                alert('✅ Ingreso actualizado correctamente');
+            });
+        }
+
+        // ============================================
+        // ELIMINAR INGRESO
+        // ============================================
+        function eliminarIngreso(id) {
+            var ingreso = ingresos.find(function(i) { return i.id === id; });
+            if (!ingreso) return;
+
+            if (confirm('⚠️ ¿Eliminar el ingreso "' + ingreso.descripcion + '"?')) {
+                ingresos = ingresos.filter(function(i) { return i.id !== id; });
+                guardarIngresosExternos(ingresos);
+                renderizarIngresos();
+                alert('✅ Ingreso eliminado');
+            }
+        }
+
+        // ============================================
+        // CERRAR MODAL
+        // ============================================
+        function cerrarModal() {
+            var modal = document.getElementById('modalOverlay');
+            if (modal) modal.remove();
+        }
+
+        document.addEventListener('click', function(e) {
+            var modal = document.getElementById('modalOverlay');
+            if (modal && e.target === modal) {
+                cerrarModal();
+            }
+        });
+
+        // ============================================
+        // INICIALIZAR
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            renderizarIngresos();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            renderizarIngresos();
+        }
+
+        window.abrirSidebar = abrirSidebar;
+        window.cerrarSidebar = cerrarSidebar;
+        window.logout = logout;
+        window.mostrarModalCrear = mostrarModalCrear;
+        window.mostrarModalEditar = mostrarModalEditar;
+        window.eliminarIngreso = eliminarIngreso;
+        window.cerrarModal = cerrarModal;
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('[Service Worker] Registrado correctamente');
+                    })
+                    .catch(function(error) {
+                        console.log('[Service Worker] Error al registrar:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
