@@ -4,14 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra - Dashboard</title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Estilos del dashboard con menú lateral */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -22,6 +20,7 @@
             display: flex;
         }
 
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -213,33 +212,6 @@
         .sidebar .user-area .user-info .user-email {
             font-size: 10px;
             color: #6b7280;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            background: transparent;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar:hover {
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .sidebar .user-area .btn-logout-sidebar i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
         }
 
         .sidebar-overlay {
@@ -537,10 +509,11 @@
     </style>
 </head>
 <body>
-    <!-- OVERLAY PARA MÓVIL -->
+
+    <!-- OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
 
-    <!-- MENÚ LATERAL -->
+    <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
         <div class="logo-area">
             <div class="logo-icon">A</div>
@@ -605,20 +578,15 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
-    <!-- CONTENIDO PRINCIPAL -->
+    <!-- MAIN CONTENT -->
     <div class="main-content">
         <div class="container">
-            <!-- HEADER -->
             <div class="dashboard-header">
                 <div class="titulo">
                     <button class="hamburger" onclick="abrirSidebar()">
@@ -632,12 +600,11 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
 
-            <!-- STATS -->
             <div class="stats">
                 <div class="stat stat-purple">
                     <div class="num" id="totalGrupos">0</div>
@@ -657,13 +624,11 @@
                 </div>
             </div>
 
-            <!-- DISPONIBLE TOTAL -->
             <div class="balance">
                 <div class="num" id="totalDisponible">$0</div>
                 <div class="label">Disponible total</div>
             </div>
 
-            <!-- ALUMNOS EN RIESGO -->
             <div class="alumnos-riesgo" id="alumnosRiesgo">
                 <div class="titulo">
                     <i class="fas fa-exclamation-triangle"></i>
@@ -677,7 +642,6 @@
                 </div>
             </div>
 
-            <!-- FOOTER -->
             <div class="footer">
                 <span class="brand">amayasily</span>
                 <span style="color:#d1d5db;margin:0 4px;">·</span>
@@ -686,11 +650,7 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
     <script>
-        // ============================================
-        // SIDEBAR CONTROLS
-        // ============================================
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
             document.getElementById('sidebarOverlay').classList.add('active');
@@ -702,8 +662,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -717,80 +677,71 @@
             }
         });
 
-        function logout() {
-            if (confirm('¿Cerrar sesión?')) {
-                localStorage.removeItem('user_session');
-                window.location.href = 'login.html';
-            }
+        function getGrupos() {
+            var data = localStorage.getItem('grupos');
+            return data ? JSON.parse(data) : [];
         }
 
-        // ============================================
-        // DATOS
-        // ============================================
-        async function actualizarDashboard() {
-            const grupos = await getGrupos();
-            const alumnos = await getAlumnos();
-            const gastos = await getGastos();
-            
-            const idsGrupos = grupos.map(g => g.id);
-            const alumnosValidos = alumnos.filter(a => idsGrupos.includes(a.grupo_id));
+        function getAlumnos() {
+            var data = localStorage.getItem('alumnos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getGastos() {
+            var data = localStorage.getItem('gastos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function actualizarDashboard() {
+            var grupos = getGrupos();
+            var alumnos = getAlumnos();
+            var gastos = getGastos();
+
+            var idsGrupos = grupos.map(function(g) { return g.id; });
+            var alumnosValidos = alumnos.filter(function(a) { return idsGrupos.includes(a.grupoId); });
 
             document.getElementById('totalGrupos').textContent = grupos.length;
 
-            const totalPagado = alumnosValidos.reduce((sum, a) => sum + (a.pagado || 0), 0);
+            var totalPagado = alumnosValidos.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
             document.getElementById('totalPagado').textContent = '$' + totalPagado.toLocaleString();
 
-            const totalDisponible = alumnosValidos.reduce((sum, a) => sum + (a.disponible || 0), 0);
+            var totalDisponible = alumnosValidos.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
             document.getElementById('totalDisponible').textContent = '$' + totalDisponible.toLocaleString();
 
             document.getElementById('totalAlumnos').textContent = alumnosValidos.length;
 
-            const totalGastos = gastos.reduce((sum, g) => sum + (g.monto || 0), 0);
+            var totalGastos = gastos.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
             document.getElementById('totalGastos').textContent = '$' + totalGastos.toLocaleString();
 
             actualizarAlumnosRiesgo(alumnosValidos, grupos);
         }
 
         function actualizarAlumnosRiesgo(alumnosValidos, grupos) {
-            const enRiesgo = alumnosValidos.filter(a => {
-                const disponible = a.disponible || 0;
+            var enRiesgo = alumnosValidos.filter(function(a) {
+                var disponible = a.disponible || 0;
                 return disponible > 0 && disponible <= 500;
             });
-            enRiesgo.sort((a, b) => (a.disponible || 0) - (b.disponible || 0));
+            enRiesgo.sort(function(a, b) { return (a.disponible || 0) - (b.disponible || 0); });
 
-            const container = document.getElementById('listaRiesgo');
+            var container = document.getElementById('listaRiesgo');
 
             if (enRiesgo.length === 0) {
-                container.innerHTML = `
-                    <div class="sin-alumnos">
-                        <i class="fas fa-check-circle"></i>
-                        No hay alumnos con saldo bajo
-                    </div>
-                `;
+                container.innerHTML = '<div class="sin-alumnos"><i class="fas fa-check-circle"></i> No hay alumnos con saldo bajo</div>';
                 return;
             }
 
-            let html = '';
-            enRiesgo.forEach(alumno => {
-                const grupo = grupos.find(g => g.id === alumno.grupo_id);
-                const nombreGrupo = grupo ? grupo.nombre : 'Sin grupo';
-                const disponible = alumno.disponible || 0;
+            var html = '';
+            enRiesgo.forEach(function(alumno) {
+                var grupo = grupos.find(function(g) { return g.id === alumno.grupoId; });
+                var nombreGrupo = grupo ? grupo.nombre : 'Sin grupo';
+                var disponible = alumno.disponible || 0;
 
-                html += `
-                    <div class="alumno-item">
-                        <div>
-                            <span class="nombre">${alumno.nombre}</span>
-                            <span class="grupo">(${nombreGrupo})</span>
-                        </div>
-                        <span class="disponible">$${disponible.toLocaleString()}</span>
-                    </div>
-                `;
+                html += '<div class="alumno-item"><div><span class="nombre">' + alumno.nombre + '</span><span class="grupo">(' + nombreGrupo + ')</span></div><span class="disponible">$' + disponible.toLocaleString() + '</span></div>';
             });
 
             container.innerHTML = html;
         }
 
-        // INICIALIZAR
         document.addEventListener('DOMContentLoaded', function() {
             actualizarDashboard();
         });
@@ -801,9 +752,14 @@
 
         setInterval(actualizarDashboard, 5000);
 
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'alumnos' || e.key === 'grupos' || e.key === 'gastos') {
+                actualizarDashboard();
+            }
+        });
+
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
-        window.logout = logout;
 
         // ============================================
         // REGISTRO DEL SERVICE WORKER

@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra</title>
-    <meta http-equiv="refresh" content="0; url=login.html">
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
 </head>
 <body>
-    <p>Redirigiendo a <a href="login.html">Iniciar Sesión</a>...</p>
     <script>
-        // Redirección
-        window.location.href = 'login.html';
+        window.location.href = 'splash.html';
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
