@@ -1,5 +1,5 @@
 // sw.js - Service Worker para Administra PWA
-const CACHE_NAME = 'administra-v2';
+const CACHE_NAME = 'administra-v3';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
@@ -21,134 +21,63 @@ const STATIC_ASSETS = [
     '/js/offline-manager.js',
     '/js/splash.js',
     '/js/supabase.js',
-    '/assets/logo.png',
-    '/assets/escuela.png'
+    '/assets/logo.png'
 ];
 
-// URLs de CDN
-const CDN_ASSETS = [
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
-    'https://unpkg.com/lucide@latest'
-];
-
-// Instalación
+// Instalación del Service Worker
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
             .then((cache) => {
-                console.log('[SW] Cacheando assets...');
                 return cache.addAll(STATIC_ASSETS);
             })
-            .then(() => {
-                return caches.open(CACHE_NAME + '-cdn');
-            })
-            .then((cdnCache) => {
-                console.log('[SW] Cacheando CDN...');
-                return cdnCache.addAll(CDN_ASSETS);
-            })
-            .then(() => {
-                console.log('[SW] Assets cacheados');
-                return self.skipWaiting();
-            })
-            .catch((error) => {
-                console.error('[SW] Error en instalación:', error);
-            })
+            .then(() => self.skipWaiting())
     );
 });
 
-// Activación
+// Activación y limpieza de cachés antiguas
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME && !cacheName.startsWith(CACHE_NAME + '-cdn')) {
-                        console.log('[SW] Eliminando cache antiguo:', cacheName);
-                        return caches.delete(cacheName);
+                cacheNames.map((cache) => {
+                    if (cache !== CACHE_NAME) {
+                        return caches.delete(cache);
                     }
                 })
             );
-        })
-        .then(() => {
-            console.log('[SW] Service Worker activado');
-            return self.clients.claim();
-        })
+        }).then(() => self.clients.claim())
     );
 });
 
-// Fetch
+// Interceptar peticiones de red
 self.addEventListener('fetch', (event) => {
-    const request = event.request;
-    const url = new URL(request.url);
-
-    // HTML - Network First
-    if (request.headers.get('accept')?.includes('text/html')) {
+    // Si es una petición a Supabase o API externa, intentamos red primero y si falla usamos caché/offline
+    if (event.request.url.includes('supabase.co')) {
         event.respondWith(
-            fetch(request)
-                .then((response) => {
-                    const responseClone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(request, responseClone);
-                    });
-                    return response;
-                })
-                .catch(() => {
-                    return caches.match(request)
-                        .then((cachedResponse) => {
-                            if (cachedResponse) {
-                                return cachedResponse;
-                            }
-                            return caches.match('/offline.html');
-                        });
-                })
+            fetch(event.request).catch(() => {
+                return caches.match('/offline.html');
+            })
         );
         return;
     }
 
-    // Assets - Cache First
-    if (request.url.includes('/css/') || 
-        request.url.includes('/js/') || 
-        request.url.includes('/assets/') ||
-        request.url.includes('font-awesome') ||
-        request.url.includes('html2canvas') ||
-        request.url.includes('jspdf') ||
-        request.url.includes('supabase') ||
-        request.url.includes('lucide')) {
-        
-        event.respondWith(
-            caches.match(request)
-                .then((cachedResponse) => {
-                    if (cachedResponse) {
-                        return cachedResponse;
-                    }
-                    return fetch(request)
-                        .then((response) => {
-                            const responseClone = response.clone();
-                            caches.open(CACHE_NAME).then((cache) => {
-                                cache.put(request, responseClone);
-                            });
-                            return response;
-                        });
-                })
-        );
-        return;
-    }
-
-    // Default - Network First
+    // Para archivos estáticos: Estrategia Cache First, falling back to network
     event.respondWith(
-        fetch(request)
-            .catch(() => {
-                return caches.match(request);
+        caches.match(event.request)
+            .then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
+                }
+                return fetch(event.request).then((response) => {
+                    // Si la respuesta es válida, la podemos cachear dinámicamente si es necesario
+                    return response;
+                });
+            }).catch(() => {
+                // Si falla la red y no está en caché, mostramos la página offline si es navegación HTML
+                if (event.request.mode === 'navigate') {
+                    return caches.match('/offline.html');
+                }
             })
     );
-});
-
-// Mensajes
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
-    }
 });
