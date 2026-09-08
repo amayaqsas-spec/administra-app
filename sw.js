@@ -52,29 +52,20 @@ self.addEventListener('activate', (event) => {
 
 // Interceptar peticiones de red
 self.addEventListener('fetch', (event) => {
-    // Si es una petición a Supabase o API externa, intentamos red primero y si falla usamos caché/offline
+    // Si la petición es hacia Supabase, no interferir y dejar que pase directo a la red
     if (event.request.url.includes('supabase.co')) {
-        event.respondWith(
-            fetch(event.request).catch(() => {
-                return caches.match('/offline.html');
-            })
-        );
         return;
     }
 
-    // Para archivos estáticos: Estrategia Cache First, falling back to network
+    // Para archivos estáticos: Estrategia Cache First
     event.respondWith(
         caches.match(event.request)
             .then((cachedResponse) => {
                 if (cachedResponse) {
                     return cachedResponse;
                 }
-                return fetch(event.request).then((response) => {
-                    // Si la respuesta es válida, la podemos cachear dinámicamente si es necesario
-                    return response;
-                });
+                return fetch(event.request);
             }).catch(() => {
-                // Si falla la red y no está en caché, mostramos la página offline si es navegación HTML
                 if (event.request.mode === 'navigate') {
                     return caches.match('/offline.html');
                 }
