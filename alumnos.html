@@ -11,7 +11,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Mismos estilos que antes pero sin Supabase */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -622,13 +621,14 @@
         #contenidoPDF {
             display: none;
             background: white;
-            padding: 30px 35px;
+            padding: 15mm 20mm;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10px;
             line-height: 1.4;
             color: #1a1a2e;
-            width: 100%;
-            max-width: 210mm;
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
         }
         #contenidoPDF .pdf-header {
             display: flex;
@@ -1499,32 +1499,31 @@
             }
         }
 
-        function generarPDF(titulo, opciones, columnasVacias) {
-            var alumnos = getAlumnosDelGrupo();
+        async function generarPDF(titulo, opciones, columnasVacias) {
+            const alumnos = getAlumnosDelGrupo();
 
             if (alumnos.length === 0) {
                 alert("No hay alumnos para imprimir");
                 return;
             }
 
-            var sorted = [...alumnos].sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
-            var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            var grupoNombre = getNombreGrupo();
+            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+            const fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const grupoNombre = getNombreGrupo();
 
-            var totalPagado = sorted.reduce(function(sum, a) { return sum + a.pagado; }, 0);
-            var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
-            var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
+            const totalPagado = sorted.reduce((sum, a) => sum + a.pagado, 0);
+            const totalDisponible = sorted.reduce((sum, a) => sum + (a.disponible || 0), 0);
+            const totalRestan = sorted.reduce((sum, a) => sum + (a.total - a.pagado), 0);
 
-            var columnasVaciasHtml = '';
-            var columnasVaciasBody = '';
-            for (var i = 0; i < columnasVacias; i++) {
+            let columnasVaciasHtml = '';
+            let columnasVaciasBody = '';
+            for (let i = 0; i < columnasVacias; i++) {
                 columnasVaciasHtml += '<th class="blanco-col"></th>';
                 columnasVaciasBody += '<td class="blanco-col"></td>';
             }
 
-            var html = `
+            let html = `
                 <div class="pdf-header">
-                    <img src="assets/escuela.png" class="escudo" alt="Escudo Escuela" onerror="this.style.display='none'">
                     <div class="titulo-area">
                         <h2>${titulo || 'Listado de Alumnos'}</h2>
                         <div class="subtitulo">${grupoNombre}</div>
@@ -1549,10 +1548,10 @@
                     <tbody>
             `;
 
-            sorted.forEach(function(alumno, index) {
-                var restan = alumno.total - alumno.pagado;
-                var disponible = alumno.disponible || 0;
-                var nota = alumno.nota || '';
+            sorted.forEach((alumno, index) => {
+                const restan = alumno.total - alumno.pagado;
+                const disponible = alumno.disponible || 0;
+                const nota = alumno.nota || '';
                 html += `
                     <tr>
                         <td class="numero-col">${index + 1}</td>
@@ -1584,37 +1583,52 @@
                 </div>
             `;
 
-            var contenedor = document.getElementById('contenidoPDF');
+            const contenedor = document.getElementById('contenidoPDF');
             contenedor.innerHTML = html;
             contenedor.style.display = 'block';
 
-            html2canvas(contenedor, {
-                scale: 3,
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff',
-                width: 210 * 3.78,
-                height: 297 * 3.78,
-                windowWidth: 210 * 3.78,
-                windowHeight: 297 * 3.78
-            }).then(function(canvas) {
-                var imgData = canvas.toDataURL('image/png');
+            try {
+                await new Promise(resolve => setTimeout(resolve, 300));
 
-                var { jsPDF } = window.jspdf;
-                var pdf = new jsPDF('p', 'mm', 'a4');
-                var pageWidth = pdf.internal.pageSize.getWidth();
-                var imgWidth = pageWidth;
-                var imgHeight = (canvas.height / canvas.width) * pageWidth;
+                const canvas = await html2canvas(contenedor, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff',
+                    width: 210 * 3.78,
+                    height: 297 * 3.78,
+                    windowWidth: 210 * 3.78,
+                    windowHeight: 297 * 3.78,
+                    onclone: function(document) {
+                        var pdfContent = document.getElementById('contenidoPDF');
+                        if (pdfContent) {
+                            pdfContent.style.width = '210mm';
+                            pdfContent.style.padding = '15mm 20mm';
+                            pdfContent.style.minHeight = '297mm';
+                        }
+                    }
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height / canvas.width) * pageWidth;
 
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 pdf.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
 
                 contenedor.style.display = 'none';
-            }).catch(function(error) {
+
+            } catch (error) {
                 console.error('Error al generar PDF:', error);
                 alert('Ocurrió un error al generar el PDF: ' + error.message);
                 contenedor.style.display = 'none';
-            });
+            }
         }
 
         function mostrarModalPDF() {

@@ -19,6 +19,7 @@
             background-attachment: fixed;
             display: flex;
         }
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -358,13 +359,14 @@
         #contenidoPDF {
             display: none;
             background: white;
-            padding: 30px 35px;
+            padding: 15mm 20mm;
             font-family: 'Times New Roman', Times, serif;
             font-size: 10px;
             line-height: 1.4;
             color: #1a1a2e;
-            width: 100%;
-            max-width: 210mm;
+            width: 210mm;
+            min-height: 297mm;
+            box-sizing: border-box;
         }
         #contenidoPDF .pdf-header {
             display: flex;
@@ -787,7 +789,7 @@
             generarPDF(grupoId, fechaInicio, fechaFin, opciones);
         });
 
-        function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
+        async function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
             mostrarLoading();
 
             try {
@@ -910,35 +912,42 @@
                 contenedor.innerHTML = html;
                 contenedor.style.display = 'block';
 
-                html2canvas(contenedor, {
-                    scale: 3,
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                var canvas = await html2canvas(contenedor, {
+                    scale: 2,
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
                     width: 210 * 3.78,
                     height: 297 * 3.78,
                     windowWidth: 210 * 3.78,
-                    windowHeight: 297 * 3.78
-                }).then(function(canvas) {
-                    var imgData = canvas.toDataURL('image/png');
-
-                    var { jsPDF } = window.jspdf;
-                    var pdf = new jsPDF('p', 'mm', 'a4');
-                    var pageWidth = pdf.internal.pageSize.getWidth();
-                    var imgWidth = pageWidth;
-                    var imgHeight = (canvas.height / canvas.width) * pageWidth;
-
-                    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                    pdf.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
-
-                    contenedor.style.display = 'none';
-                    ocultarLoading();
-                }).catch(function(error) {
-                    console.error('Error al generar PDF:', error);
-                    alert('Ocurrió un error al generar el PDF: ' + error.message);
-                    ocultarLoading();
-                    document.getElementById('contenidoPDF').style.display = 'none';
+                    windowHeight: 297 * 3.78,
+                    onclone: function(document) {
+                        var pdfContent = document.getElementById('contenidoPDF');
+                        if (pdfContent) {
+                            pdfContent.style.width = '210mm';
+                            pdfContent.style.padding = '15mm 20mm';
+                            pdfContent.style.minHeight = '297mm';
+                        }
+                    }
                 });
+
+                var imgData = canvas.toDataURL('image/png');
+
+                var { jsPDF } = window.jspdf;
+                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pageWidth = pdf.internal.pageSize.getWidth();
+                var pageHeight = pdf.internal.pageSize.getHeight();
+
+                var imgWidth = pageWidth;
+                var imgHeight = (canvas.height / canvas.width) * pageWidth;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
+
+                contenedor.style.display = 'none';
+                ocultarLoading();
 
             } catch (error) {
                 console.error('Error al generar PDF:', error);
