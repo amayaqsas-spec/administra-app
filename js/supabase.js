@@ -4,7 +4,7 @@
 // CONFIGURACIÓN
 // ============================================
 const SUPABASE_URL = 'https://ncbbwhyvippnmkmyntoj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+const SUPABASE_ANON_KEY = 'sb_publishable_6_metFcJd35fYjQtz5mXEA_V-1ofzH0';
 
 // ============================================
 // INICIALIZAR SUPABASE
