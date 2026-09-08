@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra - Dashboard</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Estilos del dashboard con menú lateral */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
@@ -20,7 +19,6 @@
             display: flex;
         }
 
-        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -510,10 +508,8 @@
 </head>
 <body>
 
-    <!-- OVERLAY -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
 
-    <!-- SIDEBAR -->
     <nav class="sidebar" id="sidebar">
         <div class="logo-area">
             <div class="logo-icon">A</div>
@@ -584,7 +580,6 @@
         </div>
     </nav>
 
-    <!-- MAIN CONTENT -->
     <div class="main-content">
         <div class="container">
             <div class="dashboard-header">
@@ -650,6 +645,7 @@
         </div>
     </div>
 
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -676,21 +672,6 @@
                 cerrarSidebar();
             }
         });
-
-        function getGrupos() {
-            var data = localStorage.getItem('grupos');
-            return data ? JSON.parse(data) : [];
-        }
-
-        function getAlumnos() {
-            var data = localStorage.getItem('alumnos');
-            return data ? JSON.parse(data) : [];
-        }
-
-        function getGastos() {
-            var data = localStorage.getItem('gastos');
-            return data ? JSON.parse(data) : [];
-        }
 
         function actualizarDashboard() {
             var grupos = getGrupos();
@@ -761,9 +742,6 @@
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')

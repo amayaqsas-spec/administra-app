@@ -18,6 +18,7 @@ const STATIC_ASSETS = [
     '/js/layout.js',
     '/js/offline-manager.js',
     '/js/splash.js',
+    '/js/storage.js',
     '/assets/icon.png',
     '/assets/logo.png'
 ];

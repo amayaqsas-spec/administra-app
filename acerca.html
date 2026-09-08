@@ -7,10 +7,9 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -631,13 +630,9 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
@@ -656,7 +651,7 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
@@ -696,7 +691,7 @@
                         </div>
                         <div class="info">
                             <h4>📶 Funciona sin internet</h4>
-                            <p>Modo offline completo. Los datos se guardan localmente y se sincronizan automáticamente al recuperar la conexión.</p>
+                            <p>Modo offline completo. Los datos se guardan localmente en tu dispositivo.</p>
                         </div>
                     </div>
 
@@ -726,7 +721,7 @@
                         </div>
                         <div class="info">
                             <h4>🔒 Datos seguros</h4>
-                            <p>Todos los datos se almacenan en Supabase (nube) con autenticación segura.</p>
+                            <p>Todos los datos se almacenan localmente en tu dispositivo. Tú controlas tu información.</p>
                         </div>
                     </div>
 
@@ -775,8 +770,6 @@
                     <span class="tecnologia">📄 html2canvas</span>
                     <span class="tecnologia">📊 jsPDF</span>
                     <span class="tecnologia">🎯 Font Awesome</span>
-                    <span class="tecnologia">☁️ Supabase</span>
-                    <span class="tecnologia">🚀 Vercel</span>
                 </div>
 
                 <div class="separador"></div>
@@ -804,7 +797,7 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -817,8 +810,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -843,9 +836,6 @@
         window.cerrarSidebar = cerrarSidebar;
         window.logout = logout;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')

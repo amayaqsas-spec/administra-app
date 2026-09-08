@@ -7,10 +7,9 @@
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -748,13 +747,9 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
@@ -773,7 +768,7 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
@@ -854,7 +849,7 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -867,8 +862,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -889,21 +884,13 @@
             }
         }
 
-        // ============================================
-        // FUNCIONES DE DATOS
-        // ============================================
-        async function obtenerTodosLosDatos() {
-            const grupos = await getGrupos();
-            const alumnos = await getAlumnos();
-            const gastos = await getGastos();
-            const extraNotas = await getExtraNotas();
-            return { grupos, alumnos, gastos, extraNotas };
-        }
+        function exportarDatos() {
+            var grupos = getGrupos();
+            var alumnos = getAlumnos();
+            var gastos = getGastos();
+            var extraNotas = getExtraNotas();
 
-        async function exportarDatos() {
-            const { grupos, alumnos, gastos, extraNotas } = await obtenerTodosLosDatos();
-
-            const datos = {
+            var datos = {
                 version: '2.0.0',
                 fechaExportacion: new Date().toISOString(),
                 app: 'Administra',
@@ -913,37 +900,37 @@
                 extraNotas: extraNotas
             };
 
-            const total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
+            var total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
 
             if (total === 0) {
                 mostrarToast('⚠️ No hay datos para exportar', 'warning');
                 return;
             }
 
-            const json = JSON.stringify(datos, null, 2);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
+            var json = JSON.stringify(datos, null, 2);
+            var blob = new Blob([json], { type: 'application/json' });
+            var url = URL.createObjectURL(blob);
 
-            const a = document.createElement('a');
+            var a = document.createElement('a');
             a.href = url;
-            const fecha = new Date().toISOString().split('T')[0];
-            a.download = `administra_backup_${fecha}.json`;
+            var fecha = new Date().toISOString().split('T')[0];
+            a.download = 'administra_backup_' + fecha + '.json';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            mostrarToast(`✅ Exportados ${total} registros correctamente`, 'success');
+            mostrarToast('✅ Exportados ' + total + ' registros correctamente', 'success');
         }
 
-        async function importarDatos(event) {
-            const file = event.target.files[0];
+        function importarDatos(event) {
+            var file = event.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = async function(e) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
                 try {
-                    const datos = JSON.parse(e.target.result);
+                    var datos = JSON.parse(e.target.result);
 
                     if (!datos.grupos || !datos.alumnos || !datos.gastos) {
                         mostrarToast('❌ Archivo inválido: falta estructura de datos', 'error');
@@ -955,42 +942,31 @@
                         return;
                     }
 
-                    const totalRegistros = datos.grupos.length + datos.alumnos.length + datos.gastos.length + (datos.extraNotas ? datos.extraNotas.length : 0);
-                    const mensaje = 
-                        `📊 Resumen del archivo:\n\n` +
-                        `• Grupos: ${datos.grupos.length}\n` +
-                        `• Alumnos: ${datos.alumnos.length}\n` +
-                        `• Gastos: ${datos.gastos.length}\n` +
-                        `• Extra Notas: ${datos.extraNotas ? datos.extraNotas.length : 0}\n` +
-                        `• Total: ${totalRegistros} registros\n\n` +
-                        `⚠️ Esto SOBRESCRIBIRÁ todos los datos actuales.\n` +
-                        `¿Deseas continuar?`;
+                    var totalRegistros = datos.grupos.length + datos.alumnos.length + datos.gastos.length + (datos.extraNotas ? datos.extraNotas.length : 0);
+                    var mensaje = 
+                        '📊 Resumen del archivo:\n\n' +
+                        '• Grupos: ' + datos.grupos.length + '\n' +
+                        '• Alumnos: ' + datos.alumnos.length + '\n' +
+                        '• Gastos: ' + datos.gastos.length + '\n' +
+                        '• Extra Notas: ' + (datos.extraNotas ? datos.extraNotas.length : 0) + '\n' +
+                        '• Total: ' + totalRegistros + ' registros\n\n' +
+                        '⚠️ Esto SOBRESCRIBIRÁ todos los datos actuales.\n' +
+                        '¿Deseas continuar?';
 
                     if (!confirm(mensaje)) {
                         mostrarToast('❌ Importación cancelada', 'info');
                         return;
                     }
 
-                    // Guardar cada tabla
-                    for (const grupo of datos.grupos) {
-                        await crearGrupo(grupo.nombre, grupo.profesor);
-                    }
-
-                    for (const alumno of datos.alumnos) {
-                        await crearAlumno(alumno);
-                    }
-
-                    for (const gasto of datos.gastos) {
-                        await crearGasto(gasto);
-                    }
-
+                    // Guardar en localStorage
+                    localStorage.setItem('grupos', JSON.stringify(datos.grupos));
+                    localStorage.setItem('alumnos', JSON.stringify(datos.alumnos));
+                    localStorage.setItem('gastos', JSON.stringify(datos.gastos));
                     if (datos.extraNotas) {
-                        for (const nota of datos.extraNotas) {
-                            await crearExtraNota(nota);
-                        }
+                        localStorage.setItem('extraNotas', JSON.stringify(datos.extraNotas));
                     }
 
-                    mostrarToast(`✅ Importados ${totalRegistros} registros correctamente`, 'success');
+                    mostrarToast('✅ Importados ' + totalRegistros + ' registros correctamente', 'success');
                     actualizarInfoExportacion();
                     event.target.value = '';
 
@@ -1007,7 +983,7 @@
         }
 
         function mostrarModalLimpiar() {
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1035,28 +1011,11 @@
             document.body.appendChild(overlay);
         }
 
-        async function limpiarDatos() {
-            // Obtener todos los IDs para eliminar
-            const grupos = await getGrupos();
-            const alumnos = await getAlumnos();
-            const gastos = await getGastos();
-            const extraNotas = await getExtraNotas();
-
-            for (const grupo of grupos) {
-                await eliminarGrupo(grupo.id);
-            }
-
-            for (const alumno of alumnos) {
-                await eliminarAlumno(alumno.id);
-            }
-
-            for (const gasto of gastos) {
-                await eliminarGasto(gasto.id);
-            }
-
-            for (const nota of extraNotas) {
-                await eliminarExtraNota(nota.id);
-            }
+        function limpiarDatos() {
+            localStorage.removeItem('grupos');
+            localStorage.removeItem('alumnos');
+            localStorage.removeItem('gastos');
+            localStorage.removeItem('extraNotas');
 
             cerrarModal();
             mostrarToast('🗑️ Todos los datos han sido eliminados', 'warning');
@@ -1064,43 +1023,47 @@
         }
 
         function cerrarModal() {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal) modal.remove();
         }
 
         document.addEventListener('click', function(e) {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal && e.target === modal) {
                 cerrarModal();
             }
         });
 
-        async function actualizarInfoExportacion() {
-            const { grupos, alumnos, gastos, extraNotas } = await obtenerTodosLosDatos();
-            const total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
-            const info = document.getElementById('exportInfo');
+        function actualizarInfoExportacion() {
+            var grupos = getGrupos();
+            var alumnos = getAlumnos();
+            var gastos = getGastos();
+            var extraNotas = getExtraNotas();
+            var total = grupos.length + alumnos.length + gastos.length + extraNotas.length;
+            var info = document.getElementById('exportInfo');
 
             if (total === 0) {
                 info.textContent = '📊 Sin datos';
                 info.style.color = '#6b7280';
             } else {
-                info.textContent = `📊 ${grupos.length} grupos · ${alumnos.length} alumnos · ${gastos.length} gastos · ${extraNotas.length} notas`;
+                info.textContent = '📊 ' + grupos.length + ' grupos · ' + alumnos.length + ' alumnos · ' + gastos.length + ' gastos · ' + extraNotas.length + ' notas';
                 info.style.color = '#059669';
             }
         }
 
-        function mostrarToast(mensaje, tipo = 'info') {
-            const existing = document.querySelectorAll('.toast');
-            existing.forEach(t => t.remove());
+        function mostrarToast(mensaje, tipo) {
+            tipo = tipo || 'info';
+            var existing = document.querySelectorAll('.toast');
+            existing.forEach(function(t) { t.remove(); });
 
-            const toast = document.createElement('div');
-            toast.className = `toast ${tipo}`;
+            var toast = document.createElement('div');
+            toast.className = 'toast ' + tipo;
             toast.textContent = mensaje;
             document.body.appendChild(toast);
 
-            setTimeout(() => {
+            setTimeout(function() {
                 toast.classList.add('out');
-                setTimeout(() => toast.remove(), 400);
+                setTimeout(function() { toast.remove(); }, 400);
             }, 3000);
         }
 
@@ -1121,9 +1084,6 @@
         window.limpiarDatos = limpiarDatos;
         window.cerrarModal = cerrarModal;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')

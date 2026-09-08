@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra - Grupos</title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -213,33 +210,6 @@
         .sidebar .user-area .user-info .user-email {
             font-size: 10px;
             color: #6b7280;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            background: transparent;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar:hover {
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .sidebar .user-area .btn-logout-sidebar i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
         }
 
         .sidebar-overlay {
@@ -723,6 +693,7 @@
     </style>
 </head>
 <body>
+
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
 
     <nav class="sidebar" id="sidebar">
@@ -789,13 +760,9 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
@@ -814,7 +781,7 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
@@ -839,7 +806,7 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -852,8 +819,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -874,29 +841,11 @@
             }
         }
 
-        let grupos = [];
-        let nextId = 1;
-
-        async function cargarGrupos() {
-            grupos = await getGrupos();
-            if (grupos.length > 0) {
-                nextId = Math.max(...grupos.map(g => g.id)) + 1;
-            }
-            renderizarGrupos();
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarGrupos();
-        });
-
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            cargarGrupos();
-        }
-
-        async function renderizarGrupos() {
-            const container = document.getElementById('gruposList');
-            const alumnos = await getAlumnos();
-            const gastos = await getGastos();
+        function renderizarGrupos() {
+            var container = document.getElementById('gruposList');
+            var grupos = getGrupos();
+            var alumnos = getAlumnos();
+            var gastos = getGastos();
 
             if (grupos.length === 0) {
                 container.innerHTML = `
@@ -913,14 +862,14 @@
                 return;
             }
 
-            let html = '';
-            for (const grupo of grupos) {
-                const alumnosGrupo = alumnos.filter(a => a.grupo_id === grupo.id);
-                const totalAlumnos = alumnosGrupo.length;
-                const recaudado = alumnosGrupo.reduce((sum, a) => sum + (a.pagado || 0), 0);
-                const disponible = alumnosGrupo.reduce((sum, a) => sum + (a.disponible || 0), 0);
-                const gastosGrupo = gastos.filter(g => g.grupo_id === grupo.id);
-                const totalGastos = gastosGrupo.reduce((sum, g) => sum + (g.monto || 0), 0);
+            var html = '';
+            grupos.forEach(function(grupo) {
+                var alumnosGrupo = alumnos.filter(function(a) { return a.grupoId === grupo.id; });
+                var totalAlumnos = alumnosGrupo.length;
+                var recaudado = alumnosGrupo.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
+                var disponible = alumnosGrupo.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+                var gastosGrupo = gastos.filter(function(g) { return g.grupoId === grupo.id; });
+                var totalGastos = gastosGrupo.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
 
                 html += `
                     <div class="grupo-item" onclick="seleccionarGrupo(${grupo.id})">
@@ -956,7 +905,7 @@
                         </div>
                     </div>
                 `;
-            }
+            });
 
             container.innerHTML = html;
         }
@@ -966,7 +915,7 @@
         }
 
         function mostrarModalCrear() {
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1000,24 +949,24 @@
             `;
             document.body.appendChild(overlay);
 
-            setTimeout(() => {
-                const input = document.getElementById('nombreGrupoInput');
+            setTimeout(function() {
+                var input = document.getElementById('nombreGrupoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formGrupoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formGrupoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const nombre = document.getElementById('nombreGrupoInput').value.trim();
-                const profesor = document.getElementById('profesorGrupoInput').value.trim() || 'Sin maestro asignado';
+                var nombre = document.getElementById('nombreGrupoInput').value.trim();
+                var profesor = document.getElementById('profesorGrupoInput').value.trim() || 'Sin maestro asignado';
 
                 if (!nombre) {
                     alert('⚠️ El nombre del grupo es obligatorio');
                     return;
                 }
 
-                const result = await crearGrupo(nombre, profesor);
+                var result = crearGrupo(nombre, profesor);
                 if (result.success) {
-                    await cargarGrupos();
+                    renderizarGrupos();
                     cerrarModal();
                     alert('✅ Grupo "' + nombre + '" creado');
                 } else {
@@ -1027,10 +976,11 @@
         }
 
         function mostrarModalEditar(id) {
-            const grupo = grupos.find(g => g.id === id);
+            var grupos = getGrupos();
+            var grupo = grupos.find(function(g) { return g.id === id; });
             if (!grupo) return;
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1064,24 +1014,24 @@
             `;
             document.body.appendChild(overlay);
 
-            setTimeout(() => {
-                const input = document.getElementById('nombreGrupoInput');
+            setTimeout(function() {
+                var input = document.getElementById('nombreGrupoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formGrupoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formGrupoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
-                const nombre = document.getElementById('nombreGrupoInput').value.trim();
-                const profesor = document.getElementById('profesorGrupoInput').value.trim() || 'Sin maestro asignado';
+                var nombre = document.getElementById('nombreGrupoInput').value.trim();
+                var profesor = document.getElementById('profesorGrupoInput').value.trim() || 'Sin maestro asignado';
 
                 if (!nombre) {
                     alert('⚠️ El nombre del grupo es obligatorio');
                     return;
                 }
 
-                const result = await actualizarGrupo(id, nombre, profesor);
+                var result = actualizarGrupo(id, nombre, profesor);
                 if (result.success) {
-                    await cargarGrupos();
+                    renderizarGrupos();
                     cerrarModal();
                     alert('✅ Grupo "' + nombre + '" actualizado');
                 } else {
@@ -1090,14 +1040,15 @@
             });
         }
 
-        async function eliminarGrupo(id) {
-            const grupo = grupos.find(g => g.id === id);
+        function eliminarGrupo(id) {
+            var grupos = getGrupos();
+            var grupo = grupos.find(function(g) { return g.id === id; });
             if (!grupo) return;
 
             if (confirm('⚠️ ¿Eliminar "' + grupo.nombre + '"? Se eliminarán todos los alumnos.')) {
-                const result = await eliminarGrupo(id);
+                var result = eliminarGrupo(id);
                 if (result.success) {
-                    await cargarGrupos();
+                    renderizarGrupos();
                     alert('✅ Grupo eliminado');
                 } else {
                     alert('❌ Error al eliminar grupo: ' + result.error);
@@ -1106,16 +1057,24 @@
         }
 
         function cerrarModal() {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal) modal.remove();
         }
 
         document.addEventListener('click', function(e) {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal && e.target === modal) {
                 cerrarModal();
             }
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderizarGrupos();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            renderizarGrupos();
+        }
 
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
@@ -1125,9 +1084,6 @@
         window.eliminarGrupo = eliminarGrupo;
         window.cerrarModal = cerrarModal;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')

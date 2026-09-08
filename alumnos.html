@@ -4,20 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra - Alumnos</title>
-    
-    <!-- Font Awesome -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Librerías para PDF -->
+    <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
     <style>
+        /* Mismos estilos que antes pero sin Supabase */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             min-height: 100vh;
@@ -25,7 +20,6 @@
             background-attachment: fixed;
             display: flex;
         }
-
         .sidebar {
             position: fixed;
             top: 0;
@@ -44,33 +38,19 @@
             z-index: 1000;
             overflow-y: auto;
         }
-
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-                background: rgba(255, 255, 255, 0.96);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
+            .sidebar { transform: translateX(-100%); width: 280px; background: rgba(255,255,255,0.96); }
+            .sidebar.open { transform: translateX(0); }
         }
-
-        @media (min-width: 769px) {
-            .sidebar {
-                transform: translateX(0) !important;
-            }
-        }
-
+        @media (min-width: 769px) { .sidebar { transform: translateX(0) !important; } }
         .sidebar .logo-area {
             display: flex;
             align-items: center;
             gap: 10px;
             padding-bottom: 16px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
             margin-bottom: 16px;
         }
-
         .sidebar .logo-area .logo-icon {
             width: 36px;
             height: 36px;
@@ -82,26 +62,19 @@
             color: white;
             font-weight: 700;
             font-size: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255,255,255,0.5);
             flex-shrink: 0;
         }
-
-        .sidebar .logo-area h1 {
-            font-size: 16px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
+        .sidebar .logo-area h1 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
         .sidebar .logo-area .version {
             font-size: 9px;
             color: #7c3aed;
             font-weight: 600;
-            background: rgba(124, 58, 237, 0.1);
+            background: rgba(124,58,237,0.1);
             padding: 1px 8px;
             border-radius: 10px;
             margin-left: 2px;
         }
-
         .sidebar .btn-cerrar-menu {
             display: none;
             background: none;
@@ -113,22 +86,14 @@
             margin-left: auto;
             transition: all 0.2s;
         }
-        .sidebar .btn-cerrar-menu:hover {
-            color: #1e1b4b;
-        }
-        @media (max-width: 768px) {
-            .sidebar .btn-cerrar-menu {
-                display: block;
-            }
-        }
-
+        .sidebar .btn-cerrar-menu:hover { color: #1e1b4b; }
+        @media (max-width: 768px) { .sidebar .btn-cerrar-menu { display: block; } }
         .sidebar .menu {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
-
         .sidebar .menu .menu-label {
             font-size: 9px;
             text-transform: uppercase;
@@ -137,7 +102,6 @@
             letter-spacing: 0.8px;
             padding: 8px 12px 4px 12px;
         }
-
         .sidebar .menu .menu-item {
             display: flex;
             align-items: center;
@@ -155,46 +119,23 @@
             width: 100%;
             text-align: left;
         }
-
-        .sidebar .menu .menu-item:hover {
-            background: rgba(124, 58, 237, 0.08);
-            color: #5b21b6;
-        }
-
-        .sidebar .menu .menu-item.active {
-            background: rgba(124, 58, 237, 0.12);
-            color: #5b21b6;
-            font-weight: 600;
-        }
-
-        .sidebar .menu .menu-item i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .sidebar .menu .divider {
-            height: 1px;
-            background: rgba(0, 0, 0, 0.06);
-            margin: 8px 12px;
-        }
-
+        .sidebar .menu .menu-item:hover { background: rgba(124,58,237,0.08); color: #5b21b6; }
+        .sidebar .menu .menu-item.active { background: rgba(124,58,237,0.12); color: #5b21b6; font-weight: 600; }
+        .sidebar .menu .menu-item i { width: 20px; font-size: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar .menu .divider { height: 1px; background: rgba(0,0,0,0.06); margin: 8px 12px; }
         .sidebar .user-area {
             padding-top: 12px;
-            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            border-top: 1px solid rgba(0,0,0,0.06);
             margin-top: 4px;
         }
-
         .sidebar .user-area .user-info {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 8px 12px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255,255,255,0.4);
         }
-
         .sidebar .user-area .user-info .avatar {
             width: 32px;
             height: 32px;
@@ -207,66 +148,21 @@
             font-weight: 700;
             font-size: 14px;
         }
-
-        .sidebar .user-area .user-info .user-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1e1b4b;
-        }
-
-        .sidebar .user-area .user-info .user-email {
-            font-size: 10px;
-            color: #6b7280;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            background: transparent;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar:hover {
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .sidebar .user-area .btn-logout-sidebar i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
-        }
-
+        .sidebar .user-area .user-info .user-name { font-size: 12px; font-weight: 600; color: #1e1b4b; }
+        .sidebar .user-area .user-info .user-email { font-size: 10px; color: #6b7280; }
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             z-index: 999;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-        @media (min-width: 769px) {
-            .sidebar-overlay {
-                display: none !important;
-            }
-        }
-
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        @media (min-width: 769px) { .sidebar-overlay { display: none !important; } }
         .main-content {
             margin-left: 0;
             padding: 16px;
@@ -275,61 +171,37 @@
             width: 100%;
             transition: margin-left 0.3s ease;
         }
-
         @media (min-width: 769px) {
-            .main-content {
-                margin-left: 240px;
-                padding: 24px;
-                width: calc(100% - 240px);
-            }
+            .main-content { margin-left: 240px; padding: 24px; width: calc(100% - 240px); }
         }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 900px; margin: 0 auto; }
         .clay {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 10px 10px 28px rgba(0, 0, 0, 0.05), -10px -10px 28px rgba(255, 255, 255, 0.6),
-                        inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 10px 10px 28px rgba(0,0,0,0.05), -10px -10px 28px rgba(255,255,255,0.6),
+                        inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.02);
         }
-
         .clay-sm { padding: 10px 12px; border-radius: 16px; }
         .clay-md { padding: 14px 16px; border-radius: 20px; }
-
         .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
         .dashboard-header .titulo {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
-        .dashboard-header .titulo h2 {
-            font-size: 20px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
-        .dashboard-header .titulo p {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 2px;
-        }
-
+        .dashboard-header .titulo h2 { font-size: 20px; color: #1e1b4b; font-weight: 700; }
+        .dashboard-header .titulo p { font-size: 12px; color: #6b7280; margin-top: 2px; }
         .hamburger {
             display: block;
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
             font-size: 20px;
             color: #1e1b4b;
             cursor: pointer;
@@ -338,64 +210,46 @@
             transition: all 0.2s;
             backdrop-filter: blur(4px);
         }
-        .hamburger:hover {
-            background: rgba(255, 255, 255, 0.8);
-        }
-        @media (min-width: 769px) {
-            .hamburger {
-                display: none !important;
-            }
-        }
-
+        .hamburger:hover { background: rgba(255,255,255,0.8); }
+        @media (min-width: 769px) { .hamburger { display: none !important; } }
         .dashboard-header .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .connection {
             display: flex;
             align-items: center;
             gap: 4px;
             font-size: 11px;
             color: #6b7280;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.5);
             padding: 4px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
         .connection .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
-
         .connection .dot.green {
             background: #34d399;
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            box-shadow: 0 0 8px rgba(52,211,153,0.4);
             animation: pulse-dot 2s infinite;
         }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 14px;
         }
-
-        .top-bar h2 {
-            font-size: 16px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
+        .top-bar h2 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
         .btn-nuevo {
             border: none;
             border-radius: 30px;
@@ -406,121 +260,77 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 3px 10px rgba(124,58,237,0.3);
             display: flex;
             align-items: center;
             gap: 4px;
         }
-
-        .btn-nuevo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
-        }
-
+        .btn-nuevo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
         .btn-nuevo i { font-size: 12px; }
-
         .resumen {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-bottom: 10px;
         }
-
         .resumen-item {
             text-align: center;
             padding: 8px 6px;
             border-radius: 14px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255,255,255,0.6);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.02);
         }
-
-        .resumen-item .num {
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .resumen-item .label {
-            font-size: 9px;
-            color: #6b7280;
-            margin-top: 1px;
-        }
-
+        .resumen-item .num { font-size: 16px; font-weight: 800; }
+        .resumen-item .label { font-size: 9px; color: #6b7280; margin-top: 1px; }
         .num-azul { color: #2563eb; }
         .num-verde { color: #059669; }
-
         .input-search {
             width: 100%;
             padding: 6px 12px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 18px;
             font-size: 12px;
             color: #1a1a2e;
             outline: none;
-            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.02), inset -3px -3px 10px rgba(255,255,255,0.4);
             transition: all 0.25s ease;
             box-sizing: border-box;
             margin-bottom: 8px;
         }
-
         .input-search:focus {
             border-color: #a78bfa;
-            background: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
         }
-
-        .input-search::placeholder {
-            color: #a0a0b8;
-            font-size: 11px;
-        }
-
+        .input-search::placeholder { color: #a0a0b8; font-size: 11px; }
         .student-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 8px 12px;
             margin-bottom: 6px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.5);
             backdrop-filter: blur(8px);
             border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(0,0,0,0.02);
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
-        .student-item:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: scale(1.01);
-        }
-
+        .student-item:hover { background: rgba(255,255,255,0.8); transform: scale(1.01); }
         .student-item:active { transform: scale(0.98); }
         .student-item:last-child { margin-bottom: 0; }
-
-        .student-item .info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .student-item .info .nombre {
-            font-size: 13px;
-            color: #1e1b4b;
-            font-weight: 600;
-        }
-
-        .student-item .info .detalle {
-            font-size: 10px;
-            color: #6b7280;
-            margin-top: 1px;
-        }
-
+        .student-item .info { flex: 1; min-width: 0; }
+        .student-item .info .nombre { font-size: 13px; color: #1e1b4b; font-weight: 600; }
+        .student-item .info .detalle { font-size: 10px; color: #6b7280; margin-top: 1px; }
         .student-item .info .nota {
             font-size: 10px;
             color: #92400e;
-            background: rgba(252, 211, 77, 0.15);
+            background: rgba(252,211,77,0.15);
             padding: 2px 8px;
             border-radius: 8px;
             display: inline-block;
@@ -530,40 +340,17 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-
-        .student-item .info .nota i {
-            margin-right: 4px;
-            font-size: 9px;
-        }
-
-        .student-item .info .saldo {
-            font-size: 11px;
-            font-weight: 700;
-            margin-top: 2px;
-        }
-
-        .student-item .info .saldo .restan-rojo {
-            color: #dc2626;
-            font-weight: 700;
-        }
-
-        .student-item .info .saldo .restan-verde {
-            color: #059669;
-            font-weight: 700;
-        }
-
-        .student-item .info .saldo .disponible-verde {
-            color: #059669;
-            font-weight: 700;
-        }
-
+        .student-item .info .nota i { margin-right: 4px; font-size: 9px; }
+        .student-item .info .saldo { font-size: 11px; font-weight: 700; margin-top: 2px; }
+        .student-item .info .saldo .restan-rojo { color: #dc2626; font-weight: 700; }
+        .student-item .info .saldo .restan-verde { color: #059669; font-weight: 700; }
+        .student-item .info .saldo .disponible-verde { color: #059669; font-weight: 700; }
         .student-item .actions {
             display: flex;
             gap: 3px;
             flex-shrink: 0;
             margin-left: 6px;
         }
-
         .btn-sm {
             border: none;
             border-radius: 30px;
@@ -577,17 +364,14 @@
             align-items: center;
             justify-content: center;
             gap: 2px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             min-width: 24px;
         }
-
         .btn-sm i { font-size: 10px; }
         .btn-sm:hover { transform: scale(1.08); }
-
         .btn-editar { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 3px 8px; }
         .btn-eliminar { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 3px 8px; }
         .btn-whatsapp { background: linear-gradient(135deg, #25d366, #128c7e); padding: 3px 8px; }
-
         .btn-pdf {
             border: none;
             border-radius: 30px;
@@ -598,7 +382,7 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #dc2626, #b91c1c);
-            box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+            box-shadow: 0 2px 8px rgba(220,38,38,0.3);
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -606,14 +390,8 @@
             width: 100%;
             justify-content: center;
         }
-
-        .btn-pdf:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.4);
-        }
-
+        .btn-pdf:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(220,38,38,0.4); }
         .btn-pdf i { font-size: 14px; }
-
         .btn-volver {
             border: none;
             border-radius: 30px;
@@ -624,20 +402,14 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #6b7280, #4b5563);
-            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+            box-shadow: 0 2px 8px rgba(107,114,128,0.3);
             margin-top: 10px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-
-        .btn-volver:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
-        }
-
+        .btn-volver:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(107,114,128,0.4); }
         .btn-volver i { font-size: 12px; }
-
         .footer {
             text-align: center;
             font-size: 10px;
@@ -645,27 +417,18 @@
             margin-top: 20px;
             padding: 8px 0;
         }
-
         .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
-
         .empty-message {
             text-align: center;
             padding: 30px 16px;
             color: #6b7280;
             font-size: 13px;
         }
-
-        .empty-message i {
-            font-size: 32px;
-            color: #c4b5fd;
-            display: block;
-            margin: 0 auto 10px;
-        }
-
+        .empty-message i { font-size: 32px; color: #c4b5fd; display: block; margin: 0 auto 10px; }
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             display: flex;
@@ -675,35 +438,25 @@
             padding: 16px;
             animation: modalFadeIn 0.25s ease;
         }
-
         @keyframes modalFadeIn {
             from { opacity: 0; transform: scale(0.92); }
             to { opacity: 1; transform: scale(1); }
         }
-
         .modal-content {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 20px 16px 16px;
             max-width: 400px;
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.1);
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        .modal-content::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .modal-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
-            border-radius: 10px;
-        }
-
+        .modal-content::-webkit-scrollbar { width: 4px; }
+        .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #c4b5fd, #a78bfa); border-radius: 10px; }
         .modal-icono {
             width: 44px;
             height: 44px;
@@ -713,73 +466,36 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 10px;
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 4px 16px rgba(124,58,237,0.2);
         }
-
         .modal-icono i { font-size: 20px; color: white; }
-
-        .modal-titulo {
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1e1b4b;
-            margin-bottom: 2px;
-        }
-
-        .modal-subtitulo {
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 14px;
-        }
-
-        .modal-grupo {
-            margin-bottom: 12px;
-        }
-
-        .modal-grupo label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: #4a4a6a;
-            margin-bottom: 3px;
-        }
-
+        .modal-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
+        .modal-subtitulo { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+        .modal-grupo { margin-bottom: 12px; }
+        .modal-grupo label { display: block; font-size: 12px; font-weight: 600; color: #4a4a6a; margin-bottom: 3px; }
         .modal-grupo label .obligatorio { color: #ef4444; }
-
         .modal-grupo input, .modal-grupo select, .modal-grupo textarea {
             width: 100%;
             padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 20px;
             font-size: 14px;
             color: #1a1a2e;
             outline: none;
-            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.02), inset -3px -3px 10px rgba(255,255,255,0.4);
             transition: all 0.25s ease;
             box-sizing: border-box;
             font-family: inherit;
         }
-
-        .modal-grupo textarea {
-            resize: vertical;
-            min-height: 50px;
-            font-size: 13px;
-        }
-
+        .modal-grupo textarea { resize: vertical; min-height: 50px; font-size: 13px; }
         .modal-grupo input:focus, .modal-grupo select:focus, .modal-grupo textarea:focus {
             border-color: #a78bfa;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
         }
-
-        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder {
-            color: #a0a0b8;
-            font-size: 13px;
-        }
-
+        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder { color: #a0a0b8; font-size: 13px; }
         .modal-grupo select {
             cursor: pointer;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -787,26 +503,22 @@
             background-position: right 14px center;
             padding-right: 36px;
         }
-
         .modal-info {
             font-size: 12px;
             color: #6b7280;
             padding: 8px 12px;
-            background: rgba(243, 244, 246, 0.5);
+            background: rgba(243,244,246,0.5);
             border-radius: 12px;
             margin-top: 4px;
             line-height: 1.5;
         }
-
         .modal-info .verde { color: #059669; font-weight: 700; }
         .modal-info .rojo { color: #dc2626; font-weight: 700; }
-
         .modal-acciones {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
-
         .modal-acciones .btn {
             flex: 1;
             padding: 10px 12px;
@@ -821,63 +533,35 @@
             justify-content: center;
             gap: 6px;
         }
-
         .modal-acciones .btn i { font-size: 14px; }
-
         .modal-acciones .btn-guardar {
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
             color: white;
-            box-shadow: 0 3px 12px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 3px 12px rgba(124,58,237,0.2);
         }
-
-        .modal-acciones .btn-guardar:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
-        }
-
+        .modal-acciones .btn-guardar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
         .modal-acciones .btn-cancelar {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             color: #4a4a6a;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
-        .modal-acciones .btn-cancelar:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.02);
-        }
-
+        .modal-acciones .btn-cancelar:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         .modal-acciones .btn-editar-modal {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
-
-        .modal-acciones .btn-editar-modal:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-        }
-
-        .modal-detalle .modal-content {
-            max-width: 400px;
-        }
-
+        .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .modal-detalle .modal-content { max-width: 400px; }
         .modal-detalle .detalle-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-
-        .modal-detalle .detalle-item:last-child {
-            border-bottom: none;
-        }
-
-        .modal-detalle .detalle-item .etiqueta {
-            font-size: 12px;
-            color: #6b7280;
-        }
-
+        .modal-detalle .detalle-item:last-child { border-bottom: none; }
+        .modal-detalle .detalle-item .etiqueta { font-size: 12px; color: #6b7280; }
         .modal-detalle .detalle-item .valor {
             font-size: 13px;
             font-weight: 600;
@@ -885,7 +569,6 @@
             text-align: right;
             max-width: 60%;
         }
-
         .modal-detalle .detalle-item .valor.verde { color: #059669; }
         .modal-detalle .detalle-item .valor.rojo { color: #dc2626; }
         .modal-detalle .detalle-item .valor.nota-valor {
@@ -896,15 +579,13 @@
             max-width: 60%;
             word-wrap: break-word;
         }
-
         .modal-detalle .detalle-whatsapp {
             margin-top: 12px;
             padding-top: 12px;
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-top: 1px solid rgba(0,0,0,0.05);
             display: flex;
             gap: 8px;
         }
-
         .modal-detalle .detalle-whatsapp .btn-whatsapp-modal {
             flex: 1;
             padding: 10px;
@@ -916,18 +597,13 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #25d366, #128c7e);
-            box-shadow: 0 3px 12px rgba(37, 211, 102, 0.2);
+            box-shadow: 0 3px 12px rgba(37,211,102,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
         }
-
-        .modal-detalle .detalle-whatsapp .btn-whatsapp-modal:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(37, 211, 102, 0.3);
-        }
-
+        .modal-detalle .detalle-whatsapp .btn-whatsapp-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(37,211,102,0.3); }
         .modal-detalle .detalle-whatsapp .btn-cerrar-detalle {
             flex: 1;
             padding: 10px;
@@ -938,16 +614,11 @@
             color: #4a4a6a;
             cursor: pointer;
             transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.7);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
-        .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.02);
-        }
-
+        .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         #contenidoPDF {
             display: none;
             background: white;
@@ -959,7 +630,6 @@
             width: 100%;
             max-width: 210mm;
         }
-
         #contenidoPDF .pdf-header {
             display: flex;
             justify-content: space-between;
@@ -968,19 +638,12 @@
             border-bottom: 2px solid #1a1a2e;
             padding-bottom: 10px;
         }
-
-        #contenidoPDF .pdf-header .escudo {
-            width: 60px;
-            height: 60px;
-            object-fit: contain;
-        }
-
+        #contenidoPDF .pdf-header .escudo { width: 60px; height: 60px; object-fit: contain; }
         #contenidoPDF .pdf-header .titulo-area {
             flex: 1;
             text-align: center;
             padding: 0 10px;
         }
-
         #contenidoPDF .pdf-header .titulo-area h2 {
             font-size: 16px;
             font-weight: 700;
@@ -988,27 +651,14 @@
             margin-bottom: 2px;
             letter-spacing: 1px;
         }
-
-        #contenidoPDF .pdf-header .titulo-area .subtitulo {
-            font-size: 11px;
-            color: #4a4a6a;
-            font-weight: normal;
-        }
-
-        #contenidoPDF .pdf-header .fecha {
-            font-size: 10px;
-            color: #4a4a6a;
-            text-align: right;
-            white-space: nowrap;
-        }
-
+        #contenidoPDF .pdf-header .titulo-area .subtitulo { font-size: 11px; color: #4a4a6a; font-weight: normal; }
+        #contenidoPDF .pdf-header .fecha { font-size: 10px; color: #4a4a6a; text-align: right; white-space: nowrap; }
         #contenidoPDF table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 8px;
             font-size: 9px;
         }
-
         #contenidoPDF table th {
             background: #f3f4f6;
             border: 1px solid #9ca3af;
@@ -1020,57 +670,21 @@
             color: #1a1b2e;
             letter-spacing: 0.5px;
         }
-
         #contenidoPDF table td {
             border: 1px solid #9ca3af;
             padding: 3px 6px;
             font-size: 9px;
             color: #1a1a2e;
         }
-
-        #contenidoPDF table .numero-col {
-            text-align: center;
-            width: 25px;
-        }
-
-        #contenidoPDF table .nombre-col {
-            text-align: left;
-        }
-
-        #contenidoPDF table .telefono-col {
-            text-align: center;
-            width: 70px;
-        }
-
-        #contenidoPDF table .pago-col {
-            text-align: center;
-            width: 65px;
-        }
-
-        #contenidoPDF table .pagado-col {
-            text-align: right;
-            width: 60px;
-        }
-
-        #contenidoPDF table .disponible-col {
-            text-align: right;
-            width: 60px;
-        }
-
-        #contenidoPDF table .restan-col {
-            text-align: right;
-            width: 60px;
-        }
-
-        #contenidoPDF table .nota-pdf-col {
-            text-align: left;
-            width: 80px;
-        }
-
-        #contenidoPDF table .blanco-col {
-            width: 35px;
-        }
-
+        #contenidoPDF table .numero-col { text-align: center; width: 25px; }
+        #contenidoPDF table .nombre-col { text-align: left; }
+        #contenidoPDF table .telefono-col { text-align: center; width: 70px; }
+        #contenidoPDF table .pago-col { text-align: center; width: 65px; }
+        #contenidoPDF table .pagado-col { text-align: right; width: 60px; }
+        #contenidoPDF table .disponible-col { text-align: right; width: 60px; }
+        #contenidoPDF table .restan-col { text-align: right; width: 60px; }
+        #contenidoPDF table .nota-pdf-col { text-align: left; width: 80px; }
+        #contenidoPDF table .blanco-col { width: 35px; }
         #contenidoPDF .pdf-footer {
             margin-top: 15px;
             padding-top: 8px;
@@ -1080,28 +694,19 @@
             font-size: 9px;
             color: #6b7280;
         }
-
-        #contenidoPDF .pdf-footer .totales {
-            font-weight: 600;
-            color: #1a1b2e;
-        }
-
-        .modal-pdf .modal-content {
-            max-width: 400px;
-        }
-
+        #contenidoPDF .pdf-footer .totales { font-weight: 600; color: #1a1b2e; }
+        .modal-pdf .modal-content { max-width: 400px; }
         .col-toggle {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
             margin-top: 4px;
         }
-
         .col-toggle .toggle-btn {
             padding: 6px 14px;
             border: 2px solid #d1d5db;
             border-radius: 20px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.5);
             color: #6b7280;
             font-size: 12px;
             font-weight: 600;
@@ -1109,25 +714,14 @@
             transition: all 0.2s ease;
             user-select: none;
         }
-
         .col-toggle .toggle-btn.active {
             border-color: #7c3aed;
-            background: rgba(124, 58, 237, 0.15);
+            background: rgba(124,58,237,0.15);
             color: #5b21b6;
         }
-
-        .col-toggle .toggle-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .col-toggle .toggle-btn:active {
-            transform: scale(0.95);
-        }
-
-        .modal-pdf .modal-grupo-columnas {
-            margin-top: 8px;
-        }
-
+        .col-toggle .toggle-btn:hover { transform: scale(1.05); }
+        .col-toggle .toggle-btn:active { transform: scale(0.95); }
+        .modal-pdf .modal-grupo-columnas { margin-top: 8px; }
         .modal-pdf .modal-grupo-columnas label {
             display: flex;
             align-items: center;
@@ -1135,19 +729,17 @@
             font-size: 12px;
             color: #4a4a6a;
         }
-
         .modal-pdf .modal-grupo-columnas select {
             padding: 6px 10px;
             border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(8px);
             font-size: 13px;
             color: #1a1a2e;
             outline: none;
             cursor: pointer;
         }
-
         .modal-pdf .btn-generar-pdf {
             border: none;
             border-radius: 24px;
@@ -1158,19 +750,14 @@
             cursor: pointer;
             transition: all 0.25s ease;
             background: linear-gradient(135deg, #dc2626, #b91c1c);
-            box-shadow: 0 3px 12px rgba(220, 38, 38, 0.2);
+            box-shadow: 0 3px 12px rgba(220,38,38,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
             flex: 1;
         }
-
-        .modal-pdf .btn-generar-pdf:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
-        }
-
+        .modal-pdf .btn-generar-pdf:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
         .modal-pdf .btn-cancelar-pdf {
             border: none;
             border-radius: 24px;
@@ -1180,23 +767,17 @@
             color: #4a4a6a;
             cursor: pointer;
             transition: all 0.25s ease;
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.7);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
             flex: 1;
         }
-
-        .modal-pdf .btn-cancelar-pdf:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.02);
-        }
-
+        .modal-pdf .btn-cancelar-pdf:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         .modal-pdf .pdf-acciones {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
-
         @media (max-width: 380px) {
             .main-content { padding: 10px; }
             .top-bar h2 { font-size: 14px; }
@@ -1208,16 +789,9 @@
             .modal-acciones .btn { font-size: 13px; padding: 8px 10px; }
             .resumen { grid-template-columns: 1fr 1fr; }
             .resumen-item .num { font-size: 14px; }
-            .modal-detalle .detalle-item .valor {
-                max-width: 50%;
-                font-size: 12px;
-            }
-            .modal-detalle .detalle-item .valor.nota-valor {
-                max-width: 50%;
-                font-size: 11px;
-            }
+            .modal-detalle .detalle-item .valor { max-width: 50%; font-size: 12px; }
+            .modal-detalle .detalle-item .valor.nota-valor { max-width: 50%; font-size: 11px; }
         }
-
         @media (min-width: 600px) {
             .main-content { padding: 24px; }
             .container { max-width: 600px; }
@@ -1225,6 +799,7 @@
     </style>
 </head>
 <body>
+
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
 
     <nav class="sidebar" id="sidebar">
@@ -1291,13 +866,9 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
@@ -1316,7 +887,7 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
@@ -1368,11 +939,8 @@
 
     <div id="contenidoPDF"></div>
 
-    <script src="js/supabase.js"></script>
+    <script src="js/storage.js"></script>
     <script>
-        // ============================================
-        // SIDEBAR CONTROLS
-        // ============================================
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
             document.getElementById('sidebarOverlay').classList.add('active');
@@ -1384,8 +952,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -1399,86 +967,57 @@
             }
         });
 
-        function logout() {
-            if (confirm('¿Cerrar sesión?')) {
-                localStorage.removeItem('user_session');
-                window.location.href = 'login.html';
-            }
-        }
-
-        // ============================================
-        // DATOS
-        // ============================================
         function getGrupoId() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('grupo') || '1';
+            var params = new URLSearchParams(window.location.search);
+            return parseInt(params.get('grupo')) || 1;
         }
 
-        let todosLosAlumnos = [];
-        let grupos = [];
-        let nextId = 1;
-        let grupoId = parseInt(getGrupoId());
-
-        async function cargarDatos() {
-            grupos = await getGrupos();
-            todosLosAlumnos = await getAlumnos();
-            if (todosLosAlumnos.length > 0) {
-                nextId = Math.max(...todosLosAlumnos.map(a => a.id)) + 1;
-            }
-            renderizarAlumnos();
-        }
+        var grupoId = getGrupoId();
+        var todosLosAlumnos = getAlumnos();
+        var grupos = getGrupos();
+        var nextId = todosLosAlumnos.length > 0 ? Math.max(...todosLosAlumnos.map(function(a) { return a.id; })) + 1 : 1;
 
         function actualizarDashboard() {
             localStorage.setItem('dashboardUpdate', Date.now().toString());
         }
 
         function actualizarGrupo() {
-            const alumnosDelGrupo = todosLosAlumnos.filter(a => a.grupo_id === grupoId);
-            const totalRecaudado = alumnosDelGrupo.reduce((sum, a) => sum + (a.pagado || 0), 0);
-
-            const grupo = grupos.find(g => g.id === grupoId);
-            if (grupo) {
-                // No actualizamos dinero en Supabase aquí, se calcula en tiempo real
-            }
-
-            return { totalRecaudado };
+            var alumnosDelGrupo = todosLosAlumnos.filter(function(a) { return a.grupoId === grupoId; });
+            var totalRecaudado = alumnosDelGrupo.reduce(function(sum, a) { return sum + a.pagado; }, 0);
+            return { totalRecaudado: totalRecaudado };
         }
 
         function getAlumnosDelGrupo() {
-            return todosLosAlumnos.filter(a => a.grupo_id === grupoId);
+            return todosLosAlumnos.filter(function(a) { return a.grupoId === grupoId; });
         }
 
         function getNombreGrupo() {
-            const grupo = grupos.find(g => g.id === grupoId);
+            var grupo = grupos.find(function(g) { return g.id === grupoId; });
             return grupo ? grupo.nombre : 'Grupo ' + grupoId;
         }
 
-        // ============================================
-        // INICIALIZAR
-        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            cargarDatos();
+            actualizarGrupo();
+            renderizarAlumnos();
         });
 
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            cargarDatos();
+            actualizarGrupo();
+            renderizarAlumnos();
         }
 
-        // ============================================
-        // RENDERIZAR ALUMNOS
-        // ============================================
-        async function renderizarAlumnos() {
-            const container = document.getElementById('studentsList');
-            const titulo = document.getElementById('grupoTitulo');
-            const subtitulo = document.getElementById('grupoSubtitulo');
-            const totalAlumnos = document.getElementById('totalAlumnos');
-            const totalRecaudado = document.getElementById('totalRecaudado');
+        function renderizarAlumnos() {
+            var container = document.getElementById('studentsList');
+            var titulo = document.getElementById('grupoTitulo');
+            var subtitulo = document.getElementById('grupoSubtitulo');
+            var totalAlumnos = document.getElementById('totalAlumnos');
+            var totalRecaudado = document.getElementById('totalRecaudado');
 
             titulo.textContent = '👨‍🎓 Alumnos - ' + getNombreGrupo();
             subtitulo.textContent = 'Gestión de alumnos - ' + getNombreGrupo();
 
-            const alumnos = getAlumnosDelGrupo();
-            const stats = actualizarGrupo();
+            var alumnos = getAlumnosDelGrupo();
+            var stats = actualizarGrupo();
 
             totalAlumnos.textContent = alumnos.length;
             totalRecaudado.textContent = '$' + stats.totalRecaudado.toLocaleString();
@@ -1500,21 +1039,21 @@
                 return;
             }
 
-            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
+            var sorted = [...alumnos].sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
 
-            let html = '';
-            sorted.forEach((alumno, index) => {
-                const restan = alumno.total - alumno.pagado;
-                const disponible = alumno.disponible || 0;
-                const restanClass = restan > 0 ? 'restan-rojo' : 'restan-verde';
-                const tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+            var html = '';
+            sorted.forEach(function(alumno, index) {
+                var restan = alumno.total - alumno.pagado;
+                var disponible = alumno.disponible || 0;
+                var restanClass = restan > 0 ? 'restan-rojo' : 'restan-verde';
+                var tieneNota = alumno.nota && alumno.nota.trim().length > 0;
 
                 html += `
                     <div class="student-item" data-id="${alumno.id}" onclick="verDetalle(${alumno.id})">
                         <div class="info">
                             <div class="nombre">${index + 1}. ${alumno.nombre}</div>
                             <div class="detalle">📞 ${alumno.telefono} | 💰 Colegiatura: $${alumno.total}</div>
-                            ${tieneNota ? `<div class="nota"><i class="fas fa-pen"></i> ${alumno.nota}</div>` : ''}
+                            ${tieneNota ? '<div class="nota"><i class="fas fa-pen"></i> ' + alumno.nota + '</div>' : ''}
                             <div class="saldo">
                                 💵 Pagado: $${alumno.pagado.toLocaleString()} | 
                                 <span class="disponible-verde">Disponible: $${disponible.toLocaleString()}</span> | 
@@ -1539,16 +1078,13 @@
             container.innerHTML = html;
         }
 
-        // ============================================
-        // FILTRAR ALUMNOS
-        // ============================================
         function filtrarAlumnos() {
-            const input = document.getElementById('searchStudent');
-            const filter = input.value.toLowerCase().trim();
-            const items = document.querySelectorAll('.student-item');
+            var input = document.getElementById('searchStudent');
+            var filter = input.value.toLowerCase().trim();
+            var items = document.querySelectorAll('.student-item');
 
-            items.forEach(item => {
-                const nombre = item.querySelector('.nombre')?.textContent?.toLowerCase() || '';
+            items.forEach(function(item) {
+                var nombre = item.querySelector('.nombre')?.textContent?.toLowerCase() || '';
                 if (nombre.includes(filter)) {
                     item.style.display = '';
                 } else {
@@ -1557,11 +1093,8 @@
             });
         }
 
-        // ============================================
-        // ABRIR WHATSAPP
-        // ============================================
         function abrirWhatsApp(telefono) {
-            const numero = telefono.replace(/\s/g, '').replace(/-/g, '');
+            var numero = telefono.replace(/\s/g, '').replace(/-/g, '');
             if (numero) {
                 window.open('https://wa.me/52' + numero, '_blank');
             } else {
@@ -1569,18 +1102,15 @@
             }
         }
 
-        // ============================================
-        // VER DETALLE DEL ALUMNO (con Nota)
-        // ============================================
         function verDetalle(id) {
-            const alumno = todosLosAlumnos.find(a => a.id === id);
+            var alumno = todosLosAlumnos.find(function(a) { return a.id === id; });
             if (!alumno) return;
 
-            const restan = alumno.total - alumno.pagado;
-            const disponible = alumno.disponible || 0;
-            const tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+            var restan = alumno.total - alumno.pagado;
+            var disponible = alumno.disponible || 0;
+            var tieneNota = alumno.nota && alumno.nota.trim().length > 0;
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay modal-detalle';
             overlay.id = 'modalDetalleOverlay';
             overlay.innerHTML = `
@@ -1613,7 +1143,7 @@
                     </div>
                     <div class="detalle-item">
                         <span class="etiqueta">💳 Pago con</span>
-                        <span class="valor">${alumno.pago_con}</span>
+                        <span class="valor">${alumno.pagoCon}</span>
                     </div>
                     ${tieneNota ? `
                     <div class="detalle-item" style="border-bottom: none; padding-bottom: 4px;">
@@ -1637,15 +1167,12 @@
         }
 
         function cerrarModalDetalle() {
-            const modal = document.getElementById('modalDetalleOverlay');
+            var modal = document.getElementById('modalDetalleOverlay');
             if (modal) modal.remove();
         }
 
-        // ============================================
-        // CREAR ALUMNO (con campo Nota)
-        // ============================================
         function mostrarModalCrear() {
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1708,16 +1235,15 @@
             `;
             document.body.appendChild(overlay);
 
-            // Calcular restan y disponible
-            const totalInput = document.getElementById('montoAlumnoInput');
-            const pagadoInput = document.getElementById('pagadoAlumnoInput');
-            const disponibleInput = document.getElementById('disponibleAlumnoInput');
-            const restanteDisplay = document.getElementById('restanteDisplay');
+            var totalInput = document.getElementById('montoAlumnoInput');
+            var pagadoInput = document.getElementById('pagadoAlumnoInput');
+            var disponibleInput = document.getElementById('disponibleAlumnoInput');
+            var restanteDisplay = document.getElementById('restanteDisplay');
 
             function actualizarCampos() {
-                const total = parseInt(totalInput.value) || 0;
-                const pagado = parseInt(pagadoInput.value) || 0;
-                const restan = total - pagado;
+                var total = parseInt(totalInput.value) || 0;
+                var pagado = parseInt(pagadoInput.value) || 0;
+                var restan = total - pagado;
 
                 restanteDisplay.textContent = '$' + restan.toLocaleString();
                 restanteDisplay.className = restan > 0 ? 'rojo' : 'verde';
@@ -1729,21 +1255,21 @@
             pagadoInput.addEventListener('input', actualizarCampos);
             actualizarCampos();
 
-            setTimeout(() => {
-                const input = document.getElementById('nombreAlumnoInput');
+            setTimeout(function() {
+                var input = document.getElementById('nombreAlumnoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formAlumnoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formAlumnoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                const nombre = document.getElementById('nombreAlumnoInput').value.trim();
-                const telefono = document.getElementById('telefonoAlumnoInput').value.trim();
-                const total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
-                const pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
-                const disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
-                const pagoCon = document.getElementById('pagoConInput').value;
-                const nota = document.getElementById('notaAlumnoInput').value.trim();
+                var nombre = document.getElementById('nombreAlumnoInput').value.trim();
+                var telefono = document.getElementById('telefonoAlumnoInput').value.trim();
+                var total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
+                var pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
+                var disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
+                var pagoCon = document.getElementById('pagoConInput').value;
+                var nota = document.getElementById('notaAlumnoInput').value.trim();
 
                 if (!nombre) {
                     alert('⚠️ El nombre del alumno es obligatorio');
@@ -1758,7 +1284,7 @@
                     return;
                 }
 
-                const nuevoAlumno = {
+                var nuevoAlumno = {
                     id: nextId++,
                     grupoId: grupoId,
                     nombre: nombre,
@@ -1770,9 +1296,12 @@
                     nota: nota || ''
                 };
 
-                const result = await crearAlumno(nuevoAlumno);
+                var result = crearAlumno(nuevoAlumno);
                 if (result.success) {
-                    await cargarDatos();
+                    todosLosAlumnos = getAlumnos();
+                    actualizarGrupo();
+                    renderizarAlumnos();
+                    actualizarDashboard();
                     cerrarModal();
                     alert('✅ Alumno "' + nombre + '" registrado');
                 } else {
@@ -1781,14 +1310,11 @@
             });
         }
 
-        // ============================================
-        // EDITAR ALUMNO (con campo Nota)
-        // ============================================
         function mostrarModalEditar(id) {
-            const alumno = todosLosAlumnos.find(a => a.id === id);
+            var alumno = todosLosAlumnos.find(function(a) { return a.id === id; });
             if (!alumno) return;
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1827,9 +1353,9 @@
                         <div class="modal-grupo">
                             <label>Pago con <span class="obligatorio">*</span></label>
                             <select id="pagoConInput" required>
-                                <option value="Efectivo" ${alumno.pago_con === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
-                                <option value="Transferencia" ${alumno.pago_con === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
-                                <option value="Depósito" ${alumno.pago_con === 'Depósito' ? 'selected' : ''}>Depósito</option>
+                                <option value="Efectivo" ${alumno.pagoCon === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+                                <option value="Transferencia" ${alumno.pagoCon === 'Transferencia' ? 'selected' : ''}>Transferencia</option>
+                                <option value="Depósito" ${alumno.pagoCon === 'Depósito' ? 'selected' : ''}>Depósito</option>
                             </select>
                         </div>
                         <div class="modal-grupo">
@@ -1851,16 +1377,15 @@
             `;
             document.body.appendChild(overlay);
 
-            // Calcular restan y disponible
-            const totalInput = document.getElementById('montoAlumnoInput');
-            const pagadoInput = document.getElementById('pagadoAlumnoInput');
-            const disponibleInput = document.getElementById('disponibleAlumnoInput');
-            const restanteDisplay = document.getElementById('restanteDisplay');
+            var totalInput = document.getElementById('montoAlumnoInput');
+            var pagadoInput = document.getElementById('pagadoAlumnoInput');
+            var disponibleInput = document.getElementById('disponibleAlumnoInput');
+            var restanteDisplay = document.getElementById('restanteDisplay');
 
             function actualizarCampos() {
-                const total = parseInt(totalInput.value) || 0;
-                const pagado = parseInt(pagadoInput.value) || 0;
-                const restan = total - pagado;
+                var total = parseInt(totalInput.value) || 0;
+                var pagado = parseInt(pagadoInput.value) || 0;
+                var restan = total - pagado;
 
                 restanteDisplay.textContent = '$' + restan.toLocaleString();
                 restanteDisplay.className = restan > 0 ? 'rojo' : 'verde';
@@ -1872,21 +1397,21 @@
             pagadoInput.addEventListener('input', actualizarCampos);
             actualizarCampos();
 
-            setTimeout(() => {
-                const input = document.getElementById('nombreAlumnoInput');
+            setTimeout(function() {
+                var input = document.getElementById('nombreAlumnoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formAlumnoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formAlumnoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                const nombre = document.getElementById('nombreAlumnoInput').value.trim();
-                const telefono = document.getElementById('telefonoAlumnoInput').value.trim();
-                const total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
-                const pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
-                const disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
-                const pagoCon = document.getElementById('pagoConInput').value;
-                const nota = document.getElementById('notaAlumnoInput').value.trim();
+                var nombre = document.getElementById('nombreAlumnoInput').value.trim();
+                var telefono = document.getElementById('telefonoAlumnoInput').value.trim();
+                var total = parseInt(document.getElementById('montoAlumnoInput').value) || 1500;
+                var pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
+                var disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
+                var pagoCon = document.getElementById('pagoConInput').value;
+                var nota = document.getElementById('notaAlumnoInput').value.trim();
 
                 if (!nombre) {
                     alert('⚠️ El nombre del alumno es obligatorio');
@@ -1909,9 +1434,12 @@
                 alumno.pagoCon = pagoCon;
                 alumno.nota = nota || '';
 
-                const result = await actualizarAlumno(alumno);
+                var result = actualizarAlumno(alumno);
                 if (result.success) {
-                    await cargarDatos();
+                    todosLosAlumnos = getAlumnos();
+                    actualizarGrupo();
+                    renderizarAlumnos();
+                    actualizarDashboard();
                     cerrarModal();
                     alert('✅ Alumno "' + nombre + '" actualizado');
                 } else {
@@ -1920,17 +1448,17 @@
             });
         }
 
-        // ============================================
-        // ELIMINAR ALUMNO
-        // ============================================
-        async function eliminarAlumno(id) {
-            const alumno = todosLosAlumnos.find(a => a.id === id);
+        function eliminarAlumno(id) {
+            var alumno = todosLosAlumnos.find(function(a) { return a.id === id; });
             if (!alumno) return;
 
             if (confirm('⚠️ ¿Eliminar a "' + alumno.nombre + '"?')) {
-                const result = await eliminarAlumno(id);
+                var result = eliminarAlumno(id);
                 if (result.success) {
-                    await cargarDatos();
+                    todosLosAlumnos = getAlumnos();
+                    actualizarGrupo();
+                    renderizarAlumnos();
+                    actualizarDashboard();
                     alert('✅ Alumno eliminado');
                 } else {
                     alert('❌ Error al eliminar alumno: ' + result.error);
@@ -1938,29 +1466,23 @@
             }
         }
 
-        // ============================================
-        // CERRAR MODAL
-        // ============================================
         function cerrarModal() {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal) modal.remove();
         }
 
         document.addEventListener('click', function(e) {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal && e.target === modal) {
                 cerrarModal();
             }
-            const modalDetalle = document.getElementById('modalDetalleOverlay');
+            var modalDetalle = document.getElementById('modalDetalleOverlay');
             if (modalDetalle && e.target === modalDetalle) {
                 cerrarModalDetalle();
             }
         });
 
-        // ============================================
-        // PDF - CON COLUMNA DE NOTAS
-        // ============================================
-        let columnasSeleccionadas = {
+        var columnasSeleccionadas = {
             telefono: true,
             pagoCon: true,
             pagado: true,
@@ -1971,36 +1493,36 @@
 
         function toggleColumna(columna) {
             columnasSeleccionadas[columna] = !columnasSeleccionadas[columna];
-            const btn = document.querySelector(`.toggle-btn[data-columna="${columna}"]`);
+            var btn = document.querySelector('.toggle-btn[data-columna="' + columna + '"]');
             if (btn) {
                 btn.classList.toggle('active');
             }
         }
 
-        async function generarPDF(titulo, opciones, columnasVacias) {
-            const alumnos = getAlumnosDelGrupo();
+        function generarPDF(titulo, opciones, columnasVacias) {
+            var alumnos = getAlumnosDelGrupo();
 
             if (alumnos.length === 0) {
                 alert("No hay alumnos para imprimir");
                 return;
             }
 
-            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
-            const fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const grupoNombre = getNombreGrupo();
+            var sorted = [...alumnos].sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
+            var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            var grupoNombre = getNombreGrupo();
 
-            const totalPagado = sorted.reduce((sum, a) => sum + a.pagado, 0);
-            const totalDisponible = sorted.reduce((sum, a) => sum + (a.disponible || 0), 0);
-            const totalRestan = sorted.reduce((sum, a) => sum + (a.total - a.pagado), 0);
+            var totalPagado = sorted.reduce(function(sum, a) { return sum + a.pagado; }, 0);
+            var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+            var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
 
-            let columnasVaciasHtml = '';
-            let columnasVaciasBody = '';
-            for (let i = 0; i < columnasVacias; i++) {
+            var columnasVaciasHtml = '';
+            var columnasVaciasBody = '';
+            for (var i = 0; i < columnasVacias; i++) {
                 columnasVaciasHtml += '<th class="blanco-col"></th>';
                 columnasVaciasBody += '<td class="blanco-col"></td>';
             }
 
-            let html = `
+            var html = `
                 <div class="pdf-header">
                     <img src="assets/escuela.png" class="escudo" alt="Escudo Escuela" onerror="this.style.display='none'">
                     <div class="titulo-area">
@@ -2027,16 +1549,16 @@
                     <tbody>
             `;
 
-            sorted.forEach((alumno, index) => {
-                const restan = alumno.total - alumno.pagado;
-                const disponible = alumno.disponible || 0;
-                const nota = alumno.nota || '';
+            sorted.forEach(function(alumno, index) {
+                var restan = alumno.total - alumno.pagado;
+                var disponible = alumno.disponible || 0;
+                var nota = alumno.nota || '';
                 html += `
                     <tr>
                         <td class="numero-col">${index + 1}</td>
                         <td class="nombre-col">${alumno.nombre}</td>
                         ${opciones.telefono ? '<td class="telefono-col">' + alumno.telefono + '</td>' : ''}
-                        ${opciones.pagoCon ? '<td class="pago-col">' + alumno.pago_con + '</td>' : ''}
+                        ${opciones.pagoCon ? '<td class="pago-col">' + alumno.pagoCon + '</td>' : ''}
                         ${opciones.pagado ? '<td class="pagado-col">$' + alumno.pagado.toLocaleString() + '</td>' : ''}
                         ${opciones.disponible ? '<td class="disponible-col">$' + disponible.toLocaleString() + '</td>' : ''}
                         ${opciones.restan ? '<td class="restan-col">$' + restan.toLocaleString() + '</td>' : ''}
@@ -2062,47 +1584,41 @@
                 </div>
             `;
 
-            const contenedor = document.getElementById('contenidoPDF');
+            var contenedor = document.getElementById('contenidoPDF');
             contenedor.innerHTML = html;
             contenedor.style.display = 'block';
 
-            try {
-                await new Promise(resolve => setTimeout(resolve, 300));
+            html2canvas(contenedor, {
+                scale: 3,
+                useCORS: true,
+                logging: false,
+                backgroundColor: '#ffffff',
+                width: 210 * 3.78,
+                height: 297 * 3.78,
+                windowWidth: 210 * 3.78,
+                windowHeight: 297 * 3.78
+            }).then(function(canvas) {
+                var imgData = canvas.toDataURL('image/png');
 
-                const canvas = await html2canvas(contenedor, {
-                    scale: 3,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    width: 210 * 3.78,
-                    height: 297 * 3.78,
-                    windowWidth: 210 * 3.78,
-                    windowHeight: 297 * 3.78
-                });
-
-                const imgData = canvas.toDataURL('image/png');
-
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height / canvas.width) * pageWidth;
+                var { jsPDF } = window.jspdf;
+                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pageWidth = pdf.internal.pageSize.getWidth();
+                var imgWidth = pageWidth;
+                var imgHeight = (canvas.height / canvas.width) * pageWidth;
 
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 pdf.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
 
                 contenedor.style.display = 'none';
-
-            } catch (error) {
+            }).catch(function(error) {
                 console.error('Error al generar PDF:', error);
                 alert('Ocurrió un error al generar el PDF: ' + error.message);
                 contenedor.style.display = 'none';
-            }
+            });
         }
 
         function mostrarModalPDF() {
-            const alumnos = getAlumnosDelGrupo();
+            var alumnos = getAlumnosDelGrupo();
 
             if (alumnos.length === 0) {
                 alert('⚠️ No hay alumnos para imprimir');
@@ -2118,7 +1634,7 @@
                 nota: true
             };
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay modal-pdf';
             overlay.id = 'modalPDFOverlay';
             overlay.innerHTML = `
@@ -2188,8 +1704,8 @@
         }
 
         function generarPDFDesdeModal() {
-            const titulo = document.getElementById('tituloPDFInput').value.trim() || 'Listado de Alumnos';
-            const opciones = {
+            var titulo = document.getElementById('tituloPDFInput').value.trim() || 'Listado de Alumnos';
+            var opciones = {
                 telefono: columnasSeleccionadas.telefono,
                 pagoCon: columnasSeleccionadas.pagoCon,
                 pagado: columnasSeleccionadas.pagado,
@@ -2197,23 +1713,19 @@
                 restan: columnasSeleccionadas.restan,
                 nota: columnasSeleccionadas.nota
             };
-            const columnasVacias = parseInt(document.getElementById('columnasVacias').value) || 0;
+            var columnasVacias = parseInt(document.getElementById('columnasVacias').value) || 0;
 
             cerrarModalPDF();
             generarPDF(titulo, opciones, columnasVacias);
         }
 
         function cerrarModalPDF() {
-            const modal = document.getElementById('modalPDFOverlay');
+            var modal = document.getElementById('modalPDFOverlay');
             if (modal) modal.remove();
         }
 
-        // ============================================
-        // EXPONER FUNCIONES GLOBALES
-        // ============================================
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
-        window.logout = logout;
         window.mostrarModalCrear = mostrarModalCrear;
         window.mostrarModalEditar = mostrarModalEditar;
         window.eliminarAlumno = eliminarAlumno;
@@ -2226,9 +1738,6 @@
         window.verDetalle = verDetalle;
         window.cerrarModalDetalle = cerrarModalDetalle;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')

@@ -4,16 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Administra - Gastos</title>
-    
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="assets/logo.png" type="image/png">
+    <link rel="icon" href="assets/icon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
+        /* Mismos estilos que antes */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
             min-height: 100vh;
@@ -21,7 +18,7 @@
             background-attachment: fixed;
             display: flex;
         }
-
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -40,33 +37,19 @@
             z-index: 1000;
             overflow-y: auto;
         }
-
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                width: 280px;
-                background: rgba(255, 255, 255, 0.96);
-            }
-            .sidebar.open {
-                transform: translateX(0);
-            }
+            .sidebar { transform: translateX(-100%); width: 280px; background: rgba(255,255,255,0.96); }
+            .sidebar.open { transform: translateX(0); }
         }
-
-        @media (min-width: 769px) {
-            .sidebar {
-                transform: translateX(0) !important;
-            }
-        }
-
+        @media (min-width: 769px) { .sidebar { transform: translateX(0) !important; } }
         .sidebar .logo-area {
             display: flex;
             align-items: center;
             gap: 10px;
             padding-bottom: 16px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
             margin-bottom: 16px;
         }
-
         .sidebar .logo-area .logo-icon {
             width: 36px;
             height: 36px;
@@ -78,26 +61,19 @@
             color: white;
             font-weight: 700;
             font-size: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255,255,255,0.5);
             flex-shrink: 0;
         }
-
-        .sidebar .logo-area h1 {
-            font-size: 16px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
+        .sidebar .logo-area h1 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
         .sidebar .logo-area .version {
             font-size: 9px;
             color: #7c3aed;
             font-weight: 600;
-            background: rgba(124, 58, 237, 0.1);
+            background: rgba(124,58,237,0.1);
             padding: 1px 8px;
             border-radius: 10px;
             margin-left: 2px;
         }
-
         .sidebar .btn-cerrar-menu {
             display: none;
             background: none;
@@ -109,22 +85,14 @@
             margin-left: auto;
             transition: all 0.2s;
         }
-        .sidebar .btn-cerrar-menu:hover {
-            color: #1e1b4b;
-        }
-        @media (max-width: 768px) {
-            .sidebar .btn-cerrar-menu {
-                display: block;
-            }
-        }
-
+        .sidebar .btn-cerrar-menu:hover { color: #1e1b4b; }
+        @media (max-width: 768px) { .sidebar .btn-cerrar-menu { display: block; } }
         .sidebar .menu {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
-
         .sidebar .menu .menu-label {
             font-size: 9px;
             text-transform: uppercase;
@@ -133,7 +101,6 @@
             letter-spacing: 0.8px;
             padding: 8px 12px 4px 12px;
         }
-
         .sidebar .menu .menu-item {
             display: flex;
             align-items: center;
@@ -151,46 +118,23 @@
             width: 100%;
             text-align: left;
         }
-
-        .sidebar .menu .menu-item:hover {
-            background: rgba(124, 58, 237, 0.08);
-            color: #5b21b6;
-        }
-
-        .sidebar .menu .menu-item.active {
-            background: rgba(124, 58, 237, 0.12);
-            color: #5b21b6;
-            font-weight: 600;
-        }
-
-        .sidebar .menu .menu-item i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .sidebar .menu .divider {
-            height: 1px;
-            background: rgba(0, 0, 0, 0.06);
-            margin: 8px 12px;
-        }
-
+        .sidebar .menu .menu-item:hover { background: rgba(124,58,237,0.08); color: #5b21b6; }
+        .sidebar .menu .menu-item.active { background: rgba(124,58,237,0.12); color: #5b21b6; font-weight: 600; }
+        .sidebar .menu .menu-item i { width: 20px; font-size: 16px; text-align: center; flex-shrink: 0; }
+        .sidebar .menu .divider { height: 1px; background: rgba(0,0,0,0.06); margin: 8px 12px; }
         .sidebar .user-area {
             padding-top: 12px;
-            border-top: 1px solid rgba(0, 0, 0, 0.06);
+            border-top: 1px solid rgba(0,0,0,0.06);
             margin-top: 4px;
         }
-
         .sidebar .user-area .user-info {
             display: flex;
             align-items: center;
             gap: 10px;
             padding: 8px 12px;
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255,255,255,0.4);
         }
-
         .sidebar .user-area .user-info .avatar {
             width: 32px;
             height: 32px;
@@ -203,66 +147,21 @@
             font-weight: 700;
             font-size: 14px;
         }
-
-        .sidebar .user-area .user-info .user-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1e1b4b;
-        }
-
-        .sidebar .user-area .user-info .user-email {
-            font-size: 10px;
-            color: #6b7280;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            color: #dc2626;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            background: transparent;
-            width: 100%;
-            margin-top: 4px;
-        }
-
-        .sidebar .user-area .btn-logout-sidebar:hover {
-            background: rgba(239, 68, 68, 0.08);
-        }
-
-        .sidebar .user-area .btn-logout-sidebar i {
-            width: 20px;
-            font-size: 16px;
-            text-align: center;
-        }
-
+        .sidebar .user-area .user-info .user-name { font-size: 12px; font-weight: 600; color: #1e1b4b; }
+        .sidebar .user-area .user-info .user-email { font-size: 10px; color: #6b7280; }
         .sidebar-overlay {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
             z-index: 999;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-        @media (min-width: 769px) {
-            .sidebar-overlay {
-                display: none !important;
-            }
-        }
-
+        .sidebar-overlay.active { display: block; opacity: 1; }
+        @media (min-width: 769px) { .sidebar-overlay { display: none !important; } }
         .main-content {
             margin-left: 0;
             padding: 16px;
@@ -271,61 +170,37 @@
             width: 100%;
             transition: margin-left 0.3s ease;
         }
-
         @media (min-width: 769px) {
-            .main-content {
-                margin-left: 240px;
-                padding: 24px;
-                width: calc(100% - 240px);
-            }
+            .main-content { margin-left: 240px; padding: 24px; width: calc(100% - 240px); }
         }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-
+        .container { max-width: 900px; margin: 0 auto; }
         .clay {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 10px 10px 28px rgba(0, 0, 0, 0.05), -10px -10px 28px rgba(255, 255, 255, 0.6),
-                        inset 2px 2px 4px rgba(255, 255, 255, 0.8), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 10px 10px 28px rgba(0,0,0,0.05), -10px -10px 28px rgba(255,255,255,0.6),
+                        inset 2px 2px 4px rgba(255,255,255,0.8), inset -2px -2px 4px rgba(0,0,0,0.02);
         }
-
         .clay-sm { padding: 10px 12px; border-radius: 16px; }
         .clay-md { padding: 14px 16px; border-radius: 20px; }
-
         .dashboard-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
         .dashboard-header .titulo {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-
-        .dashboard-header .titulo h2 {
-            font-size: 20px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
-        .dashboard-header .titulo p {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 2px;
-        }
-
+        .dashboard-header .titulo h2 { font-size: 20px; color: #1e1b4b; font-weight: 700; }
+        .dashboard-header .titulo p { font-size: 12px; color: #6b7280; margin-top: 2px; }
         .hamburger {
             display: block;
-            background: rgba(255, 255, 255, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
             font-size: 20px;
             color: #1e1b4b;
             cursor: pointer;
@@ -334,64 +209,46 @@
             transition: all 0.2s;
             backdrop-filter: blur(4px);
         }
-        .hamburger:hover {
-            background: rgba(255, 255, 255, 0.8);
-        }
-        @media (min-width: 769px) {
-            .hamburger {
-                display: none !important;
-            }
-        }
-
+        .hamburger:hover { background: rgba(255,255,255,0.8); }
+        @media (min-width: 769px) { .hamburger { display: none !important; } }
         .dashboard-header .header-right {
             display: flex;
             align-items: center;
             gap: 12px;
         }
-
         .connection {
             display: flex;
             align-items: center;
             gap: 4px;
             font-size: 11px;
             color: #6b7280;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.5);
             padding: 4px 12px;
             border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
         .connection .dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
         }
-
         .connection .dot.green {
             background: #34d399;
-            box-shadow: 0 0 8px rgba(52, 211, 153, 0.4);
+            box-shadow: 0 0 8px rgba(52,211,153,0.4);
             animation: pulse-dot 2s infinite;
         }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
-
         .top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
         }
-
-        .top-bar h2 {
-            font-size: 16px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
-
+        .top-bar h2 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
         .btn-nuevo {
             border: none;
             border-radius: 30px;
@@ -402,114 +259,68 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            box-shadow: 0 3px 10px rgba(124, 58, 237, 0.3);
+            box-shadow: 0 3px 10px rgba(124,58,237,0.3);
             display: flex;
             align-items: center;
             gap: 4px;
         }
-
-        .btn-nuevo:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
-        }
-
+        .btn-nuevo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
         .btn-nuevo i { font-size: 12px; }
-
         .filtros {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 6px;
             margin-bottom: 10px;
         }
-
         .filtros input, .filtros select {
             padding: 6px 10px;
-            background: rgba(255, 255, 255, 0.6);
+            background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 16px;
             font-size: 11px;
             color: #1a1a2e;
             outline: none;
-            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.02), inset -3px -3px 10px rgba(255,255,255,0.4);
             transition: all 0.25s ease;
             box-sizing: border-box;
             width: 100%;
         }
-
         .filtros input:focus, .filtros select:focus {
             border-color: #a78bfa;
-            background: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
         }
-
-        .filtros input::placeholder {
-            color: #a0a0b8;
-            font-size: 10px;
-        }
-
+        .filtros input::placeholder { color: #a0a0b8; font-size: 10px; }
         #gastosList {
             max-height: 400px;
             overflow-y: auto;
             padding-right: 4px;
         }
-
-        #gastosList::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        #gastosList::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-
-        #gastosList::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
-            border-radius: 10px;
-        }
-
+        #gastosList::-webkit-scrollbar { width: 4px; }
+        #gastosList::-webkit-scrollbar-track { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        #gastosList::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #c4b5fd, #a78bfa); border-radius: 10px; }
         .gasto-item {
             padding: 10px 14px;
             margin-bottom: 8px;
-            background: rgba(255, 255, 255, 0.5);
+            background: rgba(255,255,255,0.5);
             backdrop-filter: blur(8px);
             border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: inset 2px 2px 4px rgba(255, 255, 255, 0.6), inset -2px -2px 4px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(0,0,0,0.02);
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
-        .gasto-item:hover {
-            background: rgba(255, 255, 255, 0.8);
-            transform: scale(1.01);
-            border-color: rgba(167, 139, 250, 0.3);
-        }
-
-        .gasto-item:active {
-            transform: scale(0.98);
-        }
-
+        .gasto-item:hover { background: rgba(255,255,255,0.8); transform: scale(1.01); border-color: rgba(167,139,250,0.3); }
+        .gasto-item:active { transform: scale(0.98); }
         .gasto-item:last-child { margin-bottom: 0; }
-
         .gasto-item .gasto-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
         }
-
-        .gasto-item .gasto-header .info h4 {
-            font-size: 13px;
-            color: #1e1b4b;
-            font-weight: 600;
-        }
-
-        .gasto-item .gasto-header .info .meta {
-            font-size: 10px;
-            color: #6b7280;
-            margin-top: 1px;
-        }
-
+        .gasto-item .gasto-header .info h4 { font-size: 13px; color: #1e1b4b; font-weight: 600; }
+        .gasto-item .gasto-header .info .meta { font-size: 10px; color: #6b7280; margin-top: 1px; }
         .gasto-item .gasto-header .monto {
             font-size: 15px;
             font-weight: 700;
@@ -518,29 +329,21 @@
             flex-shrink: 0;
             margin-left: 8px;
         }
-
-        .gasto-item .gasto-header .monto .per {
-            font-size: 9px;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
+        .gasto-item .gasto-header .monto .per { font-size: 9px; color: #6b7280; font-weight: 400; }
         .gasto-item .gasto-nota {
             font-size: 10px;
             color: #92400e;
-            background: rgba(252, 211, 77, 0.15);
+            background: rgba(252,211,77,0.15);
             padding: 4px 10px;
             border-radius: 10px;
             margin-top: 4px;
             display: inline-block;
         }
-
         .gasto-item .gasto-actions {
             display: flex;
             gap: 4px;
             margin-top: 4px;
         }
-
         .btn-sm {
             border: none;
             border-radius: 30px;
@@ -554,15 +357,12 @@
             align-items: center;
             justify-content: center;
             gap: 3px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
-
         .btn-sm i { font-size: 10px; }
         .btn-sm:hover { transform: scale(1.08); }
-
         .btn-editar { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .btn-eliminar { background: linear-gradient(135deg, #ef4444, #dc2626); }
-
         .btn-volver {
             border: none;
             border-radius: 30px;
@@ -573,20 +373,14 @@
             cursor: pointer;
             transition: all 0.2s;
             background: linear-gradient(135deg, #6b7280, #4b5563);
-            box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+            box-shadow: 0 2px 8px rgba(107,114,128,0.3);
             margin-top: 12px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
-
-        .btn-volver:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 16px rgba(107, 114, 128, 0.4);
-        }
-
+        .btn-volver:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(107,114,128,0.4); }
         .btn-volver i { font-size: 12px; }
-
         .footer {
             text-align: center;
             font-size: 10px;
@@ -594,27 +388,18 @@
             margin-top: 20px;
             padding: 8px 0;
         }
-
         .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
-
         .empty-message {
             text-align: center;
             padding: 30px 16px;
             color: #6b7280;
             font-size: 13px;
         }
-
-        .empty-message i {
-            font-size: 32px;
-            color: #c4b5fd;
-            display: block;
-            margin: 0 auto 10px;
-        }
-
+        .empty-message i { font-size: 32px; color: #c4b5fd; display: block; margin: 0 auto 10px; }
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0,0,0,0.3);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
             display: flex;
@@ -624,35 +409,25 @@
             padding: 16px;
             animation: modalFadeIn 0.25s ease;
         }
-
         @keyframes modalFadeIn {
             from { opacity: 0; transform: scale(0.92); }
             to { opacity: 1; transform: scale(1); }
         }
-
         .modal-content {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 20px 16px 16px;
             max-width: 360px;
             width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.1);
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        .modal-content::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .modal-content::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #c4b5fd, #a78bfa);
-            border-radius: 10px;
-        }
-
+        .modal-content::-webkit-scrollbar { width: 4px; }
+        .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #c4b5fd, #a78bfa); border-radius: 10px; }
         .modal-icono {
             width: 44px;
             height: 44px;
@@ -662,73 +437,36 @@
             align-items: center;
             justify-content: center;
             margin: 0 auto 10px;
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 4px 16px rgba(124,58,237,0.2);
         }
-
         .modal-icono i { font-size: 20px; color: white; }
-
-        .modal-titulo {
-            text-align: center;
-            font-size: 20px;
-            font-weight: 700;
-            color: #1e1b4b;
-            margin-bottom: 2px;
-        }
-
-        .modal-subtitulo {
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
-            margin-bottom: 14px;
-        }
-
-        .modal-grupo {
-            margin-bottom: 12px;
-        }
-
-        .modal-grupo label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: #4a4a6a;
-            margin-bottom: 3px;
-        }
-
+        .modal-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
+        .modal-subtitulo { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
+        .modal-grupo { margin-bottom: 12px; }
+        .modal-grupo label { display: block; font-size: 12px; font-weight: 600; color: #4a4a6a; margin-bottom: 3px; }
         .modal-grupo label .obligatorio { color: #ef4444; }
-
         .modal-grupo input, .modal-grupo select, .modal-grupo textarea {
             width: 100%;
             padding: 10px 14px;
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(255,255,255,0.4);
             border-radius: 20px;
             font-size: 14px;
             color: #1a1a2e;
             outline: none;
-            box-shadow: inset 3px 3px 10px rgba(0, 0, 0, 0.02), inset -3px -3px 10px rgba(255, 255, 255, 0.4);
+            box-shadow: inset 3px 3px 10px rgba(0,0,0,0.02), inset -3px -3px 10px rgba(255,255,255,0.4);
             transition: all 0.25s ease;
             box-sizing: border-box;
             font-family: inherit;
         }
-
-        .modal-grupo textarea {
-            resize: vertical;
-            min-height: 50px;
-            font-size: 12px;
-        }
-
+        .modal-grupo textarea { resize: vertical; min-height: 50px; font-size: 12px; }
         .modal-grupo input:focus, .modal-grupo select:focus, .modal-grupo textarea:focus {
             border-color: #a78bfa;
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.1), inset 3px 3px 10px rgba(0, 0, 0, 0.02);
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
         }
-
-        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder {
-            color: #a0a0b8;
-            font-size: 13px;
-        }
-
+        .modal-grupo input::placeholder, .modal-grupo textarea::placeholder { color: #a0a0b8; font-size: 13px; }
         .modal-grupo select {
             cursor: pointer;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
@@ -736,28 +474,24 @@
             background-position: right 14px center;
             padding-right: 36px;
         }
-
         .modal-info {
             font-size: 11px;
             padding: 8px 12px;
-            background: rgba(243, 244, 246, 0.5);
+            background: rgba(243,244,246,0.5);
             border-radius: 12px;
             margin-top: 4px;
             line-height: 1.6;
             white-space: pre-line;
         }
-
         .modal-info .verde { color: #059669; }
         .modal-info .rojo { color: #dc2626; }
         .modal-info .naranja { color: #d97706; }
         .modal-info .negrita { font-weight: 700; }
-
         .modal-acciones {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
-
         .modal-acciones .btn {
             flex: 1;
             padding: 10px 12px;
@@ -772,111 +506,66 @@
             justify-content: center;
             gap: 6px;
         }
-
         .modal-acciones .btn i { font-size: 14px; }
-
         .modal-acciones .btn-guardar {
             background: linear-gradient(135deg, #7c3aed, #6d28d9);
             color: white;
-            box-shadow: 0 3px 12px rgba(124, 58, 237, 0.2);
+            box-shadow: 0 3px 12px rgba(124,58,237,0.2);
         }
-
-        .modal-acciones .btn-guardar:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
-        }
-
+        .modal-acciones .btn-guardar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
         .modal-acciones .btn-cancelar {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             color: #4a4a6a;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
-        .modal-acciones .btn-cancelar:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.02);
-        }
-
+        .modal-acciones .btn-cancelar:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         .modal-acciones .btn-editar-modal {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
-
-        .modal-acciones .btn-editar-modal:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-        }
-
-        .modal-detalle .modal-content {
-            max-width: 380px;
-        }
-
+        .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .modal-detalle .modal-content { max-width: 380px; }
         .modal-detalle .detalle-item {
             display: flex;
             justify-content: space-between;
             padding: 8px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
-
-        .modal-detalle .detalle-item:last-child {
-            border-bottom: none;
-        }
-
-        .modal-detalle .detalle-item .etiqueta {
-            font-size: 12px;
-            color: #6b7280;
-        }
-
-        .modal-detalle .detalle-item .valor {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e1b4b;
-        }
-
+        .modal-detalle .detalle-item:last-child { border-bottom: none; }
+        .modal-detalle .detalle-item .etiqueta { font-size: 12px; color: #6b7280; }
+        .modal-detalle .detalle-item .valor { font-size: 13px; font-weight: 600; color: #1e1b4b; }
         .modal-detalle .detalle-item .valor.rojo { color: #dc2626; }
         .modal-detalle .detalle-item .valor.verde { color: #059669; }
         .modal-detalle .detalle-item .valor.naranja { color: #d97706; }
-
         .modal-detalle .detalle-nota {
             margin-top: 12px;
             padding: 10px 12px;
-            background: rgba(252, 211, 77, 0.12);
+            background: rgba(252,211,77,0.12);
             border-radius: 12px;
             border-left: 3px solid #d97706;
             font-size: 11px;
             color: #4a4a6a;
             line-height: 1.5;
         }
-
-        .modal-detalle .detalle-nota i {
-            color: #d97706;
-            margin-right: 4px;
-        }
-
+        .modal-detalle .detalle-nota i { color: #d97706; margin-right: 4px; }
         .modal-detalle .detalle-excluidos {
             margin-top: 8px;
             padding: 8px 12px;
-            background: rgba(239, 68, 68, 0.08);
+            background: rgba(239,68,68,0.08);
             border-radius: 12px;
             border-left: 3px solid #ef4444;
             font-size: 11px;
             color: #991b1b;
             line-height: 1.5;
         }
-
-        .modal-detalle .detalle-excluidos i {
-            color: #ef4444;
-            margin-right: 4px;
-        }
-
+        .modal-detalle .detalle-excluidos i { color: #ef4444; margin-right: 4px; }
         .modal-detalle .detalle-acciones {
             display: flex;
             gap: 8px;
             margin-top: 16px;
         }
-
         .modal-detalle .detalle-acciones .btn {
             flex: 1;
             padding: 10px 12px;
@@ -891,58 +580,36 @@
             justify-content: center;
             gap: 6px;
         }
-
         .modal-detalle .detalle-acciones .btn i { font-size: 14px; }
-
         .modal-detalle .detalle-acciones .btn-editar-detalle {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
-            box-shadow: 0 3px 12px rgba(245, 158, 11, 0.2);
+            box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
-
-        .modal-detalle .detalle-acciones .btn-editar-detalle:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-        }
-
+        .modal-detalle .detalle-acciones .btn-editar-detalle:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
         .modal-detalle .detalle-acciones .btn-eliminar-detalle {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
-            box-shadow: 0 3px 12px rgba(239, 68, 68, 0.2);
+            box-shadow: 0 3px 12px rgba(239,68,68,0.2);
         }
-
-        .modal-detalle .detalle-acciones .btn-eliminar-detalle:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
-        }
-
+        .modal-detalle .detalle-acciones .btn-eliminar-detalle:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
         .modal-detalle .detalle-acciones .btn-cerrar-detalle {
-            background: rgba(255, 255, 255, 0.7);
+            background: rgba(255,255,255,0.7);
             color: #4a4a6a;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
         }
-
-        .modal-detalle .detalle-acciones .btn-cerrar-detalle:hover {
-            background: rgba(255, 255, 255, 0.9);
-            transform: scale(1.02);
-        }
-
+        .modal-detalle .detalle-acciones .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         .explicacion-descuento {
             font-size: 10px;
             color: #4a4a6a;
             padding: 6px 10px;
-            background: rgba(167, 139, 250, 0.08);
+            background: rgba(167,139,250,0.08);
             border-radius: 10px;
             border-left: 3px solid #7c3aed;
             margin-top: 4px;
         }
-
-        .explicacion-descuento i {
-            color: #7c3aed;
-            margin-right: 4px;
-        }
-
+        .explicacion-descuento i { color: #7c3aed; margin-right: 4px; }
         @media (max-width: 380px) {
             .main-content { padding: 10px; }
             .top-bar h2 { font-size: 14px; }
@@ -953,7 +620,6 @@
             .modal-acciones .btn { font-size: 13px; padding: 8px 10px; }
             .gasto-item .gasto-header .monto { font-size: 13px; }
         }
-
         @media (min-width: 600px) {
             .main-content { padding: 24px; }
             .container { max-width: 600px; }
@@ -961,6 +627,7 @@
     </style>
 </head>
 <body>
+
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="cerrarSidebar()"></div>
 
     <nav class="sidebar" id="sidebar">
@@ -1027,13 +694,9 @@
                 <div class="avatar">A</div>
                 <div>
                     <div class="user-name">Administrador</div>
-                    <div class="user-email">admin@escuela.com</div>
+                    <div class="user-email">Modo Local</div>
                 </div>
             </div>
-            <button class="btn-logout-sidebar" onclick="cerrarSidebar(); logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Cerrar sesión
-            </button>
         </div>
     </nav>
 
@@ -1052,7 +715,7 @@
                 <div class="header-right">
                     <div class="connection">
                         <span class="dot green"></span>
-                        <span>En línea</span>
+                        <span>Local</span>
                     </div>
                 </div>
             </div>
@@ -1091,7 +754,7 @@
         </div>
     </div>
 
-    <script src="js/supabase.js"></script>
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -1104,8 +767,8 @@
         }
 
         document.addEventListener('click', function(e) {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
             if (window.innerWidth <= 768) {
                 if (!sidebar.contains(e.target) && e.target !== overlay && !e.target.closest('.hamburger')) {
                     cerrarSidebar();
@@ -1126,39 +789,30 @@
             }
         }
 
-        let todosLosGastos = [];
-        let grupos = [];
-        let alumnos = [];
-        let nextId = 1;
+        var todosLosGastos = getGastos();
+        var grupos = getGrupos();
+        var alumnos = getAlumnos();
+        var nextId = todosLosGastos.length > 0 ? Math.max(...todosLosGastos.map(function(g) { return g.id; })) + 1 : 1;
 
-        async function cargarDatos() {
-            grupos = await getGrupos();
-            alumnos = await getAlumnos();
-            todosLosGastos = await getGastos();
-            if (todosLosGastos.length > 0) {
-                nextId = Math.max(...todosLosGastos.map(g => g.id)) + 1;
-            }
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarFiltrosGrupos();
+            renderizarGastos();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
             cargarFiltrosGrupos();
             renderizarGastos();
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarDatos();
-        });
-
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            cargarDatos();
-        }
-
         function cargarFiltrosGrupos() {
-            const select = document.getElementById('filterGrupo');
+            var select = document.getElementById('filterGrupo');
             // Limpiar opciones excepto la primera
             while (select.options.length > 1) {
                 select.remove(1);
             }
 
-            grupos.forEach(grupo => {
-                const option = document.createElement('option');
+            grupos.forEach(function(grupo) {
+                var option = document.createElement('option');
                 option.value = grupo.id;
                 option.textContent = grupo.nombre;
                 select.appendChild(option);
@@ -1166,34 +820,34 @@
         }
 
         function getNombreGrupo(id) {
-            const grupo = grupos.find(g => g.id === id);
+            var grupo = grupos.find(function(g) { return g.id === id; });
             return grupo ? grupo.nombre : 'Grupo ' + id;
         }
 
         function getAlumnosDelGrupo(grupoId) {
-            return alumnos.filter(a => a.grupo_id === grupoId);
+            return alumnos.filter(function(a) { return a.grupoId === grupoId; });
         }
 
         function renderizarGastos() {
-            const container = document.getElementById('gastosList');
-            const search = document.getElementById('searchGasto').value.toLowerCase().trim();
-            const filterGrupo = document.getElementById('filterGrupo').value;
+            var container = document.getElementById('gastosList');
+            var search = document.getElementById('searchGasto').value.toLowerCase().trim();
+            var filterGrupo = document.getElementById('filterGrupo').value;
 
-            let filtrados = todosLosGastos;
+            var filtrados = todosLosGastos;
 
             if (filterGrupo) {
-                filtrados = filtrados.filter(g => g.grupo_id == filterGrupo);
+                filtrados = filtrados.filter(function(g) { return g.grupoId == filterGrupo; });
             }
 
             if (search) {
-                filtrados = filtrados.filter(g => 
-                    g.descripcion.toLowerCase().includes(search) ||
-                    g.monto.toString().includes(search) ||
-                    g.tipo.toLowerCase().includes(search)
-                );
+                filtrados = filtrados.filter(function(g) {
+                    return g.descripcion.toLowerCase().includes(search) ||
+                        g.monto.toString().includes(search) ||
+                        g.tipo.toLowerCase().includes(search);
+                });
             }
 
-            filtrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            filtrados.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
 
             if (filtrados.length === 0) {
                 container.innerHTML = `
@@ -1210,26 +864,26 @@
                 return;
             }
 
-            let html = '';
-            filtrados.forEach(gasto => {
-                const porNiño = (gasto.monto / gasto.participantes).toFixed(2);
-                const excluidos = gasto.excluidos || [];
-                const nota = gasto.nota || '';
+            var html = '';
+            filtrados.forEach(function(gasto) {
+                var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
+                var excluidos = gasto.excluidos || [];
+                var nota = gasto.nota || '';
                 
                 html += `
                     <div class="gasto-item" data-id="${gasto.id}" onclick="verDetalleGasto(${gasto.id})">
                         <div class="gasto-header">
                             <div class="info">
                                 <h4>${gasto.descripcion}</h4>
-                                <div class="meta">${getNombreGrupo(gasto.grupo_id)} • ${gasto.tipo} • 📅 ${gasto.fecha}</div>
+                                <div class="meta">${getNombreGrupo(gasto.grupoId)} • ${gasto.tipo} • 📅 ${gasto.fecha}</div>
                             </div>
                             <div class="monto">
                                 -$${gasto.monto.toLocaleString()}
                                 <div class="per">$${porNiño} c/u • ${gasto.participantes} niños</div>
                             </div>
                         </div>
-                        ${excluidos.length > 0 ? `<div class="gasto-nota"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i> ⚠️ ${excluidos.length} alumno(s) excluido(s)</div>` : ''}
-                        ${nota && !nota.includes('AJUSTE AUTOMÁTICO') ? `<div class="gasto-nota"><i class="fas fa-pen"></i> ${nota}</div>` : ''}
+                        ${excluidos.length > 0 ? '<div class="gasto-nota"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i> ⚠️ ' + excluidos.length + ' alumno(s) excluido(s)</div>' : ''}
+                        ${nota && !nota.includes('AJUSTE AUTOMÁTICO') ? '<div class="gasto-nota"><i class="fas fa-pen"></i> ' + nota + '</div>' : ''}
                         <div class="gasto-actions" onclick="event.stopPropagation();">
                             <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${gasto.id})">
                                 <i class="fas fa-pencil-alt"></i>
@@ -1250,15 +904,15 @@
         }
 
         function verDetalleGasto(id) {
-            const gasto = todosLosGastos.find(g => g.id === id);
+            var gasto = todosLosGastos.find(function(g) { return g.id === id; });
             if (!gasto) return;
 
-            const grupoNombre = getNombreGrupo(gasto.grupo_id);
-            const porNiño = (gasto.monto / gasto.participantes).toFixed(2);
-            const excluidos = gasto.excluidos || [];
-            const nota = gasto.nota || '';
+            var grupoNombre = getNombreGrupo(gasto.grupoId);
+            var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
+            var excluidos = gasto.excluidos || [];
+            var nota = gasto.nota || '';
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay modal-detalle';
             overlay.id = 'modalDetalleOverlay';
             overlay.innerHTML = `
@@ -1328,7 +982,7 @@
         }
 
         function cerrarModalDetalle() {
-            const modal = document.getElementById('modalDetalleOverlay');
+            var modal = document.getElementById('modalDetalleOverlay');
             if (modal) modal.remove();
         }
 
@@ -1338,12 +992,12 @@
                 return;
             }
 
-            let grupoOptions = '';
-            grupos.forEach(g => {
-                grupoOptions += `<option value="${g.id}">${g.nombre}</option>`;
+            var grupoOptions = '';
+            grupos.forEach(function(g) {
+                grupoOptions += '<option value="' + g.id + '">' + g.nombre + '</option>';
             });
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1412,26 +1066,26 @@
             `;
             document.body.appendChild(overlay);
 
-            const fechaInput = document.getElementById('fechaGastoInput');
+            var fechaInput = document.getElementById('fechaGastoInput');
             if (fechaInput) {
                 fechaInput.value = new Date().toISOString().split('T')[0];
             }
 
-            const montoInput = document.getElementById('montoGastoInput');
-            const grupoSelect = document.getElementById('grupoGastoInput');
+            var montoInput = document.getElementById('montoGastoInput');
+            var grupoSelect = document.getElementById('grupoGastoInput');
 
             function calcularSaldos() {
-                const grupoId = parseInt(grupoSelect.value);
-                const monto = parseFloat(montoInput.value);
-                const infoDiv = document.getElementById('infoSaldos');
-                const infoContent = document.getElementById('infoSaldosContent');
+                var grupoId = parseInt(grupoSelect.value);
+                var monto = parseFloat(montoInput.value);
+                var infoDiv = document.getElementById('infoSaldos');
+                var infoContent = document.getElementById('infoSaldosContent');
 
                 if (!grupoId || !monto || monto <= 0) {
                     infoDiv.style.display = 'none';
                     return;
                 }
 
-                const alumnosGrupo = getAlumnosDelGrupo(grupoId);
+                var alumnosGrupo = getAlumnosDelGrupo(grupoId);
 
                 if (alumnosGrupo.length === 0) {
                     infoDiv.style.display = 'block';
@@ -1440,26 +1094,26 @@
                     return;
                 }
 
-                const montoPorNino = monto / alumnosGrupo.length;
+                var montoPorNino = monto / alumnosGrupo.length;
 
-                const sinSaldo = alumnosGrupo.filter(a => {
-                    const disponible = a.disponible || 0;
+                var sinSaldo = alumnosGrupo.filter(function(a) {
+                    var disponible = a.disponible || 0;
                     return disponible < montoPorNino;
                 });
 
                 if (sinSaldo.length > 0) {
-                    const detalles = sinSaldo.map(a => {
-                        const disponible = a.disponible || 0;
-                        const falta = (montoPorNino - disponible).toFixed(2);
-                        return `${a.nombre} (Disponible: $${disponible.toFixed(2)}, falta: $${falta})`;
+                    var detalles = sinSaldo.map(function(a) {
+                        var disponible = a.disponible || 0;
+                        var falta = (montoPorNino - disponible).toFixed(2);
+                        return a.nombre + ' (Disponible: $' + disponible.toFixed(2) + ', falta: $' + falta + ')';
                     }).join('\n');
 
                     infoDiv.style.display = 'block';
-                    infoContent.innerHTML = `❌ Los siguientes alumnos NO tienen suficiente disponible:\n\n${detalles}\n\n💰 Monto por niño: $${montoPorNino.toFixed(2)}\n⚠️ Se reajustará el gasto excluyendo a estos alumnos.`;
+                    infoContent.innerHTML = '❌ Los siguientes alumnos NO tienen suficiente disponible:\n\n' + detalles + '\n\n💰 Monto por niño: $' + montoPorNino.toFixed(2) + '\n⚠️ Se reajustará el gasto excluyendo a estos alumnos.';
                     infoContent.className = 'modal-info rojo';
                 } else {
                     infoDiv.style.display = 'block';
-                    infoContent.innerHTML = `✅ ${alumnosGrupo.length} niños participarán\n💰 $${montoPorNino.toFixed(2)} por niño (se descuenta de su Disponible)`;
+                    infoContent.innerHTML = '✅ ' + alumnosGrupo.length + ' niños participarán\n💰 $' + montoPorNino.toFixed(2) + ' por niño (se descuenta de su Disponible)';
                     infoContent.className = 'modal-info verde';
                 }
             }
@@ -1467,62 +1121,62 @@
             montoInput.addEventListener('input', calcularSaldos);
             grupoSelect.addEventListener('change', calcularSaldos);
 
-            setTimeout(() => {
-                const input = document.getElementById('montoGastoInput');
+            setTimeout(function() {
+                var input = document.getElementById('montoGastoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formGastoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formGastoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                const grupoId = parseInt(document.getElementById('grupoGastoInput').value);
-                const fecha = document.getElementById('fechaGastoInput').value || new Date().toISOString().split('T')[0];
-                const descripcion = document.getElementById('descripcionGastoInput').value.trim();
-                const tipo = document.getElementById('tipoGastoInput').value;
-                const monto = parseFloat(document.getElementById('montoGastoInput').value);
-                const notaManual = document.getElementById('notaGastoInput').value.trim();
+                var grupoId = parseInt(document.getElementById('grupoGastoInput').value);
+                var fecha = document.getElementById('fechaGastoInput').value || new Date().toISOString().split('T')[0];
+                var descripcion = document.getElementById('descripcionGastoInput').value.trim();
+                var tipo = document.getElementById('tipoGastoInput').value;
+                var monto = parseFloat(document.getElementById('montoGastoInput').value);
+                var notaManual = document.getElementById('notaGastoInput').value.trim();
 
                 if (!grupoId || !monto || monto <= 0 || !descripcion) {
                     alert('⚠️ Completa todos los campos obligatorios');
                     return;
                 }
 
-                const alumnosGrupo = getAlumnosDelGrupo(grupoId);
+                var alumnosGrupo = getAlumnosDelGrupo(grupoId);
 
                 if (alumnosGrupo.length === 0) {
                     alert('⚠️ No hay alumnos en este grupo');
                     return;
                 }
 
-                const montoPorNinoOriginal = monto / alumnosGrupo.length;
+                var montoPorNinoOriginal = monto / alumnosGrupo.length;
 
-                const sinSaldo = alumnosGrupo.filter(a => {
-                    const disponible = a.disponible || 0;
+                var sinSaldo = alumnosGrupo.filter(function(a) {
+                    var disponible = a.disponible || 0;
                     return disponible < montoPorNinoOriginal;
                 });
 
-                let participantes = alumnosGrupo;
-                let montoPorNino = montoPorNinoOriginal;
-                let montoTotal = monto;
-                let notaFinal = notaManual || '';
-                let excluidos = [];
+                var participantes = alumnosGrupo;
+                var montoPorNino = montoPorNinoOriginal;
+                var montoTotal = monto;
+                var notaFinal = notaManual || '';
+                var excluidos = [];
 
                 if (sinSaldo.length > 0) {
-                    const nombresExcluidos = sinSaldo.map(a => a.nombre).join(', ');
+                    var nombresExcluidos = sinSaldo.map(function(a) { return a.nombre; }).join(', ');
 
-                    const mensaje = `❌ Los siguientes alumnos NO tienen suficiente Disponible:\n\n${sinSaldo.map(a => {
-                        const disponible = a.disponible || 0;
-                        return `${a.nombre} (Disponible: $${disponible.toFixed(2)}, necesita: $${montoPorNinoOriginal.toFixed(2)})`;
-                    }).join('\n')}\n\nSe reajustará el gasto excluyendo a estos alumnos.`;
+                    var mensaje = '❌ Los siguientes alumnos NO tienen suficiente Disponible:\n\n' + sinSaldo.map(function(a) {
+                        var disponible = a.disponible || 0;
+                        return a.nombre + ' (Disponible: $' + disponible.toFixed(2) + ', necesita: $' + montoPorNinoOriginal.toFixed(2) + ')';
+                    }).join('\n') + '\n\nSe reajustará el gasto excluyendo a estos alumnos.';
 
-                    const reajustar = confirm(mensaje + '\n\n¿Deseas reajustar el gasto excluyendo a los que no alcanzan?');
+                    var reajustar = confirm(mensaje + '\n\n¿Deseas reajustar el gasto excluyendo a los que no alcanzan?');
 
                     if (!reajustar) {
                         return;
                     }
 
-                    const sinSaldoIds = sinSaldo.map(a => a.id);
-                    participantes = alumnosGrupo.filter(a => !sinSaldoIds.includes(a.id));
+                    var sinSaldoIds = sinSaldo.map(function(a) { return a.id; });
+                    participantes = alumnosGrupo.filter(function(a) { return !sinSaldoIds.includes(a.id); });
 
                     if (participantes.length === 0) {
                         alert('❌ No hay alumnos con suficiente Disponible para cubrir este gasto');
@@ -1531,27 +1185,27 @@
 
                     montoPorNino = monto / participantes.length;
                     montoTotal = montoPorNino * participantes.length;
-                    excluidos = sinSaldo.map(a => a.nombre);
+                    excluidos = sinSaldo.map(function(a) { return a.nombre; });
 
-                    const confirmar2 = confirm(
-                        `🔄 REAJUSTE PROPUESTO:\n\n` +
-                        `Total original: $${monto.toFixed(2)}\n` +
-                        `Niños que participan: ${participantes.length}\n` +
-                        `Nuevo monto por niño: $${montoPorNino.toFixed(2)}\n` +
-                        `Nuevo total: $${montoTotal.toFixed(2)}\n\n` +
-                        `🚫 Excluidos: ${nombresExcluidos}\n\n` +
-                        `⚠️ ¿Confirmas este ajuste?`
+                    var confirmar2 = confirm(
+                        '🔄 REAJUSTE PROPUESTO:\n\n' +
+                        'Total original: $' + monto.toFixed(2) + '\n' +
+                        'Niños que participan: ' + participantes.length + '\n' +
+                        'Nuevo monto por niño: $' + montoPorNino.toFixed(2) + '\n' +
+                        'Nuevo total: $' + montoTotal.toFixed(2) + '\n\n' +
+                        '🚫 Excluidos: ' + nombresExcluidos + '\n\n' +
+                        '⚠️ ¿Confirmas este ajuste?'
                     );
 
                     if (!confirmar2) {
                         return;
                     }
 
-                    const notaAutomatica = `⚠️ AJUSTE AUTOMÁTICO: ${sinSaldo.length} alumno(s) excluido(s) por falta de Disponible: ${nombresExcluidos}. Se reajustó el gasto a $${montoPorNino.toFixed(2)} por niño (${participantes.length} niños participaron). Total ajustado: $${montoTotal.toFixed(2)}. Informar a los padres/tutores de los alumnos excluidos para cubrir el monto faltante.`;
-                    notaFinal = notaManual ? `${notaManual} | ${notaAutomatica}` : notaAutomatica;
+                    var notaAutomatica = '⚠️ AJUSTE AUTOMÁTICO: ' + sinSaldo.length + ' alumno(s) excluido(s) por falta de Disponible: ' + nombresExcluidos + '. Se reajustó el gasto a $' + montoPorNino.toFixed(2) + ' por niño (' + participantes.length + ' niños participaron). Total ajustado: $' + montoTotal.toFixed(2) + '. Informar a los padres/tutores de los alumnos excluidos para cubrir el monto faltante.';
+                    notaFinal = notaManual ? notaManual + ' | ' + notaAutomatica : notaAutomatica;
                 }
 
-                const nuevoGasto = {
+                var nuevoGasto = {
                     id: nextId++,
                     grupoId: grupoId,
                     fecha: fecha,
@@ -1563,23 +1217,25 @@
                     excluidos: excluidos
                 };
 
-                const result = await crearGasto(nuevoGasto);
+                var result = crearGasto(nuevoGasto);
                 if (result.success) {
                     // Actualizar disponible de los alumnos que participaron
-                    for (const a of participantes) {
-                        const alumno = alumnos.find(al => al.id === a.id);
+                    participantes.forEach(function(a) {
+                        var alumno = alumnos.find(function(al) { return al.id === a.id; });
                         if (alumno) {
                             alumno.disponible = Math.max(0, (alumno.disponible || 0) - montoPorNino);
-                            await actualizarAlumno(alumno);
+                            actualizarAlumno(alumno);
                         }
-                    }
+                    });
 
-                    await cargarDatos();
+                    todosLosGastos = getGastos();
+                    alumnos = getAlumnos();
+                    renderizarGastos();
                     cerrarModal();
 
-                    let mensajeFinal = `✅ Gasto registrado exitosamente\n\nTotal: $${montoTotal.toFixed(2)}\nParticipan: ${participantes.length} niños\n$${montoPorNino.toFixed(2)} por niño`;
+                    var mensajeFinal = '✅ Gasto registrado exitosamente\n\nTotal: $' + montoTotal.toFixed(2) + '\nParticipan: ' + participantes.length + ' niños\n$' + montoPorNino.toFixed(2) + ' por niño';
                     if (excluidos.length > 0) {
-                        mensajeFinal += `\n\n🚫 Excluidos: ${excluidos.join(', ')}\n📝 Se generó nota automática en el registro.`;
+                        mensajeFinal += '\n\n🚫 Excluidos: ' + excluidos.join(', ') + '\n📝 Se generó nota automática en el registro.';
                     }
                     alert(mensajeFinal);
                 } else {
@@ -1591,16 +1247,16 @@
         function mostrarModalEditar(id) {
             cerrarModalDetalle();
 
-            const gasto = todosLosGastos.find(g => g.id === id);
+            var gasto = todosLosGastos.find(function(g) { return g.id === id; });
             if (!gasto) return;
 
-            let grupoOptions = '';
-            grupos.forEach(g => {
-                const selected = g.id === gasto.grupo_id ? 'selected' : '';
-                grupoOptions += `<option value="${g.id}" ${selected}>${g.nombre}</option>`;
+            var grupoOptions = '';
+            grupos.forEach(function(g) {
+                var selected = g.id === gasto.grupoId ? 'selected' : '';
+                grupoOptions += '<option value="' + g.id + '" ' + selected + '>' + g.nombre + '</option>';
             });
 
-            const overlay = document.createElement('div');
+            var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
@@ -1658,36 +1314,37 @@
             `;
             document.body.appendChild(overlay);
 
-            setTimeout(() => {
-                const input = document.getElementById('montoGastoInput');
+            setTimeout(function() {
+                var input = document.getElementById('montoGastoInput');
                 if (input) input.focus();
             }, 100);
 
-            document.getElementById('formGastoModal').addEventListener('submit', async function(e) {
+            document.getElementById('formGastoModal').addEventListener('submit', function(e) {
                 e.preventDefault();
 
-                const grupoId = parseInt(document.getElementById('grupoGastoInput').value);
-                const fecha = document.getElementById('fechaGastoInput').value || new Date().toISOString().split('T')[0];
-                const descripcion = document.getElementById('descripcionGastoInput').value.trim();
-                const tipo = document.getElementById('tipoGastoInput').value;
-                const monto = parseFloat(document.getElementById('montoGastoInput').value);
-                const nota = document.getElementById('notaGastoInput').value.trim();
+                var grupoId = parseInt(document.getElementById('grupoGastoInput').value);
+                var fecha = document.getElementById('fechaGastoInput').value || new Date().toISOString().split('T')[0];
+                var descripcion = document.getElementById('descripcionGastoInput').value.trim();
+                var tipo = document.getElementById('tipoGastoInput').value;
+                var monto = parseFloat(document.getElementById('montoGastoInput').value);
+                var nota = document.getElementById('notaGastoInput').value.trim();
 
                 if (!grupoId || !monto || monto <= 0 || !descripcion) {
                     alert('⚠️ Completa todos los campos obligatorios');
                     return;
                 }
 
-                gasto.grupo_id = grupoId;
+                gasto.grupoId = grupoId;
                 gasto.fecha = fecha;
                 gasto.descripcion = descripcion;
                 gasto.tipo = tipo;
                 gasto.monto = monto;
                 if (nota) gasto.nota = nota;
 
-                const result = await actualizarGasto(gasto);
+                var result = actualizarGasto(gasto);
                 if (result.success) {
-                    await cargarDatos();
+                    todosLosGastos = getGastos();
+                    renderizarGastos();
                     cerrarModal();
                     alert('✅ Gasto actualizado');
                 } else {
@@ -1696,16 +1353,17 @@
             });
         }
 
-        async function eliminarGasto(id) {
-            const gasto = todosLosGastos.find(g => g.id === id);
+        function eliminarGasto(id) {
+            var gasto = todosLosGastos.find(function(g) { return g.id === id; });
             if (!gasto) return;
 
             cerrarModalDetalle();
 
-            if (confirm(`⚠️ ¿Eliminar el gasto "${gasto.descripcion}" por $${gasto.monto.toFixed(2)}?`)) {
-                const result = await eliminarGasto(id);
+            if (confirm('⚠️ ¿Eliminar el gasto "' + gasto.descripcion + '" por $' + gasto.monto.toFixed(2) + '?')) {
+                var result = eliminarGasto(id);
                 if (result.success) {
-                    await cargarDatos();
+                    todosLosGastos = getGastos();
+                    renderizarGastos();
                     alert('✅ Gasto eliminado');
                 } else {
                     alert('❌ Error al eliminar gasto: ' + result.error);
@@ -1714,16 +1372,16 @@
         }
 
         function cerrarModal() {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal) modal.remove();
         }
 
         document.addEventListener('click', function(e) {
-            const modal = document.getElementById('modalOverlay');
+            var modal = document.getElementById('modalOverlay');
             if (modal && e.target === modal) {
                 cerrarModal();
             }
-            const modalDetalle = document.getElementById('modalDetalleOverlay');
+            var modalDetalle = document.getElementById('modalDetalleOverlay');
             if (modalDetalle && e.target === modalDetalle) {
                 cerrarModalDetalle();
             }
@@ -1739,9 +1397,6 @@
         window.verDetalleGasto = verDetalleGasto;
         window.filtrarGastos = filtrarGastos;
 
-        // ============================================
-        // REGISTRO DEL SERVICE WORKER
-        // ============================================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
