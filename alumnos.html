@@ -618,17 +618,20 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
         .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
+        
+        /* ===== ESTILOS PARA PDF TAMAÑO CARTA ===== */
         #contenidoPDF {
             display: none;
             background: white;
-            padding: 15mm 20mm;
+            padding: 20mm 25mm;
             font-family: 'Times New Roman', Times, serif;
-            font-size: 10px;
-            line-height: 1.4;
+            font-size: 11px;
+            line-height: 1.5;
             color: #1a1a2e;
             width: 210mm;
             min-height: 297mm;
             box-sizing: border-box;
+            margin: 0 auto;
         }
         #contenidoPDF .pdf-header {
             display: flex;
@@ -638,63 +641,75 @@
             border-bottom: 2px solid #1a1a2e;
             padding-bottom: 10px;
         }
-        #contenidoPDF .pdf-header .escudo { width: 60px; height: 60px; object-fit: contain; }
         #contenidoPDF .pdf-header .titulo-area {
             flex: 1;
             text-align: center;
             padding: 0 10px;
         }
         #contenidoPDF .pdf-header .titulo-area h2 {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 700;
             color: #1a1a2e;
             margin-bottom: 2px;
             letter-spacing: 1px;
         }
-        #contenidoPDF .pdf-header .titulo-area .subtitulo { font-size: 11px; color: #4a4a6a; font-weight: normal; }
-        #contenidoPDF .pdf-header .fecha { font-size: 10px; color: #4a4a6a; text-align: right; white-space: nowrap; }
+        #contenidoPDF .pdf-header .titulo-area .subtitulo {
+            font-size: 12px;
+            color: #4a4a6a;
+            font-weight: normal;
+        }
+        #contenidoPDF .pdf-header .fecha {
+            font-size: 10px;
+            color: #4a4a6a;
+            text-align: right;
+            white-space: nowrap;
+        }
         #contenidoPDF table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 8px;
-            font-size: 9px;
+            margin-top: 10px;
+            font-size: 10px;
         }
         #contenidoPDF table th {
             background: #f3f4f6;
             border: 1px solid #9ca3af;
-            padding: 4px 6px;
+            padding: 5px 7px;
             text-align: left;
             font-weight: 700;
-            font-size: 8px;
+            font-size: 9px;
             text-transform: uppercase;
             color: #1a1b2e;
             letter-spacing: 0.5px;
         }
         #contenidoPDF table td {
             border: 1px solid #9ca3af;
-            padding: 3px 6px;
-            font-size: 9px;
+            padding: 4px 7px;
+            font-size: 10px;
             color: #1a1a2e;
         }
-        #contenidoPDF table .numero-col { text-align: center; width: 25px; }
+        #contenidoPDF table .numero-col { text-align: center; width: 30px; }
         #contenidoPDF table .nombre-col { text-align: left; }
-        #contenidoPDF table .telefono-col { text-align: center; width: 70px; }
-        #contenidoPDF table .pago-col { text-align: center; width: 65px; }
-        #contenidoPDF table .pagado-col { text-align: right; width: 60px; }
-        #contenidoPDF table .disponible-col { text-align: right; width: 60px; }
-        #contenidoPDF table .restan-col { text-align: right; width: 60px; }
-        #contenidoPDF table .nota-pdf-col { text-align: left; width: 80px; }
-        #contenidoPDF table .blanco-col { width: 35px; }
+        #contenidoPDF table .telefono-col { text-align: center; width: 80px; }
+        #contenidoPDF table .pago-col { text-align: center; width: 75px; }
+        #contenidoPDF table .pagado-col { text-align: right; width: 70px; }
+        #contenidoPDF table .disponible-col { text-align: right; width: 70px; }
+        #contenidoPDF table .restan-col { text-align: right; width: 70px; }
+        #contenidoPDF table .nota-pdf-col { text-align: left; width: 100px; }
+        #contenidoPDF table .blanco-col { width: 40px; }
         #contenidoPDF .pdf-footer {
             margin-top: 15px;
-            padding-top: 8px;
+            padding-top: 10px;
             border-top: 1px solid #d1d5db;
             display: flex;
             justify-content: space-between;
-            font-size: 9px;
+            font-size: 10px;
             color: #6b7280;
         }
-        #contenidoPDF .pdf-footer .totales { font-weight: 600; color: #1a1b2e; }
+        #contenidoPDF .pdf-footer .totales {
+            font-weight: 600;
+            color: #1a1b2e;
+        }
+        
         .modal-pdf .modal-content { max-width: 400px; }
         .col-toggle {
             display: flex;
@@ -844,6 +859,11 @@
             <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
                 <i class="fas fa-sticky-note"></i>
                 Extra Notas
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
             </button>
 
             <div class="divider"></div>
@@ -1482,6 +1502,9 @@
             }
         });
 
+        // ============================================
+        // VARIABLES PARA PDF
+        // ============================================
         var columnasSeleccionadas = {
             telefono: true,
             pagoCon: true,
@@ -1499,30 +1522,35 @@
             }
         }
 
+        // ============================================
+        // GENERAR PDF TAMAÑO CARTA
+        // ============================================
         async function generarPDF(titulo, opciones, columnasVacias) {
-            const alumnos = getAlumnosDelGrupo();
+            var alumnos = getAlumnosDelGrupo();
 
             if (alumnos.length === 0) {
                 alert("No hay alumnos para imprimir");
                 return;
             }
 
-            const sorted = [...alumnos].sort((a, b) => a.nombre.localeCompare(b.nombre));
-            const fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const grupoNombre = getNombreGrupo();
+            var sorted = [...alumnos].sort(function(a, b) { return a.nombre.localeCompare(b.nombre); });
+            var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            var grupoNombre = getNombreGrupo();
 
-            const totalPagado = sorted.reduce((sum, a) => sum + a.pagado, 0);
-            const totalDisponible = sorted.reduce((sum, a) => sum + (a.disponible || 0), 0);
-            const totalRestan = sorted.reduce((sum, a) => sum + (a.total - a.pagado), 0);
+            var totalPagado = sorted.reduce(function(sum, a) { return sum + a.pagado; }, 0);
+            var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+            var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
 
-            let columnasVaciasHtml = '';
-            let columnasVaciasBody = '';
-            for (let i = 0; i < columnasVacias; i++) {
+            // Construir columnas vacías
+            var columnasVaciasHtml = '';
+            var columnasVaciasBody = '';
+            for (var i = 0; i < columnasVacias; i++) {
                 columnasVaciasHtml += '<th class="blanco-col"></th>';
                 columnasVaciasBody += '<td class="blanco-col"></td>';
             }
 
-            let html = `
+            // Generar HTML para el PDF
+            var html = `
                 <div class="pdf-header">
                     <div class="titulo-area">
                         <h2>${titulo || 'Listado de Alumnos'}</h2>
@@ -1548,10 +1576,10 @@
                     <tbody>
             `;
 
-            sorted.forEach((alumno, index) => {
-                const restan = alumno.total - alumno.pagado;
-                const disponible = alumno.disponible || 0;
-                const nota = alumno.nota || '';
+            sorted.forEach(function(alumno, index) {
+                var restan = alumno.total - alumno.pagado;
+                var disponible = alumno.disponible || 0;
+                var nota = alumno.nota || '';
                 html += `
                     <tr>
                         <td class="numero-col">${index + 1}</td>
@@ -1583,15 +1611,19 @@
                 </div>
             `;
 
-            const contenedor = document.getElementById('contenidoPDF');
+            var contenedor = document.getElementById('contenidoPDF');
             contenedor.innerHTML = html;
             contenedor.style.display = 'block';
+            contenedor.style.width = '210mm';
+            contenedor.style.padding = '20mm 25mm';
+            contenedor.style.minHeight = '297mm';
+            contenedor.style.boxSizing = 'border-box';
 
             try {
-                await new Promise(resolve => setTimeout(resolve, 300));
+                await new Promise(function(resolve) { setTimeout(resolve, 500); });
 
-                const canvas = await html2canvas(contenedor, {
-                    scale: 2,
+                var canvas = await html2canvas(contenedor, {
+                    scale: 2.5,
                     useCORS: true,
                     logging: false,
                     backgroundColor: '#ffffff',
@@ -1599,25 +1631,28 @@
                     height: 297 * 3.78,
                     windowWidth: 210 * 3.78,
                     windowHeight: 297 * 3.78,
-                    onclone: function(document) {
-                        var pdfContent = document.getElementById('contenidoPDF');
+                    onclone: function(clonedDoc) {
+                        var pdfContent = clonedDoc.getElementById('contenidoPDF');
                         if (pdfContent) {
                             pdfContent.style.width = '210mm';
-                            pdfContent.style.padding = '15mm 20mm';
+                            pdfContent.style.padding = '20mm 25mm';
                             pdfContent.style.minHeight = '297mm';
+                            pdfContent.style.boxSizing = 'border-box';
+                            pdfContent.style.display = 'block';
+                            pdfContent.style.background = 'white';
                         }
                     }
                 });
 
-                const imgData = canvas.toDataURL('image/png');
+                var imgData = canvas.toDataURL('image/png');
 
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
+                var { jsPDF } = window.jspdf;
+                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pageWidth = pdf.internal.pageSize.getWidth();
+                var pageHeight = pdf.internal.pageSize.getHeight();
 
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height / canvas.width) * pageWidth;
+                var imgWidth = pageWidth;
+                var imgHeight = (canvas.height / canvas.width) * pageWidth;
 
                 pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
                 pdf.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
