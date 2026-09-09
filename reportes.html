@@ -666,7 +666,7 @@
         });
 
         // ============================================
-        // GENERAR PDF - CON RESUMEN EN LA PARTE INFERIOR
+        // GENERAR PDF - CON AUTO AJUSTE
         // ============================================
         function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
             mostrarLoading();
@@ -697,7 +697,6 @@
                 var doc = new jsPDF('p', 'mm', 'letter');
                 var margin = 15;
                 var pageWidth = doc.internal.pageSize.getWidth();
-                var pageHeight = doc.internal.pageSize.getHeight();
 
                 // ===== ESCUDO =====
                 var escudoWidth = 15;
@@ -782,23 +781,23 @@
                 function generarPDFConImagen() {
                     var yStart = dibujarEncabezado();
 
-                    // ===== TABLA =====
+                    // ===== CONFIGURAR COLUMNAS CON AUTO AJUSTE =====
                     var headRow = ['Fecha', 'Descripción', 'Tipo'];
                     var columnStyles = {
-                        0: { halign: 'center', cellWidth: 22 },
-                        1: { cellWidth: 60 },
-                        2: { halign: 'center', cellWidth: 22 }
+                        0: { halign: 'center', cellWidth: 20 },
+                        1: { cellWidth: 'auto' },  // ← Descripción se autoajusta
+                        2: { halign: 'center', cellWidth: 18 }
                     };
                     var colIndex = 3;
 
                     if (opciones.notas) {
                         headRow.push('Nota');
-                        columnStyles[colIndex] = { cellWidth: 35 };
+                        columnStyles[colIndex] = { cellWidth: 30 };
                         colIndex++;
                     }
 
                     headRow.push('Monto');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
 
                     // Preparar datos
                     var bodyRows = [];
@@ -819,12 +818,13 @@
                         });
                     }
 
-                    // Dibujar tabla - SIN FONDOS GRISES
+                    // Dibujar tabla
                     doc.autoTable({
                         head: [headRow],
                         body: bodyRows,
                         startY: yStart,
                         margin: { left: margin, right: margin },
+                        tableWidth: 'auto',
                         styles: {
                             fontSize: 8,
                             cellPadding: 1.5,
@@ -847,11 +847,11 @@
                     });
 
                     // ============================================
-                    // RESUMEN EN LA PARTE INFERIOR (antes del footer)
+                    // RESUMEN EN LA PARTE INFERIOR
                     // ============================================
                     var finalY = doc.internal.pageSize.getHeight() - 25;
 
-                    // Línea separadora antes del resumen
+                    // Línea separadora
                     doc.setLineWidth(0.3);
                     doc.line(margin, finalY - 2, pageWidth - margin, finalY - 2);
 
@@ -872,7 +872,7 @@
                     doc.text('Total Gastos: $' + totalGastos.toLocaleString(), pageWidth - margin, finalY + 4, { align: 'right' });
 
                     // ============================================
-                    // PIE DE PÁGINA (opcional)
+                    // PIE DE PÁGINA
                     // ============================================
                     var footerY = doc.internal.pageSize.getHeight() - 10;
                     doc.setFontSize(8);

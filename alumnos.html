@@ -1198,7 +1198,6 @@
             pagadoInput.addEventListener('input', actualizarCampos);
             actualizarCampos();
 
-            // Fecha por defecto
             var fechaInput = document.getElementById('fechaPagoInput');
             if (fechaInput) {
                 fechaInput.value = new Date().toISOString().split('T')[0];
@@ -1461,7 +1460,7 @@
         }
 
         // ============================================
-        // GENERAR PDF - CON FECHA DE PAGO
+        // GENERAR PDF - CON AUTO AJUSTE DE COLUMNA NOMBRE
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1479,12 +1478,13 @@
             var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
             var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
 
+            // Crear el PDF
             var { jsPDF } = window.jspdf;
             var doc = new jsPDF('p', 'mm', 'letter');
-
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
 
+            // ===== ESCUDO =====
             var escudoWidth = 15;
             var escudoHeight = 15;
             var imgData = null;
@@ -1562,17 +1562,19 @@
             function generarPDFConImagen() {
                 var yStart = dibujarEncabezado();
 
+                // ===== CONFIGURAR COLUMNAS CON AUTO AJUSTE =====
                 var headRow = ['#'];
                 var columnStyles = { 0: { halign: 'center', cellWidth: 10 } };
                 var colIndex = 1;
 
+                // *** COLUMNA NOMBRE - SE AUTO AJUSTA ***
                 headRow.push('Nombre del Alumno');
-                columnStyles[colIndex] = { cellWidth: 42 };
+                columnStyles[colIndex] = { cellWidth: 'auto' };
                 colIndex++;
 
                 if (opciones.telefono) {
                     headRow.push('Teléfono');
-                    columnStyles[colIndex] = { halign: 'center', cellWidth: 20 };
+                    columnStyles[colIndex] = { halign: 'center', cellWidth: 22 };
                     colIndex++;
                 }
 
@@ -1584,19 +1586,19 @@
 
                 if (opciones.pagado) {
                     headRow.push('Pagado');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 20 };
                     colIndex++;
                 }
 
                 if (opciones.disponible) {
                     headRow.push('Disponible');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 20 };
                     colIndex++;
                 }
 
                 if (opciones.restan) {
                     headRow.push('Restan');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 20 };
                     colIndex++;
                 }
 
@@ -1618,6 +1620,7 @@
                     colIndex++;
                 }
 
+                // ===== PREPARAR DATOS =====
                 var bodyRows = [];
                 sorted.forEach(function(alumno, index) {
                     var restan = alumno.total - alumno.pagado;
@@ -1639,13 +1642,15 @@
                     bodyRows.push(row);
                 });
 
+                // ===== DIBUJAR TABLA =====
                 doc.autoTable({
                     head: [headRow],
                     body: bodyRows,
                     startY: yStart,
                     margin: { left: margin, right: margin },
+                    tableWidth: 'auto',
                     styles: {
-                        fontSize: 7,
+                        fontSize: 7.5,
                         cellPadding: 1.5,
                         valign: 'middle',
                         fillColor: [255, 255, 255],
@@ -1677,6 +1682,7 @@
                     }
                 });
 
+                // Guardar PDF
                 doc.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
             }
         }
