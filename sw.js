@@ -1,14 +1,17 @@
+// sw.js - Service Worker para Administra PWA
 const CACHE_NAME = 'administra-v2';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
     '/splash.html',
+    '/login.html',
     '/dashboard.html',
     '/grupos.html',
     '/alumnos.html',
     '/gastos.html',
     '/reportes.html',
     '/extra-notas.html',
+    '/ingresos-externos.html',
     '/configuracion.html',
     '/acerca.html',
     '/offline.html',
@@ -20,15 +23,17 @@ const STATIC_ASSETS = [
     '/js/splash.js',
     '/js/storage.js',
     '/assets/icon.png',
-    '/assets/logo.png'
+    '/assets/logo.png',
+    '/assets/escuela.png'
 ];
 
 const CDN_ASSETS = [
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
-    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js'
 ];
 
+// Instalación
 self.addEventListener('install', function(event) {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -44,7 +49,7 @@ self.addEventListener('install', function(event) {
                 return cdnCache.addAll(CDN_ASSETS);
             })
             .then(function() {
-                console.log('[SW] Assets cacheados');
+                console.log('[SW] Assets cacheados correctamente');
                 return self.skipWaiting();
             })
             .catch(function(error) {
@@ -53,6 +58,7 @@ self.addEventListener('install', function(event) {
     );
 });
 
+// Activación
 self.addEventListener('activate', function(event) {
     event.waitUntil(
         caches.keys().then(function(cacheNames) {
@@ -72,10 +78,12 @@ self.addEventListener('activate', function(event) {
     );
 });
 
+// Fetch
 self.addEventListener('fetch', function(event) {
     var request = event.request;
     var url = new URL(request.url);
 
+    // HTML - Network First
     if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
         event.respondWith(
             fetch(request)
@@ -99,11 +107,11 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
+    // Assets - Cache First
     if (request.url.includes('/css/') || 
         request.url.includes('/js/') || 
         request.url.includes('/assets/') ||
         request.url.includes('font-awesome') ||
-        request.url.includes('html2canvas') ||
         request.url.includes('jspdf')) {
         
         event.respondWith(
@@ -125,6 +133,7 @@ self.addEventListener('fetch', function(event) {
         return;
     }
 
+    // Default - Network First
     event.respondWith(
         fetch(request)
             .catch(function() {
@@ -133,6 +142,7 @@ self.addEventListener('fetch', function(event) {
     );
 });
 
+// Mensajes
 self.addEventListener('message', function(event) {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
