@@ -666,7 +666,7 @@
         });
 
         // ============================================
-        // GENERAR PDF - CON ESCUDO Y SIN FONDOS GRISES
+        // GENERAR PDF - CON RESUMEN EN LA PARTE INFERIOR
         // ============================================
         function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
             mostrarLoading();
@@ -697,6 +697,7 @@
                 var doc = new jsPDF('p', 'mm', 'letter');
                 var margin = 15;
                 var pageWidth = doc.internal.pageSize.getWidth();
+                var pageHeight = doc.internal.pageSize.getHeight();
 
                 // ===== ESCUDO =====
                 var escudoWidth = 15;
@@ -781,19 +782,6 @@
                 function generarPDFConImagen() {
                     var yStart = dibujarEncabezado();
 
-                    // ===== RESUMEN (opcional) =====
-                    if (opciones.recaudado || opciones.disponible || opciones.gastos) {
-                        var resumenY = yStart;
-                        doc.setFontSize(10);
-                        doc.setFont('helvetica', 'bold');
-                        var resumenText = '';
-                        if (opciones.recaudado) resumenText += 'Recaudado: $' + totalRecaudado.toLocaleString() + '  ';
-                        if (opciones.disponible) resumenText += 'Disponible: $' + totalDisponible.toLocaleString() + '  ';
-                        if (opciones.gastos) resumenText += 'Gastos: $' + totalGastos.toLocaleString();
-                        doc.text(resumenText, margin, resumenY);
-                        yStart = resumenY + 8;
-                    }
-
                     // ===== TABLA =====
                     var headRow = ['Fecha', 'Descripción', 'Tipo'];
                     var columnStyles = {
@@ -855,16 +843,44 @@
                             lineColor: [0, 0, 0],
                             lineWidth: 0.3
                         },
-                        columnStyles: columnStyles,
-                        didDrawPage: function(data) {
-                            var pageY = doc.internal.pageSize.getHeight() - 10;
-                            doc.setFontSize(8);
-                            doc.setFont('helvetica', 'normal');
-                            doc.text('Total Gastos: $' + totalGastos.toLocaleString(), margin, pageY);
-                            doc.text(gastosFiltrados.length + ' registros', pageWidth - margin, pageY, { align: 'right' });
-                        }
+                        columnStyles: columnStyles
                     });
 
+                    // ============================================
+                    // RESUMEN EN LA PARTE INFERIOR (antes del footer)
+                    // ============================================
+                    var finalY = doc.internal.pageSize.getHeight() - 25;
+
+                    // Línea separadora antes del resumen
+                    doc.setLineWidth(0.3);
+                    doc.line(margin, finalY - 2, pageWidth - margin, finalY - 2);
+
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'bold');
+
+                    var resumenText = '';
+                    if (opciones.recaudado) resumenText += 'Recaudado: $' + totalRecaudado.toLocaleString() + '   ';
+                    if (opciones.disponible) resumenText += 'Disponible: $' + totalDisponible.toLocaleString() + '   ';
+                    if (opciones.gastos) resumenText += 'Gastos: $' + totalGastos.toLocaleString();
+                    
+                    doc.text(resumenText, margin, finalY + 4);
+
+                    // ============================================
+                    // TOTAL GASTOS EN LA PARTE INFERIOR DERECHA
+                    // ============================================
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Total Gastos: $' + totalGastos.toLocaleString(), pageWidth - margin, finalY + 4, { align: 'right' });
+
+                    // ============================================
+                    // PIE DE PÁGINA (opcional)
+                    // ============================================
+                    var footerY = doc.internal.pageSize.getHeight() - 10;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('Total Gastos: $' + totalGastos.toLocaleString(), pageWidth - margin, footerY, { align: 'right' });
+                    doc.text(gastosFiltrados.length + ' registros', margin, footerY);
+
+                    // Guardar PDF
                     doc.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
                     ocultarLoading();
                 }
