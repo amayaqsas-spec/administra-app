@@ -1433,7 +1433,7 @@
         }
 
         // ============================================
-        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE
+        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE + ESCUDO
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1455,142 +1455,292 @@
             var { jsPDF } = window.jspdf;
             var doc = new jsPDF('p', 'mm', 'letter');
 
-            // Márgenes
+            // Márgenes más ajustados
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
             var pageHeight = doc.internal.pageSize.getHeight();
-            var y = margin;
+            var contentWidth = pageWidth - (margin * 2);
+            var y = margin + 5;
 
-            // ===== TÍTULO =====
-            doc.setFontSize(18);
-            doc.setFont('helvetica', 'bold');
-            doc.text(titulo || 'Listado de Alumnos', pageWidth / 2, y, { align: 'center' });
-            y += 8;
-
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(grupoNombre, pageWidth / 2, y, { align: 'center' });
-            y += 6;
-
-            doc.setFontSize(10);
-            doc.text('Fecha: ' + fechaActual, pageWidth - margin, y, { align: 'right' });
-            y += 10;
-
-            // ===== CONFIGURAR COLUMNAS =====
-            var headRow = ['#'];
-            var columnStyles = { 0: { halign: 'center', cellWidth: 10 } };
-            var colIndex = 1;
-
-            // Nombre
-            headRow.push('Nombre del Alumno');
-            columnStyles[colIndex] = { cellWidth: 55 };
-            colIndex++;
-
-            // Teléfono
-            if (opciones.telefono) {
-                headRow.push('Teléfono');
-                columnStyles[colIndex] = { halign: 'center', cellWidth: 25 };
-                colIndex++;
-            }
-
-            // Pago con
-            if (opciones.pagoCon) {
-                headRow.push('Pago con');
-                columnStyles[colIndex] = { halign: 'center', cellWidth: 22 };
-                colIndex++;
-            }
-
-            // Pagado
-            if (opciones.pagado) {
-                headRow.push('Pagado');
-                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
-                colIndex++;
-            }
-
-            // Disponible
-            if (opciones.disponible) {
-                headRow.push('Disponible');
-                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
-                colIndex++;
-            }
-
-            // Restan
-            if (opciones.restan) {
-                headRow.push('Restan');
-                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
-                colIndex++;
-            }
-
-            // Nota
-            if (opciones.nota) {
-                headRow.push('Nota');
-                columnStyles[colIndex] = { cellWidth: 30 };
-                colIndex++;
-            }
-
-            // Columnas vacías
-            for (var i = 0; i < columnasVacias; i++) {
-                headRow.push('');
-                columnStyles[colIndex] = { cellWidth: 10 };
-                colIndex++;
-            }
-
-            // ===== PREPARAR DATOS =====
-            var bodyRows = [];
-            sorted.forEach(function(alumno, index) {
-                var restan = alumno.total - alumno.pagado;
-                var disponible = alumno.disponible || 0;
-                var nota = alumno.nota || '';
-                var row = [(index + 1).toString()];
-                row.push(alumno.nombre);
-                if (opciones.telefono) row.push(alumno.telefono);
-                if (opciones.pagoCon) row.push(alumno.pagoCon);
-                if (opciones.pagado) row.push('$' + alumno.pagado.toLocaleString());
-                if (opciones.disponible) row.push('$' + disponible.toLocaleString());
-                if (opciones.restan) row.push('$' + restan.toLocaleString());
-                if (opciones.nota) row.push(nota);
-                for (var j = 0; j < columnasVacias; j++) {
-                    row.push('');
+            // ===== ESCUDO (tamaño mediano) =====
+            var escudoImg = document.createElement('img');
+            escudoImg.src = 'assets/escuela.png';
+            escudoImg.crossOrigin = 'Anonymous';
+            
+            // Usar la imagen en el PDF
+            var escudoWidth = 25;
+            var escudoHeight = 25;
+            
+            // Intentar cargar la imagen como base64
+            var img = new Image();
+            img.src = 'assets/escuela.png';
+            img.crossOrigin = 'Anonymous';
+            
+            // Esperar a que cargue la imagen
+            var imgLoaded = false;
+            var imgData = null;
+            
+            // Función para dibujar el encabezado
+            function dibujarEncabezado() {
+                // Escudo (izquierda)
+                if (imgData) {
+                    doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                } else {
+                    // Si no carga la imagen, dibujar un círculo con texto
+                    doc.setFillColor(124, 58, 237);
+                    doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(14);
+                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
                 }
-                bodyRows.push(row);
-            });
+                
+                // Título centrado
+                var tituloX = pageWidth / 2;
+                var tituloY = margin + 5;
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.text(titulo || 'Listado de Alumnos', tituloX, tituloY, { align: 'center' });
+                
+                // Subtítulo (grupo)
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(grupoNombre, tituloX, tituloY + 7, { align: 'center' });
+                
+                // Fecha (derecha)
+                doc.setFontSize(10);
+                doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
+                
+                // Línea separadora
+                doc.setLineWidth(0.5);
+                doc.line(margin, tituloY + 14, pageWidth - margin, tituloY + 14);
+                
+                return tituloY + 18;
+            }
 
-            // ===== DIBUJAR TABLA =====
-            doc.autoTable({
-                head: [headRow],
-                body: bodyRows,
-                startY: y,
-                margin: { left: margin, right: margin },
-                styles: {
-                    fontSize: 8,
-                    cellPadding: 1.5,
-                    valign: 'middle'
-                },
-                headStyles: {
-                    fillColor: [220, 220, 220],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                    fontSize: 7,
-                    halign: 'left'
-                },
-                columnStyles: columnStyles,
-                didDrawPage: function(data) {
-                    // Footer
-                    var pageY = doc.internal.pageSize.getHeight() - 10;
-                    doc.setFontSize(8);
-                    doc.setFont('helvetica', 'normal');
-                    doc.text('Total Alumnos: ' + sorted.length, margin, pageY);
-
-                    var footerText = '';
-                    if (opciones.pagado) footerText += 'Total Pagado: $' + totalPagado.toLocaleString() + ' ';
-                    if (opciones.disponible) footerText += 'Total Disponible: $' + totalDisponible.toLocaleString() + ' ';
-                    if (opciones.restan) footerText += 'Total Restan: $' + totalRestan.toLocaleString();
-                    doc.text(footerText, pageWidth - margin, pageY, { align: 'right' });
+            // Cargar la imagen del escudo
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d');
+            
+            var loadImg = new Image();
+            loadImg.crossOrigin = 'Anonymous';
+            loadImg.src = 'assets/escuela.png';
+            
+            // Variable para controlar si ya se generó el PDF
+            var pdfGenerado = false;
+            
+            loadImg.onload = function() {
+                try {
+                    canvas.width = loadImg.width;
+                    canvas.height = loadImg.height;
+                    ctx.drawImage(loadImg, 0, 0);
+                    imgData = canvas.toDataURL('image/png');
+                } catch(e) {
+                    console.log('Error al cargar escudo:', e);
                 }
-            });
+                // Generar PDF después de cargar la imagen
+                if (!pdfGenerado) {
+                    pdfGenerado = true;
+                    generarPDFConImagen();
+                }
+            };
+            
+            loadImg.onerror = function() {
+                console.log('Error al cargar escudo, usando texto');
+                if (!pdfGenerado) {
+                    pdfGenerado = true;
+                    generarPDFConImagen();
+                }
+            };
+            
+            // Si la imagen ya está en caché, puede que no dispare onload
+            setTimeout(function() {
+                if (!pdfGenerado) {
+                    // Intentar cargar de nuevo
+                    try {
+                        canvas.width = 50;
+                        canvas.height = 50;
+                        ctx.fillStyle = '#7c3aed';
+                        ctx.beginPath();
+                        ctx.arc(25, 25, 20, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 20px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('E', 25, 25);
+                        imgData = canvas.toDataURL('image/png');
+                    } catch(e) {}
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                }
+            }, 500);
+            
+            function generarPDFConImagen() {
+                // Calcular posición inicial
+                var yPos = margin + 5;
+                
+                // Dibujar encabezado
+                // Escudo (izquierda)
+                if (imgData) {
+                    try {
+                        doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                    } catch(e) {
+                        // Si falla, dibujar texto
+                        doc.setFillColor(124, 58, 237);
+                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(14);
+                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
+                    }
+                } else {
+                    // Dibujar círculo con letra
+                    doc.setFillColor(124, 58, 237);
+                    doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(14);
+                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
+                }
+                
+                // Título centrado
+                var tituloX = pageWidth / 2;
+                var tituloY = margin + 5;
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.text(titulo || 'Listado de Alumnos', tituloX, tituloY, { align: 'center' });
+                
+                // Subtítulo (grupo)
+                doc.setFontSize(12);
+                doc.setFont('helvetica', 'normal');
+                doc.text(grupoNombre, tituloX, tituloY + 7, { align: 'center' });
+                
+                // Fecha (derecha)
+                doc.setFontSize(10);
+                doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
+                
+                // Línea separadora
+                doc.setLineWidth(0.5);
+                doc.line(margin, tituloY + 14, pageWidth - margin, tituloY + 14);
+                
+                var yStart = tituloY + 18;
 
-            // Guardar PDF
-            doc.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
+                // ===== CONFIGURAR COLUMNAS =====
+                var headRow = ['#'];
+                var columnStyles = { 0: { halign: 'center', cellWidth: 10 } };
+                var colIndex = 1;
+
+                // Nombre
+                headRow.push('Nombre del Alumno');
+                columnStyles[colIndex] = { cellWidth: 50 };
+                colIndex++;
+
+                // Teléfono
+                if (opciones.telefono) {
+                    headRow.push('Teléfono');
+                    columnStyles[colIndex] = { halign: 'center', cellWidth: 22 };
+                    colIndex++;
+                }
+
+                // Pago con
+                if (opciones.pagoCon) {
+                    headRow.push('Pago con');
+                    columnStyles[colIndex] = { halign: 'center', cellWidth: 20 };
+                    colIndex++;
+                }
+
+                // Pagado
+                if (opciones.pagado) {
+                    headRow.push('Pagado');
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    colIndex++;
+                }
+
+                // Disponible
+                if (opciones.disponible) {
+                    headRow.push('Disponible');
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    colIndex++;
+                }
+
+                // Restan
+                if (opciones.restan) {
+                    headRow.push('Restan');
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    colIndex++;
+                }
+
+                // Nota
+                if (opciones.nota) {
+                    headRow.push('Nota');
+                    columnStyles[colIndex] = { cellWidth: 28 };
+                    colIndex++;
+                }
+
+                // Columnas vacías
+                for (var i = 0; i < columnasVacias; i++) {
+                    headRow.push('');
+                    columnStyles[colIndex] = { cellWidth: 10 };
+                    colIndex++;
+                }
+
+                // ===== PREPARAR DATOS =====
+                var bodyRows = [];
+                sorted.forEach(function(alumno, index) {
+                    var restan = alumno.total - alumno.pagado;
+                    var disponible = alumno.disponible || 0;
+                    var nota = alumno.nota || '';
+                    var row = [(index + 1).toString()];
+                    row.push(alumno.nombre);
+                    if (opciones.telefono) row.push(alumno.telefono);
+                    if (opciones.pagoCon) row.push(alumno.pagoCon);
+                    if (opciones.pagado) row.push('$' + alumno.pagado.toLocaleString());
+                    if (opciones.disponible) row.push('$' + disponible.toLocaleString());
+                    if (opciones.restan) row.push('$' + restan.toLocaleString());
+                    if (opciones.nota) row.push(nota);
+                    for (var j = 0; j < columnasVacias; j++) {
+                        row.push('');
+                    }
+                    bodyRows.push(row);
+                });
+
+                // ===== DIBUJAR TABLA =====
+                doc.autoTable({
+                    head: [headRow],
+                    body: bodyRows,
+                    startY: yStart,
+                    margin: { left: margin, right: margin },
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 1.5,
+                        valign: 'middle'
+                    },
+                    headStyles: {
+                        fillColor: [220, 220, 220],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold',
+                        fontSize: 7,
+                        halign: 'left'
+                    },
+                    columnStyles: columnStyles,
+                    didDrawPage: function(data) {
+                        // Footer
+                        var pageY = doc.internal.pageSize.getHeight() - 10;
+                        doc.setFontSize(8);
+                        doc.setFont('helvetica', 'normal');
+                        doc.text('Total Alumnos: ' + sorted.length, margin, pageY);
+
+                        var footerText = '';
+                        if (opciones.pagado) footerText += 'Total Pagado: $' + totalPagado.toLocaleString() + ' ';
+                        if (opciones.disponible) footerText += 'Total Disponible: $' + totalDisponible.toLocaleString() + ' ';
+                        if (opciones.restan) footerText += 'Total Restan: $' + totalRestan.toLocaleString();
+                        doc.text(footerText, pageWidth - margin, pageY, { align: 'right' });
+                    }
+                });
+
+                // Guardar PDF
+                doc.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
+            }
         }
 
         // ============================================
