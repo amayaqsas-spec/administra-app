@@ -1,7 +1,7 @@
 // js/storage.js - Gestión de datos LOCAL (LocalStorage)
 
 // ============================================
-// FUNCIONES CRUD - GRUPOS
+// FUNCIONES CRUD - GRUPOS (CON TELÉFONO)
 // ============================================
 function getGrupos() {
     const data = localStorage.getItem('grupos');
@@ -12,13 +12,14 @@ function guardarGrupos(grupos) {
     localStorage.setItem('grupos', JSON.stringify(grupos));
 }
 
-function crearGrupoLocal(nombre, profesor) {
+function crearGrupoLocal(nombre, profesor, telefono) {
     const grupos = getGrupos();
     const nextId = grupos.length > 0 ? Math.max(...grupos.map(g => g.id)) + 1 : 1;
     const nuevoGrupo = {
         id: nextId,
         nombre: nombre,
         profesor: profesor || 'Sin maestro asignado',
+        telefono: telefono || '',
         dinero: 0
     };
     grupos.push(nuevoGrupo);
@@ -26,12 +27,13 @@ function crearGrupoLocal(nombre, profesor) {
     return { success: true, data: nuevoGrupo };
 }
 
-function actualizarGrupoLocal(id, nombre, profesor) {
+function actualizarGrupoLocal(id, nombre, profesor, telefono) {
     const grupos = getGrupos();
     const grupo = grupos.find(g => g.id === id);
     if (!grupo) return { success: false, error: 'Grupo no encontrado' };
     grupo.nombre = nombre;
     grupo.profesor = profesor || 'Sin maestro asignado';
+    grupo.telefono = telefono || '';
     guardarGrupos(grupos);
     return { success: true, data: grupo };
 }
@@ -44,7 +46,7 @@ function eliminarGrupoLocal(id) {
 }
 
 // ============================================
-// FUNCIONES CRUD - ALUMNOS
+// FUNCIONES CRUD - ALUMNOS (CON FECHA PAGO)
 // ============================================
 function getAlumnos() {
     const data = localStorage.getItem('alumnos');
@@ -72,6 +74,7 @@ function crearAlumnoLocal(alumno) {
         pagado: alumno.pagado || 0,
         disponible: alumno.disponible || 0,
         pagoCon: alumno.pagoCon || 'Efectivo',
+        fechaPago: alumno.fechaPago || '',
         nota: alumno.nota || ''
     };
     alumnos.push(nuevoAlumno);

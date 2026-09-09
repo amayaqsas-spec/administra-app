@@ -450,7 +450,7 @@
             -webkit-backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 20px 16px 16px;
-            max-width: 400px;
+            max-width: 420px;
             width: 100%;
             border: 1px solid rgba(255,255,255,0.5);
             box-shadow: 0 16px 48px rgba(0,0,0,0.1);
@@ -555,7 +555,7 @@
             box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
         .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
-        .modal-detalle .modal-content { max-width: 400px; }
+        .modal-detalle .modal-content { max-width: 420px; }
         .modal-detalle .detalle-item {
             display: flex;
             justify-content: space-between;
@@ -977,6 +977,7 @@
                 var disponible = alumno.disponible || 0;
                 var restanClass = restan > 0 ? 'restan-rojo' : 'restan-verde';
                 var tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+                var tieneFechaPago = alumno.fechaPago && alumno.fechaPago.trim().length > 0;
 
                 html += `
                     <div class="student-item" data-id="${alumno.id}" onclick="verDetalle(${alumno.id})">
@@ -984,6 +985,7 @@
                             <div class="nombre">${index + 1}. ${alumno.nombre}</div>
                             <div class="detalle">📞 ${alumno.telefono} | 💰 Colegiatura: $${alumno.total}</div>
                             ${tieneNota ? '<div class="nota"><i class="fas fa-pen"></i> ' + alumno.nota + '</div>' : ''}
+                            ${tieneFechaPago ? '<div class="nota" style="background:rgba(59,130,246,0.1);color:#2563eb;"><i class="fas fa-calendar"></i> Fecha pago: ' + alumno.fechaPago + '</div>' : ''}
                             <div class="saldo">
                                 💵 Pagado: $${alumno.pagado.toLocaleString()} | 
                                 <span class="disponible-verde">Disponible: $${disponible.toLocaleString()}</span> | 
@@ -1039,6 +1041,7 @@
             var restan = alumno.total - alumno.pagado;
             var disponible = alumno.disponible || 0;
             var tieneNota = alumno.nota && alumno.nota.trim().length > 0;
+            var tieneFechaPago = alumno.fechaPago && alumno.fechaPago.trim().length > 0;
 
             var overlay = document.createElement('div');
             overlay.className = 'modal-overlay modal-detalle';
@@ -1075,6 +1078,12 @@
                         <span class="etiqueta">💳 Pago con</span>
                         <span class="valor">${alumno.pagoCon}</span>
                     </div>
+                    ${tieneFechaPago ? `
+                    <div class="detalle-item">
+                        <span class="etiqueta">📅 Fecha de pago</span>
+                        <span class="valor">${alumno.fechaPago}</span>
+                    </div>
+                    ` : ''}
                     ${tieneNota ? `
                     <div class="detalle-item" style="border-bottom: none; padding-bottom: 4px;">
                         <span class="etiqueta">📝 Nota</span>
@@ -1147,6 +1156,10 @@
                             </select>
                         </div>
                         <div class="modal-grupo">
+                            <label>Fecha de pago (opcional)</label>
+                            <input type="date" id="fechaPagoInput">
+                        </div>
+                        <div class="modal-grupo">
                             <label>Notas (opcional)</label>
                             <textarea id="notaAlumnoInput" placeholder="Ej: Alumno con beca, debe pagar en dos parcialidades..." rows="2"></textarea>
                         </div>
@@ -1185,6 +1198,12 @@
             pagadoInput.addEventListener('input', actualizarCampos);
             actualizarCampos();
 
+            // Fecha por defecto
+            var fechaInput = document.getElementById('fechaPagoInput');
+            if (fechaInput) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+
             setTimeout(function() {
                 var input = document.getElementById('nombreAlumnoInput');
                 if (input) input.focus();
@@ -1199,6 +1218,7 @@
                 var pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
                 var disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
                 var pagoCon = document.getElementById('pagoConInput').value;
+                var fechaPago = document.getElementById('fechaPagoInput').value || '';
                 var nota = document.getElementById('notaAlumnoInput').value.trim();
 
                 if (!nombre) {
@@ -1223,6 +1243,7 @@
                     pagado: pagado,
                     disponible: disponible,
                     pagoCon: pagoCon,
+                    fechaPago: fechaPago,
                     nota: nota || ''
                 };
 
@@ -1289,6 +1310,10 @@
                             </select>
                         </div>
                         <div class="modal-grupo">
+                            <label>Fecha de pago (opcional)</label>
+                            <input type="date" id="fechaPagoInput" value="${alumno.fechaPago || ''}">
+                        </div>
+                        <div class="modal-grupo">
                             <label>Notas</label>
                             <textarea id="notaAlumnoInput" placeholder="Ej: Alumno con beca..." rows="2">${alumno.nota || ''}</textarea>
                         </div>
@@ -1341,6 +1366,7 @@
                 var pagado = parseInt(document.getElementById('pagadoAlumnoInput').value) || 0;
                 var disponible = parseInt(document.getElementById('disponibleAlumnoInput').value) || 0;
                 var pagoCon = document.getElementById('pagoConInput').value;
+                var fechaPago = document.getElementById('fechaPagoInput').value || '';
                 var nota = document.getElementById('notaAlumnoInput').value.trim();
 
                 if (!nombre) {
@@ -1362,6 +1388,7 @@
                 alumno.pagado = pagado;
                 alumno.disponible = disponible;
                 alumno.pagoCon = pagoCon;
+                alumno.fechaPago = fechaPago;
                 alumno.nota = nota || '';
 
                 var result = actualizarAlumno(alumno);
@@ -1421,7 +1448,8 @@
             pagado: true,
             disponible: true,
             restan: true,
-            nota: true
+            nota: true,
+            fechaPago: true
         };
 
         function toggleColumna(columna) {
@@ -1433,7 +1461,7 @@
         }
 
         // ============================================
-        // GENERAR PDF - SIN FONDOS GRISES, SOLO LÍNEAS
+        // GENERAR PDF - CON FECHA DE PAGO
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1451,23 +1479,17 @@
             var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
             var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
 
-            // Crear el PDF
             var { jsPDF } = window.jspdf;
             var doc = new jsPDF('p', 'mm', 'letter');
 
-            // Márgenes
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
 
-            // ===== ESCUDO PEQUEÑO =====
             var escudoWidth = 15;
             var escudoHeight = 15;
-            
-            // Intentar cargar la imagen del escudo
             var imgData = null;
-            
+
             function dibujarEncabezado() {
-                // Escudo (izquierda)
                 if (imgData) {
                     try {
                         doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
@@ -1485,33 +1507,29 @@
                     doc.setFontSize(10);
                     doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
                 }
-                
-                // Título centrado
+
                 var tituloX = pageWidth / 2;
                 var tituloY = margin + 3;
                 doc.setFontSize(18);
                 doc.setFont('helvetica', 'bold');
                 doc.text(titulo || 'Listado de Alumnos', tituloX, tituloY, { align: 'center' });
-                
-                // Subtítulo (grupo)
+
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
                 doc.text(grupoNombre, tituloX, tituloY + 6, { align: 'center' });
-                
-                // Fecha (derecha)
+
                 doc.setFontSize(9);
                 doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
-                
+
                 return tituloY + 12;
             }
 
-            // Cargar la imagen del escudo
             var loadImg = new Image();
             loadImg.crossOrigin = 'Anonymous';
             loadImg.src = 'assets/escuela.png';
-            
+
             var pdfGenerado = false;
-            
+
             loadImg.onload = function() {
                 try {
                     var canvas = document.createElement('canvas');
@@ -1520,98 +1538,92 @@
                     var ctx = canvas.getContext('2d');
                     ctx.drawImage(loadImg, 0, 0);
                     imgData = canvas.toDataURL('image/png');
-                } catch(e) {
-                    console.log('Error al cargar escudo:', e);
-                }
+                } catch(e) {}
                 if (!pdfGenerado) {
                     pdfGenerado = true;
                     generarPDFConImagen();
                 }
             };
-            
+
             loadImg.onerror = function() {
-                console.log('Error al cargar escudo, usando texto');
                 if (!pdfGenerado) {
                     pdfGenerado = true;
                     generarPDFConImagen();
                 }
             };
-            
+
             setTimeout(function() {
                 if (!pdfGenerado) {
                     pdfGenerado = true;
                     generarPDFConImagen();
                 }
             }, 500);
-            
+
             function generarPDFConImagen() {
                 var yStart = dibujarEncabezado();
 
-                // ===== CONFIGURAR COLUMNAS =====
                 var headRow = ['#'];
                 var columnStyles = { 0: { halign: 'center', cellWidth: 10 } };
                 var colIndex = 1;
 
-                // Nombre
                 headRow.push('Nombre del Alumno');
-                columnStyles[colIndex] = { cellWidth: 52 };
+                columnStyles[colIndex] = { cellWidth: 42 };
                 colIndex++;
 
-                // Teléfono
                 if (opciones.telefono) {
                     headRow.push('Teléfono');
-                    columnStyles[colIndex] = { halign: 'center', cellWidth: 22 };
-                    colIndex++;
-                }
-
-                // Pago con
-                if (opciones.pagoCon) {
-                    headRow.push('Pago con');
                     columnStyles[colIndex] = { halign: 'center', cellWidth: 20 };
                     colIndex++;
                 }
 
-                // Pagado
+                if (opciones.pagoCon) {
+                    headRow.push('Pago con');
+                    columnStyles[colIndex] = { halign: 'center', cellWidth: 18 };
+                    colIndex++;
+                }
+
                 if (opciones.pagado) {
                     headRow.push('Pagado');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
                     colIndex++;
                 }
 
-                // Disponible
                 if (opciones.disponible) {
                     headRow.push('Disponible');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
                     colIndex++;
                 }
 
-                // Restan
                 if (opciones.restan) {
                     headRow.push('Restan');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 18 };
                     colIndex++;
                 }
 
-                // Nota
+                if (opciones.fechaPago) {
+                    headRow.push('Fecha Pago');
+                    columnStyles[colIndex] = { halign: 'center', cellWidth: 20 };
+                    colIndex++;
+                }
+
                 if (opciones.nota) {
                     headRow.push('Nota');
-                    columnStyles[colIndex] = { cellWidth: 28 };
+                    columnStyles[colIndex] = { cellWidth: 25 };
                     colIndex++;
                 }
 
-                // Columnas vacías
                 for (var i = 0; i < columnasVacias; i++) {
                     headRow.push('');
                     columnStyles[colIndex] = { cellWidth: 10 };
                     colIndex++;
                 }
 
-                // ===== PREPARAR DATOS =====
                 var bodyRows = [];
                 sorted.forEach(function(alumno, index) {
                     var restan = alumno.total - alumno.pagado;
                     var disponible = alumno.disponible || 0;
                     var nota = alumno.nota || '';
+                    var fechaPago = alumno.fechaPago || '';
                     var row = [(index + 1).toString()];
                     row.push(alumno.nombre);
                     if (opciones.telefono) row.push(alumno.telefono);
@@ -1619,6 +1631,7 @@
                     if (opciones.pagado) row.push('$' + alumno.pagado.toLocaleString());
                     if (opciones.disponible) row.push('$' + disponible.toLocaleString());
                     if (opciones.restan) row.push('$' + restan.toLocaleString());
+                    if (opciones.fechaPago) row.push(fechaPago);
                     if (opciones.nota) row.push(nota);
                     for (var j = 0; j < columnasVacias; j++) {
                         row.push('');
@@ -1626,33 +1639,31 @@
                     bodyRows.push(row);
                 });
 
-                // ===== DIBUJAR TABLA - SIN FONDOS GRISES =====
                 doc.autoTable({
                     head: [headRow],
                     body: bodyRows,
                     startY: yStart,
                     margin: { left: margin, right: margin },
                     styles: {
-                        fontSize: 8,
+                        fontSize: 7,
                         cellPadding: 1.5,
                         valign: 'middle',
-                        fillColor: [255, 255, 255], // Fondo blanco
+                        fillColor: [255, 255, 255],
                         textColor: [0, 0, 0],
-                        lineColor: [0, 0, 0], // Líneas negras
+                        lineColor: [0, 0, 0],
                         lineWidth: 0.2
                     },
                     headStyles: {
-                        fillColor: [255, 255, 255], // Fondo blanco en cabecera
+                        fillColor: [255, 255, 255],
                         textColor: [0, 0, 0],
                         fontStyle: 'bold',
-                        fontSize: 7,
+                        fontSize: 6.5,
                         halign: 'left',
                         lineColor: [0, 0, 0],
                         lineWidth: 0.3
                     },
                     columnStyles: columnStyles,
                     didDrawPage: function(data) {
-                        // Footer
                         var pageY = doc.internal.pageSize.getHeight() - 10;
                         doc.setFontSize(8);
                         doc.setFont('helvetica', 'normal');
@@ -1666,7 +1677,6 @@
                     }
                 });
 
-                // Guardar PDF
                 doc.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
             }
         }
@@ -1688,7 +1698,8 @@
                 pagado: true,
                 disponible: true,
                 restan: true,
-                nota: true
+                nota: true,
+                fechaPago: true
             };
 
             var overlay = document.createElement('div');
@@ -1727,6 +1738,9 @@
                             </button>
                             <button class="toggle-btn active" data-columna="nota" onclick="toggleColumna('nota')">
                                 <i class="fas fa-pen"></i> Nota
+                            </button>
+                            <button class="toggle-btn active" data-columna="fechaPago" onclick="toggleColumna('fechaPago')">
+                                <i class="fas fa-calendar"></i> Fecha Pago
                             </button>
                         </div>
                     </div>
@@ -1768,7 +1782,8 @@
                 pagado: columnasSeleccionadas.pagado,
                 disponible: columnasSeleccionadas.disponible,
                 restan: columnasSeleccionadas.restan,
-                nota: columnasSeleccionadas.nota
+                nota: columnasSeleccionadas.nota,
+                fechaPago: columnasSeleccionadas.fechaPago
             };
             var columnasVacias = parseInt(document.getElementById('columnasVacias').value) || 0;
 
