@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
-        /* Mismos estilos que antes */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -18,7 +17,6 @@
             background-attachment: fixed;
             display: flex;
         }
-        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -247,8 +245,19 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
-        .top-bar h2 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
+        .top-bar h2 {
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+        }
+        .top-bar .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
         .btn-nuevo {
             border: none;
             border-radius: 30px;
@@ -266,6 +275,25 @@
         }
         .btn-nuevo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(124,58,237,0.4); }
         .btn-nuevo i { font-size: 12px; }
+        
+        .btn-gasto-directo {
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 10px rgba(220,38,38,0.3);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-gasto-directo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(220,38,38,0.4); }
+        .btn-gasto-directo i { font-size: 12px; }
+        
         .filtros {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -321,6 +349,13 @@
         }
         .gasto-item .gasto-header .info h4 { font-size: 13px; color: #1e1b4b; font-weight: 600; }
         .gasto-item .gasto-header .info .meta { font-size: 10px; color: #6b7280; margin-top: 1px; }
+        .gasto-item .gasto-header .info .meta .tipo-directo {
+            background: rgba(220,38,38,0.1);
+            color: #dc2626;
+            padding: 1px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
         .gasto-item .gasto-header .monto {
             font-size: 15px;
             font-weight: 700;
@@ -432,7 +467,6 @@
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #c084fc, #7c3aed);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -440,6 +474,7 @@
             box-shadow: 0 4px 16px rgba(124,58,237,0.2);
         }
         .modal-icono i { font-size: 20px; color: white; }
+        .modal-icono.gasto-directo-icono { background: linear-gradient(135deg, #dc2626, #b91c1c); box-shadow: 0 4px 16px rgba(220,38,38,0.2); }
         .modal-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
         .modal-subtitulo { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
         .modal-grupo { margin-bottom: 12px; }
@@ -486,7 +521,6 @@
         .modal-info .verde { color: #059669; }
         .modal-info .rojo { color: #dc2626; }
         .modal-info .naranja { color: #d97706; }
-        .modal-info .negrita { font-weight: 700; }
         .modal-acciones {
             display: flex;
             gap: 8px;
@@ -513,6 +547,12 @@
             box-shadow: 0 3px 12px rgba(124,58,237,0.2);
         }
         .modal-acciones .btn-guardar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(124,58,237,0.3); }
+        .modal-acciones .btn-guardar-directo {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 3px 12px rgba(220,38,38,0.2);
+        }
+        .modal-acciones .btn-guardar-directo:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
         .modal-acciones .btn-cancelar {
             background: rgba(255,255,255,0.7);
             color: #4a4a6a;
@@ -526,6 +566,12 @@
             box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
         .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .modal-acciones .btn-eliminar-modal {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 3px 12px rgba(239,68,68,0.2);
+        }
+        .modal-acciones .btn-eliminar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
         .modal-detalle .modal-content { max-width: 380px; }
         .modal-detalle .detalle-item {
             display: flex;
@@ -610,10 +656,28 @@
             margin-top: 4px;
         }
         .explicacion-descuento i { color: #7c3aed; margin-right: 4px; }
+        .total-gastos-directos {
+            margin-top: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            background: rgba(220,38,38,0.08);
+            border: 1px solid rgba(220,38,38,0.2);
+            text-align: center;
+        }
+        .total-gastos-directos .label {
+            font-size: 11px;
+            color: #991b1b;
+            font-weight: 600;
+        }
+        .total-gastos-directos .numero {
+            font-size: 20px;
+            font-weight: 800;
+            color: #dc2626;
+        }
         @media (max-width: 380px) {
             .main-content { padding: 10px; }
             .top-bar h2 { font-size: 14px; }
-            .btn-nuevo { font-size: 10px; padding: 4px 12px; }
+            .btn-nuevo, .btn-gasto-directo { font-size: 10px; padding: 4px 12px; }
             .filtros { grid-template-columns: 1fr; }
             .modal-content { padding: 16px 12px 12px; }
             .modal-titulo { font-size: 16px; }
@@ -674,6 +738,11 @@
                 Extra Notas
             </button>
 
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
+            </button>
+
             <div class="divider"></div>
 
             <div class="menu-label">Sistema</div>
@@ -709,7 +778,7 @@
                     </button>
                     <div>
                         <h2>💰 Gastos</h2>
-                        <p>Registro de gastos compartidos</p>
+                        <p>Registro de gastos compartidos y directos</p>
                     </div>
                 </div>
                 <div class="header-right">
@@ -723,10 +792,16 @@
             <div class="clay clay-md">
                 <div class="top-bar">
                     <h2><i class="fas fa-coins" style="color:#ec4899;"></i> Gastos</h2>
-                    <button class="btn-nuevo" onclick="mostrarModalCrear()">
-                        <i class="fas fa-plus"></i>
-                        Nuevo
-                    </button>
+                    <div class="btn-group">
+                        <button class="btn-nuevo" onclick="mostrarModalCrear()">
+                            <i class="fas fa-plus"></i>
+                            Compartido
+                        </button>
+                        <button class="btn-gasto-directo" onclick="mostrarModalGastoDirecto()">
+                            <i class="fas fa-minus-circle"></i>
+                            Gasto Directo
+                        </button>
+                    </div>
                 </div>
 
                 <div class="filtros">
@@ -737,6 +812,12 @@
                 </div>
 
                 <div id="gastosList"></div>
+
+                <!-- Total de Gastos Directos -->
+                <div class="total-gastos-directos" id="totalDirectosBox">
+                    <div class="label">💸 Total Gastos Directos</div>
+                    <div class="numero" id="totalDirectos">$0.00</div>
+                </div>
 
                 <div style="text-align:center;margin-top:10px;">
                     <button class="btn-volver" onclick="location.href='dashboard.html'">
@@ -789,11 +870,54 @@
             }
         }
 
+        // ============================================
+        // DATOS
+        // ============================================
+        function getGastos() {
+            const data = localStorage.getItem('gastos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getGastosDirectos() {
+            const data = localStorage.getItem('gastosDirectos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getGrupos() {
+            const data = localStorage.getItem('grupos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function getAlumnos() {
+            const data = localStorage.getItem('alumnos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function guardarGastos(gastos) {
+            localStorage.setItem('gastos', JSON.stringify(gastos));
+        }
+
+        function guardarGastosDirectos(gastos) {
+            localStorage.setItem('gastosDirectos', JSON.stringify(gastos));
+            // Notificar al dashboard que los gastos directos cambiaron
+            localStorage.setItem('gastosDirectosActualizado', Date.now().toString());
+        }
+
+        function guardarAlumnos(alumnos) {
+            localStorage.setItem('alumnos', JSON.stringify(alumnos));
+        }
+
+        // Variables globales
         var todosLosGastos = getGastos();
+        var gastosDirectos = getGastosDirectos();
         var grupos = getGrupos();
         var alumnos = getAlumnos();
         var nextId = todosLosGastos.length > 0 ? Math.max(...todosLosGastos.map(function(g) { return g.id; })) + 1 : 1;
+        var nextIdDirecto = gastosDirectos.length > 0 ? Math.max(...gastosDirectos.map(function(g) { return g.id; })) + 1 : 1;
 
+        // ============================================
+        // INICIALIZAR
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
             cargarFiltrosGrupos();
             renderizarGastos();
@@ -804,9 +928,11 @@
             renderizarGastos();
         }
 
+        // ============================================
+        // FUNCIONES
+        // ============================================
         function cargarFiltrosGrupos() {
             var select = document.getElementById('filterGrupo');
-            // Limpiar opciones excepto la primera
             while (select.options.length > 1) {
                 select.remove(1);
             }
@@ -833,10 +959,34 @@
             var search = document.getElementById('searchGasto').value.toLowerCase().trim();
             var filterGrupo = document.getElementById('filterGrupo').value;
 
-            var filtrados = todosLosGastos;
+            // Unir gastos compartidos + gastos directos
+            var todos = [];
+
+            // Gastos compartidos
+            todosLosGastos.forEach(function(g) {
+                todos.push({
+                    ...g,
+                    tipoGasto: 'compartido'
+                });
+            });
+
+            // Gastos directos
+            gastosDirectos.forEach(function(g) {
+                todos.push({
+                    ...g,
+                    tipoGasto: 'directo',
+                    grupoId: null,
+                    participantes: 1,
+                    excluidos: []
+                });
+            });
+
+            var filtrados = todos;
 
             if (filterGrupo) {
-                filtrados = filtrados.filter(function(g) { return g.grupoId == filterGrupo; });
+                filtrados = filtrados.filter(function(g) {
+                    return g.tipoGasto === 'directo' || g.grupoId == filterGrupo;
+                });
             }
 
             if (search) {
@@ -861,34 +1011,39 @@
                         </button>
                     </div>
                 `;
+                actualizarTotalDirectos();
                 return;
             }
 
             var html = '';
             filtrados.forEach(function(gasto) {
-                var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
+                var esDirecto = gasto.tipoGasto === 'directo';
+                var grupoNombre = esDirecto ? 'Gasto Directo' : getNombreGrupo(gasto.grupoId);
+                var porNiño = esDirecto ? '' : (gasto.monto / gasto.participantes).toFixed(2);
+                var montoDisplay = esDirecto ? '' : '$${porNiño} c/u • ${gasto.participantes} niños';
+                var tipoBadge = esDirecto ? '<span class="tipo-directo">DIRECTO</span>' : gasto.tipo;
                 var excluidos = gasto.excluidos || [];
                 var nota = gasto.nota || '';
-                
+
                 html += `
-                    <div class="gasto-item" data-id="${gasto.id}" onclick="verDetalleGasto(${gasto.id})">
+                    <div class="gasto-item" data-id="${gasto.id}" onclick="verDetalleGasto(${gasto.id}, '${esDirecto ? 'directo' : 'compartido'}')">
                         <div class="gasto-header">
                             <div class="info">
-                                <h4>${gasto.descripcion}</h4>
-                                <div class="meta">${getNombreGrupo(gasto.grupoId)} • ${gasto.tipo} • 📅 ${gasto.fecha}</div>
+                                <h4>${gasto.descripcion} ${esDirecto ? '<span style="color:#dc2626;font-size:10px;">⬇️ Directo</span>' : ''}</h4>
+                                <div class="meta">${grupoNombre} • ${tipoBadge} • 📅 ${gasto.fecha}</div>
                             </div>
                             <div class="monto">
                                 -$${gasto.monto.toLocaleString()}
-                                <div class="per">$${porNiño} c/u • ${gasto.participantes} niños</div>
+                                ${!esDirecto ? '<div class="per">$${porNiño} c/u • ' + gasto.participantes + ' niños</div>' : ''}
                             </div>
                         </div>
                         ${excluidos.length > 0 ? '<div class="gasto-nota"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i> ⚠️ ' + excluidos.length + ' alumno(s) excluido(s)</div>' : ''}
                         ${nota && !nota.includes('AJUSTE AUTOMÁTICO') ? '<div class="gasto-nota"><i class="fas fa-pen"></i> ' + nota + '</div>' : ''}
                         <div class="gasto-actions" onclick="event.stopPropagation();">
-                            <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${gasto.id})">
+                            <button class="btn-sm btn-editar" onclick="${esDirecto ? 'mostrarModalEditarDirecto' : 'mostrarModalEditar'}(${gasto.id})">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button class="btn-sm btn-eliminar" onclick="eliminarGasto(${gasto.id})">
+                            <button class="btn-sm btn-eliminar" onclick="${esDirecto ? 'eliminarGastoDirecto' : 'eliminarGasto'}(${gasto.id})">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -897,18 +1052,32 @@
             });
 
             container.innerHTML = html;
+            actualizarTotalDirectos();
+        }
+
+        function actualizarTotalDirectos() {
+            var total = gastosDirectos.reduce(function(sum, g) { return sum + g.monto; }, 0);
+            document.getElementById('totalDirectos').textContent = '$' + total.toFixed(2);
         }
 
         function filtrarGastos() {
             renderizarGastos();
         }
 
-        function verDetalleGasto(id) {
-            var gasto = todosLosGastos.find(function(g) { return g.id === id; });
+        // ============================================
+        // DETALLE DE GASTO (compartido o directo)
+        // ============================================
+        function verDetalleGasto(id, tipo) {
+            var gasto;
+            if (tipo === 'directo') {
+                gasto = gastosDirectos.find(function(g) { return g.id === id; });
+            } else {
+                gasto = todosLosGastos.find(function(g) { return g.id === id; });
+            }
             if (!gasto) return;
 
-            var grupoNombre = getNombreGrupo(gasto.grupoId);
-            var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
+            var grupoNombre = tipo === 'directo' ? 'Gasto Directo' : getNombreGrupo(gasto.grupoId);
+            var porNiño = tipo === 'directo' ? '' : (gasto.monto / gasto.participantes).toFixed(2);
             var excluidos = gasto.excluidos || [];
             var nota = gasto.nota || '';
 
@@ -921,24 +1090,27 @@
                         <i class="fas fa-receipt"></i>
                     </div>
                     <div class="modal-titulo">${gasto.descripcion}</div>
-                    <div class="modal-subtitulo">Detalle del gasto</div>
+                    <div class="modal-subtitulo">${tipo === 'directo' ? 'Gasto Directo' : 'Detalle del gasto'}</div>
 
                     <div class="detalle-item">
                         <span class="etiqueta">📅 Fecha</span>
                         <span class="valor">${gasto.fecha}</span>
                     </div>
                     <div class="detalle-item">
-                        <span class="etiqueta">📂 Grupo</span>
+                        <span class="etiqueta">📂 ${tipo === 'directo' ? 'Tipo' : 'Grupo'}</span>
                         <span class="valor">${grupoNombre}</span>
                     </div>
+                    ${tipo !== 'directo' ? `
                     <div class="detalle-item">
                         <span class="etiqueta">🏷️ Tipo</span>
                         <span class="valor">${gasto.tipo}</span>
                     </div>
+                    ` : ''}
                     <div class="detalle-item">
                         <span class="etiqueta">💰 Monto total</span>
                         <span class="valor rojo">-$${gasto.monto.toLocaleString()}</span>
                     </div>
+                    ${tipo !== 'directo' ? `
                     <div class="detalle-item">
                         <span class="etiqueta">👨‍🎓 Participantes</span>
                         <span class="valor">${gasto.participantes} niños</span>
@@ -947,14 +1119,13 @@
                         <span class="etiqueta">💵 Por niño</span>
                         <span class="valor">$${porNiño}</span>
                     </div>
-
+                    ` : ''}
                     ${excluidos.length > 0 ? `
                         <div class="detalle-excluidos">
                             <i class="fas fa-exclamation-triangle"></i>
                             <strong>Alumnos excluidos:</strong> ${excluidos.join(', ')}
                         </div>
                     ` : ''}
-
                     ${nota ? `
                         <div class="detalle-nota">
                             <i class="fas fa-pen"></i>
@@ -963,11 +1134,11 @@
                     ` : ''}
 
                     <div class="detalle-acciones">
-                        <button class="btn btn-editar-detalle" onclick="cerrarModalDetalle();mostrarModalEditar(${gasto.id})">
+                        <button class="btn btn-editar-detalle" onclick="cerrarModalDetalle();${tipo === 'directo' ? 'mostrarModalEditarDirecto' : 'mostrarModalEditar'}(${gasto.id})">
                             <i class="fas fa-pencil-alt"></i>
                             Editar
                         </button>
-                        <button class="btn btn-eliminar-detalle" onclick="cerrarModalDetalle();eliminarGasto(${gasto.id})">
+                        <button class="btn btn-eliminar-detalle" onclick="cerrarModalDetalle();${tipo === 'directo' ? 'eliminarGastoDirecto' : 'eliminarGasto'}(${gasto.id})">
                             <i class="fas fa-trash-alt"></i>
                             Eliminar
                         </button>
@@ -986,6 +1157,190 @@
             if (modal) modal.remove();
         }
 
+        // ============================================
+        // MODAL GASTO DIRECTO
+        // ============================================
+        function mostrarModalGastoDirecto() {
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono gasto-directo-icono">
+                        <i class="fas fa-minus-circle"></i>
+                    </div>
+                    <div class="modal-titulo">Gasto Directo</div>
+                    <div class="modal-subtitulo">Registra un gasto que se descuenta del Disponible Total</div>
+                    <form id="formGastoDirectoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaGastoDirectoInput" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionGastoDirectoInput" placeholder="Ej: Compra de material" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoGastoDirectoInput" placeholder="Ej: 500" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <div class="modal-info" style="background:rgba(220,38,38,0.08);border-left:3px solid #dc2626;">
+                                <span class="rojo">⚠️ Este gasto se descontará del Disponible Total en el Dashboard.</span>
+                            </div>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-guardar-directo">
+                                <i class="fas fa-check"></i>
+                                Registrar Gasto
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            var fechaInput = document.getElementById('fechaGastoDirectoInput');
+            if (fechaInput) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionGastoDirectoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formGastoDirectoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaGastoDirectoInput').value;
+                var descripcion = document.getElementById('descripcionGastoDirectoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoGastoDirectoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                // Crear gasto directo
+                var nuevoGasto = {
+                    id: nextIdDirecto++,
+                    fecha: fecha,
+                    descripcion: descripcion,
+                    tipo: 'Directo',
+                    monto: monto,
+                    participantes: 1,
+                    nota: '',
+                    excluidos: []
+                };
+
+                gastosDirectos.push(nuevoGasto);
+                guardarGastosDirectos(gastosDirectos);
+                renderizarGastos();
+                cerrarModal();
+                alert('✅ Gasto directo registrado correctamente. Se descontará del Disponible Total.');
+            });
+        }
+
+        // ============================================
+        // EDITAR GASTO DIRECTO
+        // ============================================
+        function mostrarModalEditarDirecto(id) {
+            cerrarModalDetalle();
+
+            var gasto = gastosDirectos.find(function(g) { return g.id === id; });
+            if (!gasto) return;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="modal-titulo">Editar Gasto Directo</div>
+                    <div class="modal-subtitulo">Actualiza los datos</div>
+                    <form id="formGastoDirectoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaGastoDirectoInput" value="${gasto.fecha}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionGastoDirectoInput" value="${gasto.descripcion}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoGastoDirectoInput" value="${gasto.monto}" required>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-editar-modal">
+                                <i class="fas fa-check"></i>
+                                Actualizar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionGastoDirectoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formGastoDirectoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaGastoDirectoInput').value;
+                var descripcion = document.getElementById('descripcionGastoDirectoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoGastoDirectoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                gasto.fecha = fecha;
+                gasto.descripcion = descripcion;
+                gasto.monto = monto;
+
+                guardarGastosDirectos(gastosDirectos);
+                renderizarGastos();
+                cerrarModal();
+                alert('✅ Gasto directo actualizado');
+            });
+        }
+
+        // ============================================
+        // ELIMINAR GASTO DIRECTO
+        // ============================================
+        function eliminarGastoDirecto(id) {
+            var gasto = gastosDirectos.find(function(g) { return g.id === id; });
+            if (!gasto) return;
+
+            cerrarModalDetalle();
+
+            if (confirm('⚠️ ¿Eliminar el gasto directo "' + gasto.descripcion + '" por $' + gasto.monto.toFixed(2) + '?')) {
+                gastosDirectos = gastosDirectos.filter(function(g) { return g.id !== id; });
+                guardarGastosDirectos(gastosDirectos);
+                renderizarGastos();
+                alert('✅ Gasto directo eliminado');
+            }
+        }
+
+        // ============================================
+        // GASTO COMPARTIDO - CREAR
+        // ============================================
         function mostrarModalCrear() {
             if (grupos.length === 0) {
                 alert('⚠️ Primero debes crear un grupo');
@@ -1005,8 +1360,8 @@
                     <div class="modal-icono" style="background:linear-gradient(135deg,#ec4899,#db2777);">
                         <i class="fas fa-credit-card"></i>
                     </div>
-                    <div class="modal-titulo">Nuevo Gasto</div>
-                    <div class="modal-subtitulo">Registra un gasto compartido</div>
+                    <div class="modal-titulo">Nuevo Gasto Compartido</div>
+                    <div class="modal-subtitulo">Registra un gasto compartido entre alumnos</div>
                     <form id="formGastoModal">
                         <div class="modal-grupo">
                             <label>Grupo <span class="obligatorio">*</span></label>
@@ -1244,6 +1599,9 @@
             });
         }
 
+        // ============================================
+        // GASTO COMPARTIDO - EDITAR
+        // ============================================
         function mostrarModalEditar(id) {
             cerrarModalDetalle();
 
@@ -1264,7 +1622,7 @@
                     <div class="modal-icono" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
                         <i class="fas fa-pencil-alt"></i>
                     </div>
-                    <div class="modal-titulo">Editar Gasto</div>
+                    <div class="modal-titulo">Editar Gasto Compartido</div>
                     <div class="modal-subtitulo">Actualiza los datos del gasto</div>
                     <form id="formGastoModal">
                         <div class="modal-grupo">
@@ -1353,6 +1711,9 @@
             });
         }
 
+        // ============================================
+        // GASTO COMPARTIDO - ELIMINAR
+        // ============================================
         function eliminarGasto(id) {
             var gasto = todosLosGastos.find(function(g) { return g.id === id; });
             if (!gasto) return;
@@ -1371,6 +1732,9 @@
             }
         }
 
+        // ============================================
+        // CERRAR MODAL
+        // ============================================
         function cerrarModal() {
             var modal = document.getElementById('modalOverlay');
             if (modal) modal.remove();
@@ -1387,12 +1751,18 @@
             }
         });
 
+        // ============================================
+        // EXPONER FUNCIONES
+        // ============================================
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
         window.logout = logout;
         window.mostrarModalCrear = mostrarModalCrear;
+        window.mostrarModalGastoDirecto = mostrarModalGastoDirecto;
         window.mostrarModalEditar = mostrarModalEditar;
+        window.mostrarModalEditarDirecto = mostrarModalEditarDirecto;
         window.eliminarGasto = eliminarGasto;
+        window.eliminarGastoDirecto = eliminarGastoDirecto;
         window.cerrarModal = cerrarModal;
         window.verDetalleGasto = verDetalleGasto;
         window.filtrarGastos = filtrarGastos;

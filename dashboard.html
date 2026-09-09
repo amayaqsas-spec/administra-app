@@ -698,11 +698,17 @@
             return data ? JSON.parse(data) : [];
         }
 
+        function getGastosDirectos() {
+            var data = localStorage.getItem('gastosDirectos');
+            return data ? JSON.parse(data) : [];
+        }
+
         function actualizarDashboard() {
             var grupos = getGrupos();
             var alumnos = getAlumnos();
             var gastos = getGastos();
             var ingresosExternos = getIngresosExternos();
+            var gastosDirectos = getGastosDirectos();
 
             var idsGrupos = grupos.map(function(g) { return g.id; });
             var alumnosValidos = alumnos.filter(function(a) { return idsGrupos.includes(a.grupoId); });
@@ -712,10 +718,11 @@
             var totalPagado = alumnosValidos.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
             document.getElementById('totalPagado').textContent = '$' + totalPagado.toLocaleString();
 
-            // DISPONIBLE TOTAL = Inscripción (disponible de alumnos) + Ingresos Externos
+            // DISPONIBLE TOTAL = Inscripción + Ingresos Externos - Gastos Directos
             var totalDisponibleInscripcion = alumnosValidos.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
             var totalIngresosExternos = ingresosExternos.reduce(function(sum, i) { return sum + (i.monto || 0); }, 0);
-            var totalDisponible = totalDisponibleInscripcion + totalIngresosExternos;
+            var totalGastosDirectos = gastosDirectos.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
+            var totalDisponible = totalDisponibleInscripcion + totalIngresosExternos - totalGastosDirectos;
 
             document.getElementById('totalDisponible').textContent = '$' + totalDisponible.toLocaleString();
 
@@ -764,7 +771,7 @@
         setInterval(actualizarDashboard, 5000);
 
         window.addEventListener('storage', function(e) {
-            if (e.key === 'alumnos' || e.key === 'grupos' || e.key === 'gastos' || e.key === 'ingresosExternos') {
+            if (e.key === 'alumnos' || e.key === 'grupos' || e.key === 'gastos' || e.key === 'ingresosExternos' || e.key === 'gastosDirectos') {
                 actualizarDashboard();
             }
         });

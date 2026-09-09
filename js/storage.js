@@ -99,7 +99,7 @@ function eliminarAlumnoLocal(id) {
 }
 
 // ============================================
-// FUNCIONES CRUD - GASTOS
+// FUNCIONES CRUD - GASTOS COMPARTIDOS
 // ============================================
 function getGastos() {
     const data = localStorage.getItem('gastos');
@@ -147,6 +147,52 @@ function eliminarGastoLocal(id) {
     let gastos = getGastos();
     gastos = gastos.filter(g => g.id !== id);
     guardarGastos(gastos);
+    return { success: true };
+}
+
+// ============================================
+// FUNCIONES CRUD - GASTOS DIRECTOS
+// ============================================
+function getGastosDirectos() {
+    const data = localStorage.getItem('gastosDirectos');
+    return data ? JSON.parse(data) : [];
+}
+
+function guardarGastosDirectos(gastos) {
+    localStorage.setItem('gastosDirectos', JSON.stringify(gastos));
+}
+
+function crearGastoDirectoLocal(gasto) {
+    const gastos = getGastosDirectos();
+    const nextId = gastos.length > 0 ? Math.max(...gastos.map(g => g.id)) + 1 : 1;
+    const nuevoGasto = {
+        id: nextId,
+        fecha: gasto.fecha,
+        descripcion: gasto.descripcion,
+        tipo: 'Directo',
+        monto: gasto.monto || 0,
+        participantes: 1,
+        nota: gasto.nota || '',
+        excluidos: []
+    };
+    gastos.push(nuevoGasto);
+    guardarGastosDirectos(gastos);
+    return { success: true, data: nuevoGasto };
+}
+
+function actualizarGastoDirectoLocal(gasto) {
+    const gastos = getGastosDirectos();
+    const index = gastos.findIndex(g => g.id === gasto.id);
+    if (index === -1) return { success: false, error: 'Gasto no encontrado' };
+    gastos[index] = gasto;
+    guardarGastosDirectos(gastos);
+    return { success: true, data: gasto };
+}
+
+function eliminarGastoDirectoLocal(id) {
+    let gastos = getGastosDirectos();
+    gastos = gastos.filter(g => g.id !== id);
+    guardarGastosDirectos(gastos);
     return { success: true };
 }
 
@@ -252,6 +298,10 @@ window.getGastosPorGrupo = getGastosPorGrupo;
 window.crearGasto = crearGastoLocal;
 window.actualizarGasto = actualizarGastoLocal;
 window.eliminarGasto = eliminarGastoLocal;
+window.getGastosDirectos = getGastosDirectos;
+window.crearGastoDirecto = crearGastoDirectoLocal;
+window.actualizarGastoDirecto = actualizarGastoDirectoLocal;
+window.eliminarGastoDirecto = eliminarGastoDirectoLocal;
 window.getExtraNotas = getExtraNotas;
 window.crearExtraNota = crearExtraNotaLocal;
 window.actualizarExtraNota = actualizarExtraNotaLocal;
