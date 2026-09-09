@@ -619,21 +619,68 @@
         }
         .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         
-        /* ===== ESTILOS PARA PDF TAMAÑO CARTA ===== */
-        #contenidoPDF {
+        /* ============================================================
+           ESTILOS PARA IMPRESIÓN (PDF TAMAÑO CARTA)
+           ============================================================ */
+        @page {
+            size: letter;
+            margin: 1.5cm;
+        }
+
+        @media print {
+            /* Ocultar todo lo que no sea el área de impresión */
+            body * {
+                visibility: hidden;
+            }
+            
+            /* Mostrar únicamente el contenedor del documento */
+            #area-impresion, #area-impresion * {
+                visibility: visible;
+            }
+
+            #area-impresion {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background: white;
+            }
+
+            /* Evitar que las filas de tablas se corten entre páginas */
+            tr, .card, .pdf-row {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* Asegurar que la tabla no se desborde */
+            table {
+                width: 100% !important;
+                table-layout: fixed;
+                border-collapse: collapse;
+            }
+            
+            th, td {
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
+        }
+
+        /* ===== ESTILOS PARA EL CONTENEDOR DE IMPRESIÓN ===== */
+        #area-impresion {
             display: none;
             background: white;
-            padding: 20mm 25mm;
+            padding: 0;
             font-family: 'Times New Roman', Times, serif;
             font-size: 11px;
             line-height: 1.5;
             color: #1a1a2e;
-            width: 210mm;
-            min-height: 297mm;
+            width: 100%;
+            max-width: 210mm;
             box-sizing: border-box;
-            margin: 0 auto;
         }
-        #contenidoPDF .pdf-header {
+        #area-impresion .pdf-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
@@ -641,36 +688,36 @@
             border-bottom: 2px solid #1a1a2e;
             padding-bottom: 10px;
         }
-        #contenidoPDF .pdf-header .titulo-area {
+        #area-impresion .pdf-header .titulo-area {
             flex: 1;
             text-align: center;
             padding: 0 10px;
         }
-        #contenidoPDF .pdf-header .titulo-area h2 {
+        #area-impresion .pdf-header .titulo-area h2 {
             font-size: 18px;
             font-weight: 700;
             color: #1a1a2e;
             margin-bottom: 2px;
             letter-spacing: 1px;
         }
-        #contenidoPDF .pdf-header .titulo-area .subtitulo {
+        #area-impresion .pdf-header .titulo-area .subtitulo {
             font-size: 12px;
             color: #4a4a6a;
             font-weight: normal;
         }
-        #contenidoPDF .pdf-header .fecha {
+        #area-impresion .pdf-header .fecha {
             font-size: 10px;
             color: #4a4a6a;
             text-align: right;
             white-space: nowrap;
         }
-        #contenidoPDF table {
+        #area-impresion table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
             font-size: 10px;
         }
-        #contenidoPDF table th {
+        #area-impresion table th {
             background: #f3f4f6;
             border: 1px solid #9ca3af;
             padding: 5px 7px;
@@ -681,22 +728,22 @@
             color: #1a1b2e;
             letter-spacing: 0.5px;
         }
-        #contenidoPDF table td {
+        #area-impresion table td {
             border: 1px solid #9ca3af;
             padding: 4px 7px;
             font-size: 10px;
             color: #1a1a2e;
         }
-        #contenidoPDF table .numero-col { text-align: center; width: 30px; }
-        #contenidoPDF table .nombre-col { text-align: left; }
-        #contenidoPDF table .telefono-col { text-align: center; width: 80px; }
-        #contenidoPDF table .pago-col { text-align: center; width: 75px; }
-        #contenidoPDF table .pagado-col { text-align: right; width: 70px; }
-        #contenidoPDF table .disponible-col { text-align: right; width: 70px; }
-        #contenidoPDF table .restan-col { text-align: right; width: 70px; }
-        #contenidoPDF table .nota-pdf-col { text-align: left; width: 100px; }
-        #contenidoPDF table .blanco-col { width: 40px; }
-        #contenidoPDF .pdf-footer {
+        #area-impresion table .numero-col { text-align: center; width: 30px; }
+        #area-impresion table .nombre-col { text-align: left; }
+        #area-impresion table .telefono-col { text-align: center; width: 80px; }
+        #area-impresion table .pago-col { text-align: center; width: 75px; }
+        #area-impresion table .pagado-col { text-align: right; width: 70px; }
+        #area-impresion table .disponible-col { text-align: right; width: 70px; }
+        #area-impresion table .restan-col { text-align: right; width: 70px; }
+        #area-impresion table .nota-pdf-col { text-align: left; width: 100px; }
+        #area-impresion table .blanco-col { width: 40px; }
+        #area-impresion .pdf-footer {
             margin-top: 15px;
             padding-top: 10px;
             border-top: 1px solid #d1d5db;
@@ -705,7 +752,7 @@
             font-size: 10px;
             color: #6b7280;
         }
-        #contenidoPDF .pdf-footer .totales {
+        #area-impresion .pdf-footer .totales {
             font-weight: 600;
             color: #1a1b2e;
         }
@@ -957,7 +1004,8 @@
         </div>
     </div>
 
-    <div id="contenidoPDF"></div>
+    <!-- ===== CONTENEDOR PARA IMPRESIÓN ===== -->
+    <div id="area-impresion"></div>
 
     <script src="js/storage.js"></script>
     <script>
@@ -1549,7 +1597,7 @@
                 columnasVaciasBody += '<td class="blanco-col"></td>';
             }
 
-            // Generar HTML para el PDF
+            // Generar HTML para el PDF dentro del contenedor de impresión
             var html = `
                 <div class="pdf-header">
                     <div class="titulo-area">
@@ -1611,15 +1659,19 @@
                 </div>
             `;
 
-            var contenedor = document.getElementById('contenidoPDF');
+            // Poner el HTML en el contenedor de impresión
+            var contenedor = document.getElementById('area-impresion');
             contenedor.innerHTML = html;
             contenedor.style.display = 'block';
-            contenedor.style.width = '210mm';
-            contenedor.style.padding = '20mm 25mm';
-            contenedor.style.minHeight = '297mm';
+            contenedor.style.width = '100%';
+            contenedor.style.maxWidth = '210mm';
+            contenedor.style.margin = '0 auto';
+            contenedor.style.padding = '0';
+            contenedor.style.background = 'white';
             contenedor.style.boxSizing = 'border-box';
 
             try {
+                // Esperar a que se renderice
                 await new Promise(function(resolve) { setTimeout(resolve, 500); });
 
                 var canvas = await html2canvas(contenedor, {
@@ -1632,14 +1684,15 @@
                     windowWidth: 210 * 3.78,
                     windowHeight: 297 * 3.78,
                     onclone: function(clonedDoc) {
-                        var pdfContent = clonedDoc.getElementById('contenidoPDF');
-                        if (pdfContent) {
-                            pdfContent.style.width = '210mm';
-                            pdfContent.style.padding = '20mm 25mm';
-                            pdfContent.style.minHeight = '297mm';
-                            pdfContent.style.boxSizing = 'border-box';
-                            pdfContent.style.display = 'block';
-                            pdfContent.style.background = 'white';
+                        var content = clonedDoc.getElementById('area-impresion');
+                        if (content) {
+                            content.style.width = '210mm';
+                            content.style.maxWidth = '210mm';
+                            content.style.margin = '0 auto';
+                            content.style.padding = '0';
+                            content.style.background = 'white';
+                            content.style.display = 'block';
+                            content.style.boxSizing = 'border-box';
                         }
                     }
                 });
@@ -1647,7 +1700,7 @@
                 var imgData = canvas.toDataURL('image/png');
 
                 var { jsPDF } = window.jspdf;
-                var pdf = new jsPDF('p', 'mm', 'a4');
+                var pdf = new jsPDF('p', 'mm', 'letter');
                 var pageWidth = pdf.internal.pageSize.getWidth();
                 var pageHeight = pdf.internal.pageSize.getHeight();
 
