@@ -8,8 +8,11 @@
     <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -19,7 +22,6 @@
             background-attachment: fixed;
             display: flex;
         }
-        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -356,132 +358,7 @@
         }
         .btn-generar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(220,38,38,0.35); }
         .btn-generar i { font-size: 16px; }
-        #contenidoPDF {
-            display: none;
-            background: white;
-            padding: 15mm 20mm;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 10px;
-            line-height: 1.4;
-            color: #1a1a2e;
-            width: 210mm;
-            min-height: 297mm;
-            box-sizing: border-box;
-        }
-        #contenidoPDF .pdf-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #1a1a2e;
-            padding-bottom: 10px;
-        }
-        #contenidoPDF .pdf-header .escudo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 4px;
-            border: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #contenidoPDF .pdf-header .escudo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-        #contenidoPDF .pdf-header .titulo-area {
-            flex: 1;
-            text-align: center;
-            padding: 0 10px;
-        }
-        #contenidoPDF .pdf-header .titulo-area h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 2px;
-            letter-spacing: 1px;
-        }
-        #contenidoPDF .pdf-header .titulo-area .subtitulo { font-size: 11px; color: #4a4a6a; font-weight: normal; }
-        #contenidoPDF .pdf-header .fecha-reporte {
-            font-size: 10px;
-            color: #4a4a6a;
-            text-align: right;
-            white-space: nowrap;
-        }
-        #contenidoPDF .pdf-header .fecha-reporte span {
-            display: block;
-            font-size: 9px;
-            color: #9ca3af;
-        }
-        #contenidoPDF .pdf-resumen {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            margin-bottom: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        #contenidoPDF .pdf-resumen .resumen-item {
-            text-align: center;
-        }
-        #contenidoPDF .pdf-resumen .resumen-item .numero { font-size: 14px; font-weight: 700; }
-        #contenidoPDF .pdf-resumen .resumen-item .etiqueta {
-            font-size: 8px;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        #contenidoPDF .pdf-resumen .resumen-item .verde { color: #059669; }
-        #contenidoPDF .pdf-resumen .resumen-item .morado { color: #7c3aed; }
-        #contenidoPDF .pdf-resumen .resumen-item .rojo { color: #dc2626; }
-        #contenidoPDF .pdf-resumen .resumen-item .azul { color: #2563eb; }
-        #contenidoPDF table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-            font-size: 9px;
-        }
-        #contenidoPDF table th {
-            background: #f3f4f6;
-            border: 1px solid #9ca3af;
-            padding: 4px 6px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 8px;
-            text-transform: uppercase;
-            color: #1a1b2e;
-            letter-spacing: 0.5px;
-        }
-        #contenidoPDF table td {
-            border: 1px solid #9ca3af;
-            padding: 3px 6px;
-            font-size: 9px;
-            color: #1a1a2e;
-        }
-        #contenidoPDF table .fecha-col { width: 70px; }
-        #contenidoPDF table .descripcion-col { text-align: left; }
-        #contenidoPDF table .tipo-col { text-align: center; width: 65px; }
-        #contenidoPDF table .nota-col { text-align: left; }
-        #contenidoPDF table .monto-col { text-align: right; width: 60px; }
-        #contenidoPDF .pdf-footer {
-            margin-top: 15px;
-            padding-top: 8px;
-            border-top: 1px solid #d1d5db;
-            display: flex;
-            justify-content: space-between;
-            font-size: 9px;
-            color: #6b7280;
-        }
-        #contenidoPDF .pdf-footer .totales { font-weight: 600; color: #1a1b2e; }
-        #contenidoPDF .pdf-footer .sin-datos {
-            text-align: center;
-            color: #6b7280;
-            font-size: 11px;
-            padding: 20px 0;
-        }
+        
         .loading-overlay {
             position: fixed;
             inset: 0;
@@ -567,6 +444,11 @@
             <button class="menu-item" onclick="cerrarSidebar(); location.href='extra-notas.html'">
                 <i class="fas fa-sticky-note"></i>
                 Extra Notas
+            </button>
+
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
             </button>
 
             <div class="divider"></div>
@@ -669,8 +551,6 @@
         </div>
     </div>
 
-    <div id="contenidoPDF"></div>
-
     <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
@@ -709,10 +589,6 @@
         var grupos = getGrupos();
         var alumnos = getAlumnos();
         var gastos = getGastos();
-
-        function getEscudoURL() {
-            return 'assets/escuela.png';
-        }
 
         document.addEventListener('DOMContentLoaded', function() {
             cargarGrupos();
@@ -789,7 +665,10 @@
             generarPDF(grupoId, fechaInicio, fechaFin, opciones);
         });
 
-        async function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
+        // ============================================
+        // GENERAR PDF - CON ESCUDO Y SIN FONDOS GRISES
+        // ============================================
+        function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
             mostrarLoading();
 
             try {
@@ -812,148 +691,188 @@
                 var totalGastos = gastosFiltrados.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
 
                 var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                var escudoURL = getEscudoURL();
 
-                var html = `
-                    <div class="pdf-header">
-                        <div class="escudo">
-                            <img src="${escudoURL}" alt="Escudo Escuela" crossorigin="anonymous">
-                        </div>
-                        <div class="titulo-area">
-                            <h2>Reporte de Gastos</h2>
-                            <div class="subtitulo">${grupo.nombre}</div>
-                        </div>
-                        <div class="fecha-reporte">
-                            ${fechaActual}
-                            <span>${fechaInicio} - ${fechaFin}</span>
-                        </div>
-                    </div>
-                `;
+                // Crear PDF
+                var { jsPDF } = window.jspdf;
+                var doc = new jsPDF('p', 'mm', 'letter');
+                var margin = 15;
+                var pageWidth = doc.internal.pageSize.getWidth();
 
-                var resumenHtml = '<div class="pdf-resumen">';
-                if (opciones.recaudado) {
-                    resumenHtml += `
-                        <div class="resumen-item">
-                            <div class="numero verde">$${totalRecaudado.toLocaleString()}</div>
-                            <div class="etiqueta">Recaudado</div>
-                        </div>
-                    `;
+                // ===== ESCUDO =====
+                var escudoWidth = 15;
+                var escudoHeight = 15;
+                var imgData = null;
+
+                function dibujarEncabezado() {
+                    // Escudo (izquierda)
+                    if (imgData) {
+                        try {
+                            doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                        } catch(e) {
+                            doc.setFillColor(124, 58, 237);
+                            doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(10);
+                            doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                        }
+                    } else {
+                        doc.setFillColor(124, 58, 237);
+                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(10);
+                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                    }
+
+                    // Título
+                    var tituloX = pageWidth / 2;
+                    var tituloY = margin + 3;
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Reporte de Gastos', tituloX, tituloY, { align: 'center' });
+
+                    // Subtítulo (grupo)
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(grupo.nombre, tituloX, tituloY + 6, { align: 'center' });
+
+                    // Fecha
+                    doc.setFontSize(9);
+                    doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
+
+                    return tituloY + 12;
                 }
-                if (opciones.disponible) {
-                    resumenHtml += `
-                        <div class="resumen-item">
-                            <div class="numero morado">$${totalDisponible.toLocaleString()}</div>
-                            <div class="etiqueta">Disponible</div>
-                        </div>
-                    `;
-                }
-                if (opciones.gastos) {
-                    resumenHtml += `
-                        <div class="resumen-item">
-                            <div class="numero rojo">$${totalGastos.toLocaleString()}</div>
-                            <div class="etiqueta">Gastos</div>
-                        </div>
-                    `;
-                }
-                resumenHtml += '</div>';
-                html += resumenHtml;
 
-                if (gastosFiltrados.length === 0) {
-                    html += `
-                        <div class="sin-datos">
-                            No hay gastos registrados en el período seleccionado
-                        </div>
-                    `;
-                } else {
-                    html += `
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="fecha-col">Fecha</th>
-                                    <th class="descripcion-col">Descripción</th>
-                                    <th class="tipo-col">Tipo</th>
-                                    <th class="nota-col">Nota</th>
-                                    <th class="monto-col">Monto</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
+                // Cargar escudo
+                var loadImg = new Image();
+                loadImg.crossOrigin = 'Anonymous';
+                loadImg.src = 'assets/escuela.png';
 
-                    gastosFiltrados.forEach(function(gasto) {
-                        html += `
-                            <tr>
-                                <td class="fecha-col">${gasto.fecha}</td>
-                                <td class="descripcion-col">${gasto.descripcion}</td>
-                                <td class="tipo-col">${gasto.tipo}</td>
-                                <td class="nota-col">${gasto.nota || '-'}</td>
-                                <td class="monto-col">$${gasto.monto.toLocaleString()}</td>
-                            </tr>
-                        `;
+                var pdfGenerado = false;
+
+                loadImg.onload = function() {
+                    try {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = loadImg.width;
+                        canvas.height = loadImg.height;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(loadImg, 0, 0);
+                        imgData = canvas.toDataURL('image/png');
+                    } catch(e) {}
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                };
+
+                loadImg.onerror = function() {
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                };
+
+                setTimeout(function() {
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                }, 500);
+
+                function generarPDFConImagen() {
+                    var yStart = dibujarEncabezado();
+
+                    // ===== RESUMEN (opcional) =====
+                    if (opciones.recaudado || opciones.disponible || opciones.gastos) {
+                        var resumenY = yStart;
+                        doc.setFontSize(10);
+                        doc.setFont('helvetica', 'bold');
+                        var resumenText = '';
+                        if (opciones.recaudado) resumenText += 'Recaudado: $' + totalRecaudado.toLocaleString() + '  ';
+                        if (opciones.disponible) resumenText += 'Disponible: $' + totalDisponible.toLocaleString() + '  ';
+                        if (opciones.gastos) resumenText += 'Gastos: $' + totalGastos.toLocaleString();
+                        doc.text(resumenText, margin, resumenY);
+                        yStart = resumenY + 8;
+                    }
+
+                    // ===== TABLA =====
+                    var headRow = ['Fecha', 'Descripción', 'Tipo'];
+                    var columnStyles = {
+                        0: { halign: 'center', cellWidth: 22 },
+                        1: { cellWidth: 60 },
+                        2: { halign: 'center', cellWidth: 22 }
+                    };
+                    var colIndex = 3;
+
+                    if (opciones.notas) {
+                        headRow.push('Nota');
+                        columnStyles[colIndex] = { cellWidth: 35 };
+                        colIndex++;
+                    }
+
+                    headRow.push('Monto');
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
+
+                    // Preparar datos
+                    var bodyRows = [];
+                    if (gastosFiltrados.length === 0) {
+                        bodyRows.push(['No hay gastos en el período seleccionado', '', '', '', '']);
+                    } else {
+                        gastosFiltrados.forEach(function(gasto) {
+                            var row = [
+                                gasto.fecha,
+                                gasto.descripcion,
+                                gasto.tipo
+                            ];
+                            if (opciones.notas) {
+                                row.push(gasto.nota || '-');
+                            }
+                            row.push('$' + gasto.monto.toLocaleString());
+                            bodyRows.push(row);
+                        });
+                    }
+
+                    // Dibujar tabla - SIN FONDOS GRISES
+                    doc.autoTable({
+                        head: [headRow],
+                        body: bodyRows,
+                        startY: yStart,
+                        margin: { left: margin, right: margin },
+                        styles: {
+                            fontSize: 8,
+                            cellPadding: 1.5,
+                            valign: 'middle',
+                            fillColor: [255, 255, 255],
+                            textColor: [0, 0, 0],
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.2
+                        },
+                        headStyles: {
+                            fillColor: [255, 255, 255],
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold',
+                            fontSize: 7,
+                            halign: 'left',
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.3
+                        },
+                        columnStyles: columnStyles,
+                        didDrawPage: function(data) {
+                            var pageY = doc.internal.pageSize.getHeight() - 10;
+                            doc.setFontSize(8);
+                            doc.setFont('helvetica', 'normal');
+                            doc.text('Total Gastos: $' + totalGastos.toLocaleString(), margin, pageY);
+                            doc.text(gastosFiltrados.length + ' registros', pageWidth - margin, pageY, { align: 'right' });
+                        }
                     });
 
-                    html += `
-                            </tbody>
-                        </table>
-                    `;
+                    doc.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
+                    ocultarLoading();
                 }
-
-                html += `
-                    <div class="pdf-footer">
-                        <div>
-                            <span class="totales">Total Gastos: $${totalGastos.toLocaleString()}</span>
-                        </div>
-                        <div>
-                            <span>${gastosFiltrados.length} registros</span>
-                        </div>
-                    </div>
-                `;
-
-                var contenedor = document.getElementById('contenidoPDF');
-                contenedor.innerHTML = html;
-                contenedor.style.display = 'block';
-
-                await new Promise(resolve => setTimeout(resolve, 300));
-
-                var canvas = await html2canvas(contenedor, {
-                    scale: 2,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    width: 210 * 3.78,
-                    height: 297 * 3.78,
-                    windowWidth: 210 * 3.78,
-                    windowHeight: 297 * 3.78,
-                    onclone: function(document) {
-                        var pdfContent = document.getElementById('contenidoPDF');
-                        if (pdfContent) {
-                            pdfContent.style.width = '210mm';
-                            pdfContent.style.padding = '15mm 20mm';
-                            pdfContent.style.minHeight = '297mm';
-                        }
-                    }
-                });
-
-                var imgData = canvas.toDataURL('image/png');
-
-                var { jsPDF } = window.jspdf;
-                var pdf = new jsPDF('p', 'mm', 'a4');
-                var pageWidth = pdf.internal.pageSize.getWidth();
-                var pageHeight = pdf.internal.pageSize.getHeight();
-
-                var imgWidth = pageWidth;
-                var imgHeight = (canvas.height / canvas.width) * pageWidth;
-
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                pdf.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
-
-                contenedor.style.display = 'none';
-                ocultarLoading();
 
             } catch (error) {
                 console.error('Error al generar PDF:', error);
                 alert('Ocurrió un error al generar el PDF: ' + error.message);
                 ocultarLoading();
-                document.getElementById('contenidoPDF').style.display = 'none';
             }
         }
 
