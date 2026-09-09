@@ -8,7 +8,11 @@
     <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -1429,7 +1433,7 @@
         }
 
         // ============================================
-        // GENERAR PDF DIRECTO CON jsPDF (SIN html2canvas)
+        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1455,7 +1459,6 @@
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
             var pageHeight = doc.internal.pageSize.getHeight();
-            var contentWidth = pageWidth - (margin * 2);
             var y = margin;
 
             // ===== TÍTULO =====
@@ -1473,109 +1476,104 @@
             doc.text('Fecha: ' + fechaActual, pageWidth - margin, y, { align: 'right' });
             y += 10;
 
-            // ===== TABLA =====
-            // Configurar columnas
-            var colDefs = [];
-            var colWidths = [];
+            // ===== CONFIGURAR COLUMNAS =====
+            var headRow = ['#'];
+            var columnStyles = { 0: { halign: 'center', cellWidth: 10 } };
+            var colIndex = 1;
 
-            // Columna #
-            colDefs.push({ header: '#', dataKey: 'num' });
-            colWidths.push(8);
-
-            // Columna Nombre
-            colDefs.push({ header: 'Nombre del Alumno', dataKey: 'nombre' });
-            colWidths.push(55);
+            // Nombre
+            headRow.push('Nombre del Alumno');
+            columnStyles[colIndex] = { cellWidth: 55 };
+            colIndex++;
 
             // Teléfono
             if (opciones.telefono) {
-                colDefs.push({ header: 'Teléfono', dataKey: 'telefono' });
-                colWidths.push(25);
+                headRow.push('Teléfono');
+                columnStyles[colIndex] = { halign: 'center', cellWidth: 25 };
+                colIndex++;
             }
 
             // Pago con
             if (opciones.pagoCon) {
-                colDefs.push({ header: 'Pago con', dataKey: 'pagoCon' });
-                colWidths.push(22);
+                headRow.push('Pago con');
+                columnStyles[colIndex] = { halign: 'center', cellWidth: 22 };
+                colIndex++;
             }
 
             // Pagado
             if (opciones.pagado) {
-                colDefs.push({ header: 'Pagado', dataKey: 'pagado' });
-                colWidths.push(25);
+                headRow.push('Pagado');
+                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
+                colIndex++;
             }
 
             // Disponible
             if (opciones.disponible) {
-                colDefs.push({ header: 'Disponible', dataKey: 'disponible' });
-                colWidths.push(25);
+                headRow.push('Disponible');
+                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
+                colIndex++;
             }
 
             // Restan
             if (opciones.restan) {
-                colDefs.push({ header: 'Restan', dataKey: 'restan' });
-                colWidths.push(25);
+                headRow.push('Restan');
+                columnStyles[colIndex] = { halign: 'right', cellWidth: 25 };
+                colIndex++;
             }
 
             // Nota
             if (opciones.nota) {
-                colDefs.push({ header: 'Nota', dataKey: 'nota' });
-                colWidths.push(30);
+                headRow.push('Nota');
+                columnStyles[colIndex] = { cellWidth: 30 };
+                colIndex++;
             }
 
             // Columnas vacías
             for (var i = 0; i < columnasVacias; i++) {
-                colDefs.push({ header: '', dataKey: 'vacia' + i });
-                colWidths.push(10);
+                headRow.push('');
+                columnStyles[colIndex] = { cellWidth: 10 };
+                colIndex++;
             }
 
-            // Preparar datos
-            var rows = [];
+            // ===== PREPARAR DATOS =====
+            var bodyRows = [];
             sorted.forEach(function(alumno, index) {
                 var restan = alumno.total - alumno.pagado;
                 var disponible = alumno.disponible || 0;
                 var nota = alumno.nota || '';
-                var row = {
-                    num: (index + 1).toString(),
-                    nombre: alumno.nombre,
-                    telefono: opciones.telefono ? alumno.telefono : '',
-                    pagoCon: opciones.pagoCon ? alumno.pagoCon : '',
-                    pagado: opciones.pagado ? '$' + alumno.pagado.toLocaleString() : '',
-                    disponible: opciones.disponible ? '$' + disponible.toLocaleString() : '',
-                    restan: opciones.restan ? '$' + restan.toLocaleString() : '',
-                    nota: opciones.nota ? nota : ''
-                };
+                var row = [(index + 1).toString()];
+                row.push(alumno.nombre);
+                if (opciones.telefono) row.push(alumno.telefono);
+                if (opciones.pagoCon) row.push(alumno.pagoCon);
+                if (opciones.pagado) row.push('$' + alumno.pagado.toLocaleString());
+                if (opciones.disponible) row.push('$' + disponible.toLocaleString());
+                if (opciones.restan) row.push('$' + restan.toLocaleString());
+                if (opciones.nota) row.push(nota);
                 for (var j = 0; j < columnasVacias; j++) {
-                    row['vacia' + j] = '';
+                    row.push('');
                 }
-                rows.push(row);
+                bodyRows.push(row);
             });
 
-            // Dibujar tabla
+            // ===== DIBUJAR TABLA =====
             doc.autoTable({
-                head: [colDefs.map(function(c) { return c.header; })],
-                body: rows.map(function(r) {
-                    return colDefs.map(function(c) { return r[c.dataKey] || ''; });
-                }),
+                head: [headRow],
+                body: bodyRows,
                 startY: y,
                 margin: { left: margin, right: margin },
-                tableWidth: contentWidth,
                 styles: {
                     fontSize: 8,
-                    cellPadding: 2,
-                    valign: 'middle',
-                    halign: 'left'
+                    cellPadding: 1.5,
+                    valign: 'middle'
                 },
                 headStyles: {
-                    fillColor: [243, 244, 246],
-                    textColor: [26, 27, 46],
+                    fillColor: [220, 220, 220],
+                    textColor: [0, 0, 0],
                     fontStyle: 'bold',
                     fontSize: 7,
                     halign: 'left'
                 },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 8 },
-                    1: { cellWidth: 55 }
-                },
+                columnStyles: columnStyles,
                 didDrawPage: function(data) {
                     // Footer
                     var pageY = doc.internal.pageSize.getHeight() - 10;
