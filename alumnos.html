@@ -8,7 +8,6 @@
     <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -619,144 +618,6 @@
         }
         .modal-detalle .detalle-whatsapp .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
         
-        /* ============================================================
-           ESTILOS PARA IMPRESIÓN (PDF TAMAÑO CARTA)
-           ============================================================ */
-        @page {
-            size: letter;
-            margin: 1.5cm;
-        }
-
-        @media print {
-            /* Ocultar todo lo que no sea el área de impresión */
-            body * {
-                visibility: hidden;
-            }
-            
-            /* Mostrar únicamente el contenedor del documento */
-            #area-impresion, #area-impresion * {
-                visibility: visible;
-            }
-
-            #area-impresion {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                background: white;
-            }
-
-            /* Evitar que las filas de tablas se corten entre páginas */
-            tr, .card, .pdf-row {
-                page-break-inside: avoid;
-                break-inside: avoid;
-            }
-
-            /* Asegurar que la tabla no se desborde */
-            table {
-                width: 100% !important;
-                table-layout: fixed;
-                border-collapse: collapse;
-            }
-            
-            th, td {
-                word-wrap: break-word;
-                overflow-wrap: break-word;
-            }
-        }
-
-        /* ===== ESTILOS PARA EL CONTENEDOR DE IMPRESIÓN ===== */
-        #area-impresion {
-            display: none;
-            background: white;
-            padding: 0;
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 11px;
-            line-height: 1.5;
-            color: #1a1a2e;
-            width: 100%;
-            max-width: 210mm;
-            box-sizing: border-box;
-        }
-        #area-impresion .pdf-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #1a1a2e;
-            padding-bottom: 10px;
-        }
-        #area-impresion .pdf-header .titulo-area {
-            flex: 1;
-            text-align: center;
-            padding: 0 10px;
-        }
-        #area-impresion .pdf-header .titulo-area h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 2px;
-            letter-spacing: 1px;
-        }
-        #area-impresion .pdf-header .titulo-area .subtitulo {
-            font-size: 12px;
-            color: #4a4a6a;
-            font-weight: normal;
-        }
-        #area-impresion .pdf-header .fecha {
-            font-size: 10px;
-            color: #4a4a6a;
-            text-align: right;
-            white-space: nowrap;
-        }
-        #area-impresion table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 10px;
-        }
-        #area-impresion table th {
-            background: #f3f4f6;
-            border: 1px solid #9ca3af;
-            padding: 5px 7px;
-            text-align: left;
-            font-weight: 700;
-            font-size: 9px;
-            text-transform: uppercase;
-            color: #1a1b2e;
-            letter-spacing: 0.5px;
-        }
-        #area-impresion table td {
-            border: 1px solid #9ca3af;
-            padding: 4px 7px;
-            font-size: 10px;
-            color: #1a1a2e;
-        }
-        #area-impresion table .numero-col { text-align: center; width: 30px; }
-        #area-impresion table .nombre-col { text-align: left; }
-        #area-impresion table .telefono-col { text-align: center; width: 80px; }
-        #area-impresion table .pago-col { text-align: center; width: 75px; }
-        #area-impresion table .pagado-col { text-align: right; width: 70px; }
-        #area-impresion table .disponible-col { text-align: right; width: 70px; }
-        #area-impresion table .restan-col { text-align: right; width: 70px; }
-        #area-impresion table .nota-pdf-col { text-align: left; width: 100px; }
-        #area-impresion table .blanco-col { width: 40px; }
-        #area-impresion .pdf-footer {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #d1d5db;
-            display: flex;
-            justify-content: space-between;
-            font-size: 10px;
-            color: #6b7280;
-        }
-        #area-impresion .pdf-footer .totales {
-            font-weight: 600;
-            color: #1a1b2e;
-        }
-        
         .modal-pdf .modal-content { max-width: 400px; }
         .col-toggle {
             display: flex;
@@ -1003,9 +864,6 @@
             </div>
         </div>
     </div>
-
-    <!-- ===== CONTENEDOR PARA IMPRESIÓN ===== -->
-    <div id="area-impresion"></div>
 
     <script src="js/storage.js"></script>
     <script>
@@ -1571,9 +1429,9 @@
         }
 
         // ============================================
-        // GENERAR PDF TAMAÑO CARTA
+        // GENERAR PDF DIRECTO CON jsPDF (SIN html2canvas)
         // ============================================
-        async function generarPDF(titulo, opciones, columnasVacias) {
+        function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
 
             if (alumnos.length === 0) {
@@ -1589,136 +1447,157 @@
             var totalDisponible = sorted.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
             var totalRestan = sorted.reduce(function(sum, a) { return sum + (a.total - a.pagado); }, 0);
 
-            // Construir columnas vacías
-            var columnasVaciasHtml = '';
-            var columnasVaciasBody = '';
-            for (var i = 0; i < columnasVacias; i++) {
-                columnasVaciasHtml += '<th class="blanco-col"></th>';
-                columnasVaciasBody += '<td class="blanco-col"></td>';
+            // Crear el PDF
+            var { jsPDF } = window.jspdf;
+            var doc = new jsPDF('p', 'mm', 'letter');
+
+            // Márgenes
+            var margin = 15;
+            var pageWidth = doc.internal.pageSize.getWidth();
+            var pageHeight = doc.internal.pageSize.getHeight();
+            var contentWidth = pageWidth - (margin * 2);
+            var y = margin;
+
+            // ===== TÍTULO =====
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.text(titulo || 'Listado de Alumnos', pageWidth / 2, y, { align: 'center' });
+            y += 8;
+
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.text(grupoNombre, pageWidth / 2, y, { align: 'center' });
+            y += 6;
+
+            doc.setFontSize(10);
+            doc.text('Fecha: ' + fechaActual, pageWidth - margin, y, { align: 'right' });
+            y += 10;
+
+            // ===== TABLA =====
+            // Configurar columnas
+            var colDefs = [];
+            var colWidths = [];
+
+            // Columna #
+            colDefs.push({ header: '#', dataKey: 'num' });
+            colWidths.push(8);
+
+            // Columna Nombre
+            colDefs.push({ header: 'Nombre del Alumno', dataKey: 'nombre' });
+            colWidths.push(55);
+
+            // Teléfono
+            if (opciones.telefono) {
+                colDefs.push({ header: 'Teléfono', dataKey: 'telefono' });
+                colWidths.push(25);
             }
 
-            // Generar HTML para el PDF dentro del contenedor de impresión
-            var html = `
-                <div class="pdf-header">
-                    <div class="titulo-area">
-                        <h2>${titulo || 'Listado de Alumnos'}</h2>
-                        <div class="subtitulo">${grupoNombre}</div>
-                    </div>
-                    <div class="fecha">Fecha: ${fechaActual}</div>
-                </div>
+            // Pago con
+            if (opciones.pagoCon) {
+                colDefs.push({ header: 'Pago con', dataKey: 'pagoCon' });
+                colWidths.push(22);
+            }
 
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="numero-col">#</th>
-                            <th class="nombre-col">Nombre del Alumno</th>
-                            ${opciones.telefono ? '<th class="telefono-col">Teléfono</th>' : ''}
-                            ${opciones.pagoCon ? '<th class="pago-col">Pago con</th>' : ''}
-                            ${opciones.pagado ? '<th class="pagado-col">Pagado</th>' : ''}
-                            ${opciones.disponible ? '<th class="disponible-col">Disponible</th>' : ''}
-                            ${opciones.restan ? '<th class="restan-col">Restan</th>' : ''}
-                            ${opciones.nota ? '<th class="nota-pdf-col">Nota</th>' : ''}
-                            ${columnasVaciasHtml}
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+            // Pagado
+            if (opciones.pagado) {
+                colDefs.push({ header: 'Pagado', dataKey: 'pagado' });
+                colWidths.push(25);
+            }
 
+            // Disponible
+            if (opciones.disponible) {
+                colDefs.push({ header: 'Disponible', dataKey: 'disponible' });
+                colWidths.push(25);
+            }
+
+            // Restan
+            if (opciones.restan) {
+                colDefs.push({ header: 'Restan', dataKey: 'restan' });
+                colWidths.push(25);
+            }
+
+            // Nota
+            if (opciones.nota) {
+                colDefs.push({ header: 'Nota', dataKey: 'nota' });
+                colWidths.push(30);
+            }
+
+            // Columnas vacías
+            for (var i = 0; i < columnasVacias; i++) {
+                colDefs.push({ header: '', dataKey: 'vacia' + i });
+                colWidths.push(10);
+            }
+
+            // Preparar datos
+            var rows = [];
             sorted.forEach(function(alumno, index) {
                 var restan = alumno.total - alumno.pagado;
                 var disponible = alumno.disponible || 0;
                 var nota = alumno.nota || '';
-                html += `
-                    <tr>
-                        <td class="numero-col">${index + 1}</td>
-                        <td class="nombre-col">${alumno.nombre}</td>
-                        ${opciones.telefono ? '<td class="telefono-col">' + alumno.telefono + '</td>' : ''}
-                        ${opciones.pagoCon ? '<td class="pago-col">' + alumno.pagoCon + '</td>' : ''}
-                        ${opciones.pagado ? '<td class="pagado-col">$' + alumno.pagado.toLocaleString() + '</td>' : ''}
-                        ${opciones.disponible ? '<td class="disponible-col">$' + disponible.toLocaleString() + '</td>' : ''}
-                        ${opciones.restan ? '<td class="restan-col">$' + restan.toLocaleString() + '</td>' : ''}
-                        ${opciones.nota ? '<td class="nota-pdf-col">' + nota + '</td>' : ''}
-                        ${columnasVaciasBody}
-                    </tr>
-                `;
+                var row = {
+                    num: (index + 1).toString(),
+                    nombre: alumno.nombre,
+                    telefono: opciones.telefono ? alumno.telefono : '',
+                    pagoCon: opciones.pagoCon ? alumno.pagoCon : '',
+                    pagado: opciones.pagado ? '$' + alumno.pagado.toLocaleString() : '',
+                    disponible: opciones.disponible ? '$' + disponible.toLocaleString() : '',
+                    restan: opciones.restan ? '$' + restan.toLocaleString() : '',
+                    nota: opciones.nota ? nota : ''
+                };
+                for (var j = 0; j < columnasVacias; j++) {
+                    row['vacia' + j] = '';
+                }
+                rows.push(row);
             });
 
-            html += `
-                    </tbody>
-                </table>
+            // Dibujar tabla
+            doc.autoTable({
+                head: [colDefs.map(function(c) { return c.header; })],
+                body: rows.map(function(r) {
+                    return colDefs.map(function(c) { return r[c.dataKey] || ''; });
+                }),
+                startY: y,
+                margin: { left: margin, right: margin },
+                tableWidth: contentWidth,
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2,
+                    valign: 'middle',
+                    halign: 'left'
+                },
+                headStyles: {
+                    fillColor: [243, 244, 246],
+                    textColor: [26, 27, 46],
+                    fontStyle: 'bold',
+                    fontSize: 7,
+                    halign: 'left'
+                },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 8 },
+                    1: { cellWidth: 55 }
+                },
+                didDrawPage: function(data) {
+                    // Footer
+                    var pageY = doc.internal.pageSize.getHeight() - 10;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text('Total Alumnos: ' + sorted.length, margin, pageY);
 
-                <div class="pdf-footer">
-                    <div>
-                        <span class="totales">Total Alumnos: ${sorted.length}</span>
-                    </div>
-                    <div>
-                        ${opciones.pagado ? '<span class="totales">Total Pagado: $' + totalPagado.toLocaleString() + '</span>' : ''}
-                        ${opciones.disponible ? ' | <span class="totales">Total Disponible: $' + totalDisponible.toLocaleString() + '</span>' : ''}
-                        ${opciones.restan ? ' | <span class="totales">Total Restan: $' + totalRestan.toLocaleString() + '</span>' : ''}
-                    </div>
-                </div>
-            `;
+                    var footerText = '';
+                    if (opciones.pagado) footerText += 'Total Pagado: $' + totalPagado.toLocaleString() + ' ';
+                    if (opciones.disponible) footerText += 'Total Disponible: $' + totalDisponible.toLocaleString() + ' ';
+                    if (opciones.restan) footerText += 'Total Restan: $' + totalRestan.toLocaleString();
+                    doc.text(footerText, pageWidth - margin, pageY, { align: 'right' });
+                }
+            });
 
-            // Poner el HTML en el contenedor de impresión
-            var contenedor = document.getElementById('area-impresion');
-            contenedor.innerHTML = html;
-            contenedor.style.display = 'block';
-            contenedor.style.width = '100%';
-            contenedor.style.maxWidth = '210mm';
-            contenedor.style.margin = '0 auto';
-            contenedor.style.padding = '0';
-            contenedor.style.background = 'white';
-            contenedor.style.boxSizing = 'border-box';
-
-            try {
-                // Esperar a que se renderice
-                await new Promise(function(resolve) { setTimeout(resolve, 500); });
-
-                var canvas = await html2canvas(contenedor, {
-                    scale: 2.5,
-                    useCORS: true,
-                    logging: false,
-                    backgroundColor: '#ffffff',
-                    width: 210 * 3.78,
-                    height: 297 * 3.78,
-                    windowWidth: 210 * 3.78,
-                    windowHeight: 297 * 3.78,
-                    onclone: function(clonedDoc) {
-                        var content = clonedDoc.getElementById('area-impresion');
-                        if (content) {
-                            content.style.width = '210mm';
-                            content.style.maxWidth = '210mm';
-                            content.style.margin = '0 auto';
-                            content.style.padding = '0';
-                            content.style.background = 'white';
-                            content.style.display = 'block';
-                            content.style.boxSizing = 'border-box';
-                        }
-                    }
-                });
-
-                var imgData = canvas.toDataURL('image/png');
-
-                var { jsPDF } = window.jspdf;
-                var pdf = new jsPDF('p', 'mm', 'letter');
-                var pageWidth = pdf.internal.pageSize.getWidth();
-                var pageHeight = pdf.internal.pageSize.getHeight();
-
-                var imgWidth = pageWidth;
-                var imgHeight = (canvas.height / canvas.width) * pageWidth;
-
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-                pdf.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
-
-                contenedor.style.display = 'none';
-
-            } catch (error) {
-                console.error('Error al generar PDF:', error);
-                alert('Ocurrió un error al generar el PDF: ' + error.message);
-                contenedor.style.display = 'none';
-            }
+            // Guardar PDF
+            doc.save('Listado_Alumnos_' + grupoNombre.replace(/\s/g, '_') + '.pdf');
         }
 
+        // ============================================
+        // MOSTRAR MODAL PDF
+        // ============================================
         function mostrarModalPDF() {
             var alumnos = getAlumnosDelGrupo();
 
@@ -1818,7 +1697,7 @@
             var columnasVacias = parseInt(document.getElementById('columnasVacias').value) || 0;
 
             cerrarModalPDF();
-            generarPDF(titulo, opciones, columnasVacias);
+            generarPDFDirecto(titulo, opciones, columnasVacias);
         }
 
         function cerrarModalPDF() {
