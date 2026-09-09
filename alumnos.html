@@ -1433,7 +1433,7 @@
         }
 
         // ============================================
-        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE + ESCUDO PEQUEÑO
+        // GENERAR PDF - SIN FONDOS GRISES, SOLO LÍNEAS
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1458,23 +1458,20 @@
             // Márgenes
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
-            var pageHeight = doc.internal.pageSize.getHeight();
 
-            // ===== ESCUDO PEQUEÑO (tamaño 15mm) =====
+            // ===== ESCUDO PEQUEÑO =====
             var escudoWidth = 15;
             var escudoHeight = 15;
             
             // Intentar cargar la imagen del escudo
             var imgData = null;
             
-            // Función para dibujar el encabezado SIN LÍNEA
             function dibujarEncabezado() {
                 // Escudo (izquierda)
                 if (imgData) {
                     try {
                         doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
                     } catch(e) {
-                        // Si falla, dibujar círculo con letra
                         doc.setFillColor(124, 58, 237);
                         doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
                         doc.setTextColor(255, 255, 255);
@@ -1482,7 +1479,6 @@
                         doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
                     }
                 } else {
-                    // Dibujar círculo con letra
                     doc.setFillColor(124, 58, 237);
                     doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
                     doc.setTextColor(255, 255, 255);
@@ -1505,8 +1501,6 @@
                 // Fecha (derecha)
                 doc.setFontSize(9);
                 doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
-                
-                // SIN LÍNEA NEGRA - Eliminada
                 
                 return tituloY + 12;
             }
@@ -1543,7 +1537,6 @@
                 }
             };
             
-            // Timeout por si la imagen no carga
             setTimeout(function() {
                 if (!pdfGenerado) {
                     pdfGenerado = true;
@@ -1552,7 +1545,6 @@
             }, 500);
             
             function generarPDFConImagen() {
-                // Calcular posición inicial
                 var yStart = dibujarEncabezado();
 
                 // ===== CONFIGURAR COLUMNAS =====
@@ -1634,7 +1626,7 @@
                     bodyRows.push(row);
                 });
 
-                // ===== DIBUJAR TABLA =====
+                // ===== DIBUJAR TABLA - SIN FONDOS GRISES =====
                 doc.autoTable({
                     head: [headRow],
                     body: bodyRows,
@@ -1643,14 +1635,20 @@
                     styles: {
                         fontSize: 8,
                         cellPadding: 1.5,
-                        valign: 'middle'
+                        valign: 'middle',
+                        fillColor: [255, 255, 255], // Fondo blanco
+                        textColor: [0, 0, 0],
+                        lineColor: [0, 0, 0], // Líneas negras
+                        lineWidth: 0.2
                     },
                     headStyles: {
-                        fillColor: [220, 220, 220],
+                        fillColor: [255, 255, 255], // Fondo blanco en cabecera
                         textColor: [0, 0, 0],
                         fontStyle: 'bold',
                         fontSize: 7,
-                        halign: 'left'
+                        halign: 'left',
+                        lineColor: [0, 0, 0],
+                        lineWidth: 0.3
                     },
                     columnStyles: columnStyles,
                     didDrawPage: function(data) {
