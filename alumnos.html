@@ -1433,7 +1433,7 @@
         }
 
         // ============================================
-        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE + ESCUDO
+        // GENERAR PDF DIRECTO CON jsPDF + AUTOTABLE + ESCUDO PEQUEÑO
         // ============================================
         function generarPDFDirecto(titulo, opciones, columnasVacias) {
             var alumnos = getAlumnosDelGrupo();
@@ -1455,89 +1455,80 @@
             var { jsPDF } = window.jspdf;
             var doc = new jsPDF('p', 'mm', 'letter');
 
-            // Márgenes más ajustados
+            // Márgenes
             var margin = 15;
             var pageWidth = doc.internal.pageSize.getWidth();
             var pageHeight = doc.internal.pageSize.getHeight();
-            var contentWidth = pageWidth - (margin * 2);
-            var y = margin + 5;
 
-            // ===== ESCUDO (tamaño mediano) =====
-            var escudoImg = document.createElement('img');
-            escudoImg.src = 'assets/escuela.png';
-            escudoImg.crossOrigin = 'Anonymous';
+            // ===== ESCUDO PEQUEÑO (tamaño 15mm) =====
+            var escudoWidth = 15;
+            var escudoHeight = 15;
             
-            // Usar la imagen en el PDF
-            var escudoWidth = 25;
-            var escudoHeight = 25;
-            
-            // Intentar cargar la imagen como base64
-            var img = new Image();
-            img.src = 'assets/escuela.png';
-            img.crossOrigin = 'Anonymous';
-            
-            // Esperar a que cargue la imagen
-            var imgLoaded = false;
+            // Intentar cargar la imagen del escudo
             var imgData = null;
             
-            // Función para dibujar el encabezado
+            // Función para dibujar el encabezado SIN LÍNEA
             function dibujarEncabezado() {
                 // Escudo (izquierda)
                 if (imgData) {
-                    doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                    try {
+                        doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                    } catch(e) {
+                        // Si falla, dibujar círculo con letra
+                        doc.setFillColor(124, 58, 237);
+                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(10);
+                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                    }
                 } else {
-                    // Si no carga la imagen, dibujar un círculo con texto
+                    // Dibujar círculo con letra
                     doc.setFillColor(124, 58, 237);
                     doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
                     doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(14);
-                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
+                    doc.setFontSize(10);
+                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
                 }
                 
                 // Título centrado
                 var tituloX = pageWidth / 2;
-                var tituloY = margin + 5;
+                var tituloY = margin + 3;
                 doc.setFontSize(18);
                 doc.setFont('helvetica', 'bold');
                 doc.text(titulo || 'Listado de Alumnos', tituloX, tituloY, { align: 'center' });
                 
                 // Subtítulo (grupo)
-                doc.setFontSize(12);
+                doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
-                doc.text(grupoNombre, tituloX, tituloY + 7, { align: 'center' });
+                doc.text(grupoNombre, tituloX, tituloY + 6, { align: 'center' });
                 
                 // Fecha (derecha)
-                doc.setFontSize(10);
+                doc.setFontSize(9);
                 doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
                 
-                // Línea separadora
-                doc.setLineWidth(0.5);
-                doc.line(margin, tituloY + 14, pageWidth - margin, tituloY + 14);
+                // SIN LÍNEA NEGRA - Eliminada
                 
-                return tituloY + 18;
+                return tituloY + 12;
             }
 
             // Cargar la imagen del escudo
-            var canvas = document.createElement('canvas');
-            var ctx = canvas.getContext('2d');
-            
             var loadImg = new Image();
             loadImg.crossOrigin = 'Anonymous';
             loadImg.src = 'assets/escuela.png';
             
-            // Variable para controlar si ya se generó el PDF
             var pdfGenerado = false;
             
             loadImg.onload = function() {
                 try {
+                    var canvas = document.createElement('canvas');
                     canvas.width = loadImg.width;
                     canvas.height = loadImg.height;
+                    var ctx = canvas.getContext('2d');
                     ctx.drawImage(loadImg, 0, 0);
                     imgData = canvas.toDataURL('image/png');
                 } catch(e) {
                     console.log('Error al cargar escudo:', e);
                 }
-                // Generar PDF después de cargar la imagen
                 if (!pdfGenerado) {
                     pdfGenerado = true;
                     generarPDFConImagen();
@@ -1552,78 +1543,17 @@
                 }
             };
             
-            // Si la imagen ya está en caché, puede que no dispare onload
+            // Timeout por si la imagen no carga
             setTimeout(function() {
                 if (!pdfGenerado) {
-                    // Intentar cargar de nuevo
-                    try {
-                        canvas.width = 50;
-                        canvas.height = 50;
-                        ctx.fillStyle = '#7c3aed';
-                        ctx.beginPath();
-                        ctx.arc(25, 25, 20, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.fillStyle = 'white';
-                        ctx.font = 'bold 20px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
-                        ctx.fillText('E', 25, 25);
-                        imgData = canvas.toDataURL('image/png');
-                    } catch(e) {}
-                    if (!pdfGenerado) {
-                        pdfGenerado = true;
-                        generarPDFConImagen();
-                    }
+                    pdfGenerado = true;
+                    generarPDFConImagen();
                 }
             }, 500);
             
             function generarPDFConImagen() {
                 // Calcular posición inicial
-                var yPos = margin + 5;
-                
-                // Dibujar encabezado
-                // Escudo (izquierda)
-                if (imgData) {
-                    try {
-                        doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
-                    } catch(e) {
-                        // Si falla, dibujar texto
-                        doc.setFillColor(124, 58, 237);
-                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
-                        doc.setTextColor(255, 255, 255);
-                        doc.setFontSize(14);
-                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
-                    }
-                } else {
-                    // Dibujar círculo con letra
-                    doc.setFillColor(124, 58, 237);
-                    doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
-                    doc.setTextColor(255, 255, 255);
-                    doc.setFontSize(14);
-                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 5, { align: 'center' });
-                }
-                
-                // Título centrado
-                var tituloX = pageWidth / 2;
-                var tituloY = margin + 5;
-                doc.setFontSize(18);
-                doc.setFont('helvetica', 'bold');
-                doc.text(titulo || 'Listado de Alumnos', tituloX, tituloY, { align: 'center' });
-                
-                // Subtítulo (grupo)
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                doc.text(grupoNombre, tituloX, tituloY + 7, { align: 'center' });
-                
-                // Fecha (derecha)
-                doc.setFontSize(10);
-                doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
-                
-                // Línea separadora
-                doc.setLineWidth(0.5);
-                doc.line(margin, tituloY + 14, pageWidth - margin, tituloY + 14);
-                
-                var yStart = tituloY + 18;
+                var yStart = dibujarEncabezado();
 
                 // ===== CONFIGURAR COLUMNAS =====
                 var headRow = ['#'];
@@ -1632,7 +1562,7 @@
 
                 // Nombre
                 headRow.push('Nombre del Alumno');
-                columnStyles[colIndex] = { cellWidth: 50 };
+                columnStyles[colIndex] = { cellWidth: 52 };
                 colIndex++;
 
                 // Teléfono
