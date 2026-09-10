@@ -486,7 +486,7 @@
                     </button>
                     <div>
                         <h2>📊 Reportes</h2>
-                        <p>Genera reportes financieros por grupo</p>
+                        <p>Genera reportes financieros por grupo o gastos directos</p>
                     </div>
                 </div>
                 <div class="header-right">
@@ -501,6 +501,14 @@
                 <div class="reporte-form">
                     <form id="formReporte">
                         <div class="form-group">
+                            <label>Seleccionar <span class="obligatorio">*</span></label>
+                            <select id="tipoReporte" required>
+                                <option value="grupo">Grupo</option>
+                                <option value="directos">Gastos Directos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="grupoSelectGroup">
                             <label>Grupo <span class="obligatorio">*</span></label>
                             <select id="grupoReporte" required>
                                 <option value="">Selecciona un grupo...</option>
@@ -589,15 +597,37 @@
         var grupos = getGrupos();
         var alumnos = getAlumnos();
         var gastos = getGastos();
+        var gastosDirectos = getGastosDirectos();
 
         document.addEventListener('DOMContentLoaded', function() {
             cargarGrupos();
             establecerFechas();
+            toggleGrupoSelect();
         });
 
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             cargarGrupos();
             establecerFechas();
+            toggleGrupoSelect();
+        }
+
+        // Mostrar/ocultar selector de grupo según el tipo
+        document.getElementById('tipoReporte').addEventListener('change', function() {
+            toggleGrupoSelect();
+        });
+
+        function toggleGrupoSelect() {
+            var tipo = document.getElementById('tipoReporte').value;
+            var grupoGroup = document.getElementById('grupoSelectGroup');
+            var grupoSelect = document.getElementById('grupoReporte');
+
+            if (tipo === 'directos') {
+                grupoGroup.style.display = 'none';
+                grupoSelect.removeAttribute('required');
+            } else {
+                grupoGroup.style.display = 'block';
+                grupoSelect.setAttribute('required', 'required');
+            }
         }
 
         function cargarGrupos() {
@@ -641,11 +671,12 @@
         document.getElementById('formReporte').addEventListener('submit', function(e) {
             e.preventDefault();
 
+            var tipo = document.getElementById('tipoReporte').value;
             var grupoId = parseInt(document.getElementById('grupoReporte').value);
             var fechaInicio = document.getElementById('fechaInicio').value;
             var fechaFin = document.getElementById('fechaFin').value;
 
-            if (!grupoId) {
+            if (tipo === 'grupo' && !grupoId) {
                 alert('⚠️ Selecciona un grupo');
                 return;
             }
@@ -662,35 +693,28 @@
                 notas: document.getElementById('optNotas').checked
             };
 
-            generarPDF(grupoId, fechaInicio, fechaFin, opciones);
+            if (tipo === 'directos') {
+                generarPDFGastosDirectos(fechaInicio, fechaFin);
+            } else {
+                generarPDF(grupoId, fechaInicio, fechaFin, opciones);
+            }
         });
 
         // ============================================
-        // GENERAR PDF - CON AUTO AJUSTE
+        // GENERAR PDF - GASTOS DIRECTOS
         // ============================================
-        function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
+        function generarPDFGastosDirectos(fechaInicio, fechaFin) {
             mostrarLoading();
 
             try {
-                var grupo = grupos.find(function(g) { return g.id === grupoId; });
-                if (!grupo) {
-                    alert('⚠️ Grupo no encontrado');
-                    ocultarLoading();
-                    return;
-                }
-
-                var gastosFiltrados = gastos.filter(function(g) {
-                    return g.grupoId === grupoId && g.fecha >= fechaInicio && g.fecha <= fechaFin;
+                var gastosFiltrados = gastosDirectos.filter(function(g) {
+                    return g.fecha >= fechaInicio && g.fecha <= fechaFin;
                 });
 
                 gastosFiltrados.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
 
-                var alumnosGrupo = alumnos.filter(function(a) { return a.grupoId === grupoId; });
-                var totalRecaudado = alumnosGrupo.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
-                var totalDisponible = alumnosGrupo.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
-                var totalGastos = gastosFiltrados.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
-
                 var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                var totalGastos = gastosFiltrados.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
 
                 // Crear PDF
                 var { jsPDF } = window.jspdf;
@@ -704,7 +728,6 @@
                 var imgData = null;
 
                 function dibujarEncabezado() {
-                    // Escudo (izquierda)
                     if (imgData) {
                         try {
                             doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
@@ -723,19 +746,16 @@
                         doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
                     }
 
-                    // Título
                     var tituloX = pageWidth / 2;
                     var tituloY = margin + 3;
                     doc.setFontSize(18);
                     doc.setFont('helvetica', 'bold');
-                    doc.text('Reporte de Gastos', tituloX, tituloY, { align: 'center' });
+                    doc.text('Reporte de Gastos Directos', tituloX, tituloY, { align: 'center' });
 
-                    // Subtítulo (grupo)
                     doc.setFontSize(11);
                     doc.setFont('helvetica', 'normal');
-                    doc.text(grupo.nombre, tituloX, tituloY + 6, { align: 'center' });
+                    doc.text('Listado de gastos directos', tituloX, tituloY + 6, { align: 'center' });
 
-                    // Fecha
                     doc.setFontSize(9);
                     doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
 
@@ -781,40 +801,25 @@
                 function generarPDFConImagen() {
                     var yStart = dibujarEncabezado();
 
-                    // ===== CONFIGURAR COLUMNAS CON AUTO AJUSTE =====
-                    var headRow = ['Fecha', 'Descripción', 'Tipo'];
+                    // ===== CONFIGURAR COLUMNAS =====
+                    var headRow = ['Fecha', 'Descripción', 'Monto'];
                     var columnStyles = {
-                        0: { halign: 'center', cellWidth: 20 },
-                        1: { cellWidth: 'auto' },  // ← Descripción se autoajusta
-                        2: { halign: 'center', cellWidth: 18 }
+                        0: { halign: 'center', cellWidth: 25 },
+                        1: { cellWidth: 'auto' },
+                        2: { halign: 'right', cellWidth: 25 }
                     };
-                    var colIndex = 3;
-
-                    if (opciones.notas) {
-                        headRow.push('Nota');
-                        columnStyles[colIndex] = { cellWidth: 30 };
-                        colIndex++;
-                    }
-
-                    headRow.push('Monto');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
 
                     // Preparar datos
                     var bodyRows = [];
                     if (gastosFiltrados.length === 0) {
-                        bodyRows.push(['No hay gastos en el período seleccionado', '', '', '', '']);
+                        bodyRows.push(['No hay gastos directos en el período seleccionado', '', '']);
                     } else {
                         gastosFiltrados.forEach(function(gasto) {
-                            var row = [
+                            bodyRows.push([
                                 gasto.fecha,
                                 gasto.descripcion,
-                                gasto.tipo
-                            ];
-                            if (opciones.notas) {
-                                row.push(gasto.nota || '-');
-                            }
-                            row.push('$' + gasto.monto.toLocaleString());
-                            bodyRows.push(row);
+                                '$' + gasto.monto.toLocaleString()
+                            ]);
                         });
                     }
 
@@ -847,11 +852,211 @@
                     });
 
                     // ============================================
-                    // RESUMEN EN LA PARTE INFERIOR
+                    // TOTAL EN LA PARTE INFERIOR
                     // ============================================
+                    var finalY = doc.internal.pageSize.getHeight() - 20;
+
+                    doc.setLineWidth(0.3);
+                    doc.line(margin, finalY - 2, pageWidth - margin, finalY - 2);
+
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Total Gastos Directos: $' + totalGastos.toLocaleString(), margin, finalY + 4);
+
+                    var footerY = doc.internal.pageSize.getHeight() - 10;
+                    doc.setFontSize(8);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(gastosFiltrados.length + ' registros', margin, footerY);
+                    doc.text('Total: $' + totalGastos.toLocaleString(), pageWidth - margin, footerY, { align: 'right' });
+
+                    // Guardar PDF
+                    doc.save('Reporte_Gastos_Directos.pdf');
+                    ocultarLoading();
+                }
+
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Ocurrió un error al generar el PDF: ' + error.message);
+                ocultarLoading();
+            }
+        }
+
+        // ============================================
+        // GENERAR PDF - GASTOS POR GRUPO
+        // ============================================
+        function generarPDF(grupoId, fechaInicio, fechaFin, opciones) {
+            mostrarLoading();
+
+            try {
+                var grupo = grupos.find(function(g) { return g.id === grupoId; });
+                if (!grupo) {
+                    alert('⚠️ Grupo no encontrado');
+                    ocultarLoading();
+                    return;
+                }
+
+                var gastosFiltrados = gastos.filter(function(g) {
+                    return g.grupoId === grupoId && g.fecha >= fechaInicio && g.fecha <= fechaFin;
+                });
+
+                gastosFiltrados.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+                var alumnosGrupo = alumnos.filter(function(a) { return a.grupoId === grupoId; });
+                var totalRecaudado = alumnosGrupo.reduce(function(sum, a) { return sum + (a.pagado || 0); }, 0);
+                var totalDisponible = alumnosGrupo.reduce(function(sum, a) { return sum + (a.disponible || 0); }, 0);
+                var totalGastos = gastosFiltrados.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
+
+                var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+                // Crear PDF
+                var { jsPDF } = window.jspdf;
+                var doc = new jsPDF('p', 'mm', 'letter');
+                var margin = 15;
+                var pageWidth = doc.internal.pageSize.getWidth();
+
+                // ===== ESCUDO =====
+                var escudoWidth = 15;
+                var escudoHeight = 15;
+                var imgData = null;
+
+                function dibujarEncabezado() {
+                    if (imgData) {
+                        try {
+                            doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                        } catch(e) {
+                            doc.setFillColor(124, 58, 237);
+                            doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                            doc.setTextColor(255, 255, 255);
+                            doc.setFontSize(10);
+                            doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                        }
+                    } else {
+                        doc.setFillColor(124, 58, 237);
+                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(10);
+                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                    }
+
+                    var tituloX = pageWidth / 2;
+                    var tituloY = margin + 3;
+                    doc.setFontSize(18);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Reporte de Gastos', tituloX, tituloY, { align: 'center' });
+
+                    doc.setFontSize(11);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(grupo.nombre, tituloX, tituloY + 6, { align: 'center' });
+
+                    doc.setFontSize(9);
+                    doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
+
+                    return tituloY + 12;
+                }
+
+                // Cargar escudo
+                var loadImg = new Image();
+                loadImg.crossOrigin = 'Anonymous';
+                loadImg.src = 'assets/escuela.png';
+
+                var pdfGenerado = false;
+
+                loadImg.onload = function() {
+                    try {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = loadImg.width;
+                        canvas.height = loadImg.height;
+                        var ctx = canvas.getContext('2d');
+                        ctx.drawImage(loadImg, 0, 0);
+                        imgData = canvas.toDataURL('image/png');
+                    } catch(e) {}
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                };
+
+                loadImg.onerror = function() {
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                };
+
+                setTimeout(function() {
+                    if (!pdfGenerado) {
+                        pdfGenerado = true;
+                        generarPDFConImagen();
+                    }
+                }, 500);
+
+                function generarPDFConImagen() {
+                    var yStart = dibujarEncabezado();
+
+                    var headRow = ['Fecha', 'Descripción', 'Tipo'];
+                    var columnStyles = {
+                        0: { halign: 'center', cellWidth: 20 },
+                        1: { cellWidth: 'auto' },
+                        2: { halign: 'center', cellWidth: 18 }
+                    };
+                    var colIndex = 3;
+
+                    if (opciones.notas) {
+                        headRow.push('Nota');
+                        columnStyles[colIndex] = { cellWidth: 30 };
+                        colIndex++;
+                    }
+
+                    headRow.push('Monto');
+                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
+
+                    var bodyRows = [];
+                    if (gastosFiltrados.length === 0) {
+                        bodyRows.push(['No hay gastos en el período seleccionado', '', '', '', '']);
+                    } else {
+                        gastosFiltrados.forEach(function(gasto) {
+                            var row = [
+                                gasto.fecha,
+                                gasto.descripcion,
+                                gasto.tipo
+                            ];
+                            if (opciones.notas) {
+                                row.push(gasto.nota || '-');
+                            }
+                            row.push('$' + gasto.monto.toLocaleString());
+                            bodyRows.push(row);
+                        });
+                    }
+
+                    doc.autoTable({
+                        head: [headRow],
+                        body: bodyRows,
+                        startY: yStart,
+                        margin: { left: margin, right: margin },
+                        tableWidth: 'auto',
+                        styles: {
+                            fontSize: 8,
+                            cellPadding: 1.5,
+                            valign: 'middle',
+                            fillColor: [255, 255, 255],
+                            textColor: [0, 0, 0],
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.2
+                        },
+                        headStyles: {
+                            fillColor: [255, 255, 255],
+                            textColor: [0, 0, 0],
+                            fontStyle: 'bold',
+                            fontSize: 7,
+                            halign: 'left',
+                            lineColor: [0, 0, 0],
+                            lineWidth: 0.3
+                        },
+                        columnStyles: columnStyles
+                    });
+
                     var finalY = doc.internal.pageSize.getHeight() - 25;
 
-                    // Línea separadora
                     doc.setLineWidth(0.3);
                     doc.line(margin, finalY - 2, pageWidth - margin, finalY - 2);
 
@@ -862,25 +1067,18 @@
                     if (opciones.recaudado) resumenText += 'Recaudado: $' + totalRecaudado.toLocaleString() + '   ';
                     if (opciones.disponible) resumenText += 'Disponible: $' + totalDisponible.toLocaleString() + '   ';
                     if (opciones.gastos) resumenText += 'Gastos: $' + totalGastos.toLocaleString();
-                    
+
                     doc.text(resumenText, margin, finalY + 4);
 
-                    // ============================================
-                    // TOTAL GASTOS EN LA PARTE INFERIOR DERECHA
-                    // ============================================
                     doc.setFont('helvetica', 'bold');
                     doc.text('Total Gastos: $' + totalGastos.toLocaleString(), pageWidth - margin, finalY + 4, { align: 'right' });
 
-                    // ============================================
-                    // PIE DE PÁGINA
-                    // ============================================
                     var footerY = doc.internal.pageSize.getHeight() - 10;
                     doc.setFontSize(8);
                     doc.setFont('helvetica', 'normal');
                     doc.text('Total Gastos: $' + totalGastos.toLocaleString(), pageWidth - margin, footerY, { align: 'right' });
                     doc.text(gastosFiltrados.length + ' registros', margin, footerY);
 
-                    // Guardar PDF
                     doc.save('Reporte_Gastos_' + grupo.nombre.replace(/\s/g, '_') + '.pdf');
                     ocultarLoading();
                 }
