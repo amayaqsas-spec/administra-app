@@ -8,6 +8,11 @@
     <link rel="icon" href="assets/icon.png" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Librerías para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -244,6 +249,13 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .top-bar .btn-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
         }
         .btn-nuevo {
             border: none;
@@ -262,6 +274,43 @@
         }
         .btn-nuevo:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(16,185,129,0.4); }
         .btn-nuevo i { font-size: 14px; }
+        
+        .btn-gasto {
+            border: none;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 12px rgba(220,38,38,0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-gasto:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(220,38,38,0.4); }
+        .btn-gasto i { font-size: 14px; }
+        
+        .btn-pdf {
+            border: none;
+            border-radius: 30px;
+            padding: 8px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 3px 12px rgba(220,38,38,0.3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-pdf:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(220,38,38,0.4); }
+        .btn-pdf i { font-size: 14px; }
+        
         .ingreso-item {
             padding: 12px 14px;
             margin-bottom: 8px;
@@ -291,6 +340,38 @@
             display: flex;
             gap: 4px;
         }
+        
+        .gasto-item {
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 2px 2px 4px rgba(255,255,255,0.6), inset -2px -2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+        .gasto-item:hover { background: rgba(255,255,255,0.8); border-color: rgba(220,38,38,0.3); }
+        .gasto-item .info { flex: 1; }
+        .gasto-item .info .descripcion { font-size: 14px; font-weight: 600; color: #1e1b4b; }
+        .gasto-item .info .detalle { font-size: 12px; color: #6b7280; margin-top: 2px; }
+        .gasto-item .info .detalle span { margin-right: 12px; }
+        .gasto-item .monto {
+            font-size: 16px;
+            font-weight: 700;
+            color: #dc2626;
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+        .gasto-item .acciones {
+            display: flex;
+            gap: 4px;
+        }
+        
         .btn-sm {
             border: none;
             border-radius: 30px;
@@ -309,28 +390,60 @@
         .btn-sm i { font-size: 11px; }
         .btn-editar { background: linear-gradient(135deg, #f59e0b, #d97706); }
         .btn-eliminar { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
+        .seccion-titulo {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e1b4b;
+            margin: 18px 0 10px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid rgba(124,58,237,0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .seccion-titulo.ingresos { color: #059669; border-color: rgba(16,185,129,0.2); }
+        .seccion-titulo.gastos { color: #dc2626; border-color: rgba(220,38,38,0.2); }
+        
         .total-box {
             margin-top: 16px;
             padding: 16px 20px;
             border-radius: 18px;
+            text-align: center;
+        }
+        .total-box.ingresos {
             background: rgba(16,185,129,0.12);
             border: 2px solid #10b981;
-            text-align: center;
             box-shadow: 0 4px 16px rgba(16,185,129,0.15);
+        }
+        .total-box.gastos {
+            background: rgba(220,38,38,0.12);
+            border: 2px solid #dc2626;
+            box-shadow: 0 4px 16px rgba(220,38,38,0.15);
+        }
+        .total-box.saldo {
+            background: rgba(124,58,237,0.12);
+            border: 2px solid #7c3aed;
+            box-shadow: 0 4px 16px rgba(124,58,237,0.15);
         }
         .total-box .label {
             font-size: 13px;
-            color: #065f46;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+        .total-box.ingresos .label { color: #065f46; }
+        .total-box.gastos .label { color: #991b1b; }
+        .total-box.saldo .label { color: #5b21b6; }
         .total-box .numero {
             font-size: 28px;
             font-weight: 800;
-            color: #059669;
             margin-top: 2px;
         }
+        .total-box.ingresos .numero { color: #059669; }
+        .total-box.gastos .numero { color: #dc2626; }
+        .total-box.saldo .numero { color: #7c3aed; }
+        
         .btn-volver {
             border: none;
             border-radius: 30px;
@@ -359,11 +472,11 @@
         .footer .brand { color: #a78bfa; font-weight: 600; font-size: 11px; }
         .empty-message {
             text-align: center;
-            padding: 30px 16px;
+            padding: 20px 16px;
             color: #6b7280;
             font-size: 13px;
         }
-        .empty-message i { font-size: 32px; color: #6ee7b7; display: block; margin: 0 auto 10px; }
+        .empty-message i { font-size: 32px; color: #c4b5fd; display: block; margin: 0 auto 10px; }
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -391,18 +504,23 @@
             width: 100%;
             border: 1px solid rgba(255,255,255,0.5);
             box-shadow: 0 16px 48px rgba(0,0,0,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
         }
+        .modal-content::-webkit-scrollbar { width: 4px; }
+        .modal-content::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #c4b5fd, #a78bfa); border-radius: 10px; }
         .modal-icono {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #10b981, #059669);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 10px;
-            box-shadow: 0 4px 16px rgba(16,185,129,0.2);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         }
+        .modal-icono.ingreso-icono { background: linear-gradient(135deg, #10b981, #059669); }
+        .modal-icono.gasto-icono { background: linear-gradient(135deg, #dc2626, #b91c1c); }
         .modal-icono i { font-size: 20px; color: white; }
         .modal-titulo { text-align: center; font-size: 20px; font-weight: 700; color: #1e1b4b; margin-bottom: 2px; }
         .modal-subtitulo { text-align: center; font-size: 12px; color: #6b7280; margin-bottom: 14px; }
@@ -424,11 +542,10 @@
             box-sizing: border-box;
             font-family: inherit;
         }
-        .modal-grupo textarea { resize: vertical; min-height: 60px; }
         .modal-grupo input:focus, .modal-grupo textarea:focus {
-            border-color: #10b981;
+            border-color: #a78bfa;
             background: rgba(255,255,255,0.9);
-            box-shadow: 0 0 0 3px rgba(16,185,129,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
+            box-shadow: 0 0 0 3px rgba(167,139,250,0.1), inset 3px 3px 10px rgba(0,0,0,0.02);
         }
         .modal-grupo input::placeholder, .modal-grupo textarea::placeholder { color: #a0a0b8; font-size: 13px; }
         .modal-acciones {
@@ -451,12 +568,24 @@
             gap: 6px;
         }
         .modal-acciones .btn i { font-size: 14px; }
-        .modal-acciones .btn-guardar {
+        .modal-acciones .btn-guardar-ingreso {
             background: linear-gradient(135deg, #10b981, #059669);
             color: white;
             box-shadow: 0 3px 12px rgba(16,185,129,0.2);
         }
-        .modal-acciones .btn-guardar:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+        .modal-acciones .btn-guardar-ingreso:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(16,185,129,0.3); }
+        .modal-acciones .btn-guardar-gasto {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            box-shadow: 0 3px 12px rgba(220,38,38,0.2);
+        }
+        .modal-acciones .btn-guardar-gasto:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(220,38,38,0.3); }
+        .modal-acciones .btn-editar-modal {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            box-shadow: 0 3px 12px rgba(245,158,11,0.2);
+        }
+        .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
         .modal-acciones .btn-cancelar {
             background: rgba(255,255,255,0.7);
             color: #4a4a6a;
@@ -464,17 +593,60 @@
             border: 1px solid rgba(255,255,255,0.3);
         }
         .modal-acciones .btn-cancelar:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
-        .modal-acciones .btn-editar-modal {
+        
+        .modal-detalle .detalle-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .modal-detalle .detalle-item:last-child { border-bottom: none; }
+        .modal-detalle .detalle-item .etiqueta { font-size: 12px; color: #6b7280; }
+        .modal-detalle .detalle-item .valor { font-size: 13px; font-weight: 600; color: #1e1b4b; }
+        .modal-detalle .detalle-item .valor.rojo { color: #dc2626; }
+        .modal-detalle .detalle-acciones {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .modal-detalle .detalle-acciones .btn {
+            flex: 1;
+            padding: 10px 12px;
+            border: none;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .modal-detalle .detalle-acciones .btn i { font-size: 14px; }
+        .modal-detalle .detalle-acciones .btn-editar-detalle {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             color: white;
             box-shadow: 0 3px 12px rgba(245,158,11,0.2);
         }
-        .modal-acciones .btn-editar-modal:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .modal-detalle .detalle-acciones .btn-editar-detalle:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(245,158,11,0.3); }
+        .modal-detalle .detalle-acciones .btn-eliminar-detalle {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            box-shadow: 0 3px 12px rgba(239,68,68,0.2);
+        }
+        .modal-detalle .detalle-acciones .btn-eliminar-detalle:hover { transform: scale(1.02); box-shadow: 0 4px 16px rgba(239,68,68,0.3); }
+        .modal-detalle .detalle-acciones .btn-cerrar-detalle {
+            background: rgba(255,255,255,0.7);
+            color: #4a4a6a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .modal-detalle .detalle-acciones .btn-cerrar-detalle:hover { background: rgba(255,255,255,0.9); transform: scale(1.02); }
+        
         @media (max-width: 480px) {
-            .ingreso-item { flex-wrap: wrap; padding: 10px 12px; }
-            .ingreso-item .monto { font-size: 14px; margin-right: 8px; }
-            .ingreso-item .info .descripcion { font-size: 13px; }
-            .ingreso-item .info .detalle { font-size: 11px; }
+            .ingreso-item, .gasto-item { flex-wrap: wrap; padding: 10px 12px; }
+            .ingreso-item .monto, .gasto-item .monto { font-size: 14px; margin-right: 8px; }
             .total-box .numero { font-size: 22px; }
             .modal-content { padding: 18px 14px 14px; }
             .modal-titulo { font-size: 18px; }
@@ -570,7 +742,7 @@
                     </button>
                     <div>
                         <h2>💰 Ingresos Externos</h2>
-                        <p>Registro de ingresos adicionales</p>
+                        <p>Registro de ingresos y gastos directos</p>
                     </div>
                 </div>
                 <div class="header-right">
@@ -583,18 +755,48 @@
 
             <div class="clay clay-md">
                 <div class="top-bar">
-                    <span style="font-size:14px;color:#6b7280;">Listado de ingresos</span>
-                    <button class="btn-nuevo" onclick="mostrarModalCrear()">
-                        <i class="fas fa-plus"></i>
-                        Nuevo Ingreso
-                    </button>
+                    <div class="btn-group">
+                        <button class="btn-nuevo" onclick="mostrarModalCrearIngreso()">
+                            <i class="fas fa-plus"></i>
+                            Nuevo Ingreso
+                        </button>
+                        <button class="btn-gasto" onclick="mostrarModalCrearGasto()">
+                            <i class="fas fa-minus-circle"></i>
+                            Nuevo Gasto
+                        </button>
+                        <button class="btn-pdf" onclick="mostrarModalPDF()">
+                            <i class="fas fa-file-pdf"></i>
+                            Imprimir Gastos Directos
+                        </button>
+                    </div>
                 </div>
 
+                <!-- ========== INGRESOS ========== -->
+                <div class="seccion-titulo ingresos">
+                    <i class="fas fa-arrow-down"></i> Ingresos Externos
+                </div>
                 <div id="ingresosList"></div>
 
-                <div class="total-box" id="totalBox">
-                    <div class="label">💰 Total de ingresos externos</div>
+                <div class="total-box ingresos">
+                    <div class="label">💚 Total Ingresos</div>
                     <div class="numero" id="totalIngresos">$0.00</div>
+                </div>
+
+                <!-- ========== GASTOS DIRECTOS ========== -->
+                <div class="seccion-titulo gastos">
+                    <i class="fas fa-arrow-up"></i> Gastos Directos
+                </div>
+                <div id="gastosList"></div>
+
+                <div class="total-box gastos">
+                    <div class="label">❤️ Total Gastos Directos</div>
+                    <div class="numero" id="totalGastos">$0.00</div>
+                </div>
+
+                <!-- ========== SALDO ========== -->
+                <div class="total-box saldo">
+                    <div class="label">💜 Saldo Disponible (Ingresos - Gastos)</div>
+                    <div class="numero" id="saldoDisponible">$0.00</div>
                 </div>
 
                 <div style="text-align:center;margin-top:12px;">
@@ -613,6 +815,7 @@
         </div>
     </div>
 
+    <script src="js/storage.js"></script>
     <script>
         function abrirSidebar() {
             document.getElementById('sidebar').classList.add('open');
@@ -648,7 +851,7 @@
         }
 
         // ============================================
-        // DATOS - INGRESOS EXTERNOS
+        // DATOS
         // ============================================
         function getIngresosExternos() {
             const data = localStorage.getItem('ingresosExternos');
@@ -657,33 +860,43 @@
 
         function guardarIngresosExternos(ingresos) {
             localStorage.setItem('ingresosExternos', JSON.stringify(ingresos));
-            // Notificar al dashboard que los ingresos externos cambiaron
             localStorage.setItem('ingresosExternosActualizado', Date.now().toString());
         }
 
+        function getGastosDirectos() {
+            const data = localStorage.getItem('gastosDirectos');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function guardarGastosDirectos(gastos) {
+            localStorage.setItem('gastosDirectos', JSON.stringify(gastos));
+            localStorage.setItem('gastosDirectosActualizado', Date.now().toString());
+        }
+
         var ingresos = getIngresosExternos();
-        var nextId = ingresos.length > 0 ? Math.max(...ingresos.map(function(i) { return i.id; })) + 1 : 1;
+        var gastos = getGastosDirectos();
+        var nextIdIngreso = ingresos.length > 0 ? Math.max(...ingresos.map(function(i) { return i.id; })) + 1 : 1;
+        var nextIdGasto = gastos.length > 0 ? Math.max(...gastos.map(function(g) { return g.id; })) + 1 : 1;
 
         // ============================================
-        // RENDERIZAR INGRESOS
+        // RENDERIZAR
         // ============================================
+        function renderizarTodo() {
+            renderizarIngresos();
+            renderizarGastos();
+            actualizarTotales();
+        }
+
         function renderizarIngresos() {
             var container = document.getElementById('ingresosList');
-            var totalIngresos = document.getElementById('totalIngresos');
 
             if (ingresos.length === 0) {
                 container.innerHTML = `
                     <div class="empty-message">
                         <i class="fas fa-coins"></i>
                         No hay ingresos externos registrados
-                        <br><br>
-                        <button class="btn-nuevo" onclick="mostrarModalCrear()" style="margin:0 auto;font-size:12px;padding:6px 14px;">
-                            <i class="fas fa-plus"></i>
-                            Registrar primer ingreso
-                        </button>
                     </div>
                 `;
-                totalIngresos.textContent = '$0.00';
                 return;
             }
 
@@ -701,7 +914,7 @@
                         </div>
                         <div class="monto">+$${ingreso.monto.toFixed(2)}</div>
                         <div class="acciones">
-                            <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${ingreso.id})">
+                            <button class="btn-sm btn-editar" onclick="mostrarModalEditarIngreso(${ingreso.id})">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
                             <button class="btn-sm btn-eliminar" onclick="eliminarIngreso(${ingreso.id})">
@@ -713,21 +926,69 @@
             });
 
             container.innerHTML = html;
+        }
 
-            var total = ingresos.reduce(function(sum, i) { return sum + i.monto; }, 0);
-            totalIngresos.textContent = '$' + total.toFixed(2);
+        function renderizarGastos() {
+            var container = document.getElementById('gastosList');
+
+            if (gastos.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-message">
+                        <i class="fas fa-receipt"></i>
+                        No hay gastos directos registrados
+                    </div>
+                `;
+                return;
+            }
+
+            var sorted = [...gastos].sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+            var html = '';
+            sorted.forEach(function(gasto) {
+                html += `
+                    <div class="gasto-item" data-id="${gasto.id}" onclick="verDetalleGasto(${gasto.id})">
+                        <div class="info">
+                            <div class="descripcion">${gasto.descripcion}</div>
+                            <div class="detalle">
+                                <span>📅 ${gasto.fecha}</span>
+                            </div>
+                        </div>
+                        <div class="monto">-$${gasto.monto.toFixed(2)}</div>
+                        <div class="acciones" onclick="event.stopPropagation();">
+                            <button class="btn-sm btn-editar" onclick="mostrarModalEditarGasto(${gasto.id})">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                            <button class="btn-sm btn-eliminar" onclick="eliminarGasto(${gasto.id})">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function actualizarTotales() {
+            var totalIngresos = ingresos.reduce(function(sum, i) { return sum + i.monto; }, 0);
+            var totalGastos = gastos.reduce(function(sum, g) { return sum + g.monto; }, 0);
+            var saldo = totalIngresos - totalGastos;
+
+            document.getElementById('totalIngresos').textContent = '$' + totalIngresos.toFixed(2);
+            document.getElementById('totalGastos').textContent = '$' + totalGastos.toFixed(2);
+            document.getElementById('saldoDisponible').textContent = '$' + saldo.toFixed(2);
         }
 
         // ============================================
-        // CREAR INGRESO
+        // MODAL CREAR INGRESO
         // ============================================
-        function mostrarModalCrear() {
+        function mostrarModalCrearIngreso() {
             var overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.id = 'modalOverlay';
             overlay.innerHTML = `
                 <div class="modal-content">
-                    <div class="modal-icono">
+                    <div class="modal-icono ingreso-icono">
                         <i class="fas fa-coins"></i>
                     </div>
                     <div class="modal-titulo">Nuevo Ingreso Externo</div>
@@ -746,9 +1007,9 @@
                             <input type="number" id="montoIngresoInput" placeholder="Ej: 500.00" step="0.01" required>
                         </div>
                         <div class="modal-acciones">
-                            <button type="submit" class="btn btn-guardar">
+                            <button type="submit" class="btn btn-guardar-ingreso">
                                 <i class="fas fa-check"></i>
-                                Guardar
+                                Guardar Ingreso
                             </button>
                             <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
                                 <i class="fas fa-times"></i>
@@ -782,25 +1043,24 @@
                     return;
                 }
 
-                var nuevoIngreso = {
-                    id: nextId++,
+                ingresos.push({
+                    id: nextIdIngreso++,
                     fecha: fecha,
                     descripcion: descripcion,
                     monto: monto
-                };
+                });
 
-                ingresos.push(nuevoIngreso);
                 guardarIngresosExternos(ingresos);
-                renderizarIngresos();
+                renderizarTodo();
                 cerrarModal();
                 alert('✅ Ingreso registrado correctamente');
             });
         }
 
         // ============================================
-        // EDITAR INGRESO
+        // MODAL EDITAR INGRESO
         // ============================================
-        function mostrarModalEditar(id) {
+        function mostrarModalEditarIngreso(id) {
             var ingreso = ingresos.find(function(i) { return i.id === id; });
             if (!ingreso) return;
 
@@ -864,7 +1124,7 @@
                 ingreso.monto = monto;
 
                 guardarIngresosExternos(ingresos);
-                renderizarIngresos();
+                renderizarTodo();
                 cerrarModal();
                 alert('✅ Ingreso actualizado correctamente');
             });
@@ -880,9 +1140,238 @@
             if (confirm('⚠️ ¿Eliminar el ingreso "' + ingreso.descripcion + '"?')) {
                 ingresos = ingresos.filter(function(i) { return i.id !== id; });
                 guardarIngresosExternos(ingresos);
-                renderizarIngresos();
+                renderizarTodo();
                 alert('✅ Ingreso eliminado');
             }
+        }
+
+        // ============================================
+        // MODAL CREAR GASTO
+        // ============================================
+        function mostrarModalCrearGasto() {
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono gasto-icono">
+                        <i class="fas fa-minus-circle"></i>
+                    </div>
+                    <div class="modal-titulo">Nuevo Gasto Directo</div>
+                    <div class="modal-subtitulo">Se descontará del Disponible Total</div>
+                    <form id="formGastoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaGastoInput" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionGastoInput" placeholder="Ej: Compra de material" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoGastoInput" placeholder="Ej: 500.00" step="0.01" required>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-guardar-gasto">
+                                <i class="fas fa-check"></i>
+                                Guardar Gasto
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            var fechaInput = document.getElementById('fechaGastoInput');
+            if (fechaInput) {
+                fechaInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionGastoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formGastoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaGastoInput').value;
+                var descripcion = document.getElementById('descripcionGastoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoGastoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                gastos.push({
+                    id: nextIdGasto++,
+                    fecha: fecha,
+                    descripcion: descripcion,
+                    tipo: 'Directo',
+                    monto: monto,
+                    participantes: 1,
+                    nota: '',
+                    excluidos: []
+                });
+
+                guardarGastosDirectos(gastos);
+                renderizarTodo();
+                cerrarModal();
+                alert('✅ Gasto directo registrado. Se descontará del Disponible Total.');
+            });
+        }
+
+        // ============================================
+        // MODAL EDITAR GASTO
+        // ============================================
+        function mostrarModalEditarGasto(id) {
+            cerrarModalDetalle();
+
+            var gasto = gastos.find(function(g) { return g.id === id; });
+            if (!gasto) return;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <div class="modal-titulo">Editar Gasto Directo</div>
+                    <div class="modal-subtitulo">Actualiza los datos</div>
+                    <form id="formGastoModal">
+                        <div class="modal-grupo">
+                            <label>Fecha <span class="obligatorio">*</span></label>
+                            <input type="date" id="fechaGastoInput" value="${gasto.fecha}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Descripción <span class="obligatorio">*</span></label>
+                            <input type="text" id="descripcionGastoInput" value="${gasto.descripcion}" required>
+                        </div>
+                        <div class="modal-grupo">
+                            <label>Monto <span class="obligatorio">*</span></label>
+                            <input type="number" id="montoGastoInput" value="${gasto.monto}" step="0.01" required>
+                        </div>
+                        <div class="modal-acciones">
+                            <button type="submit" class="btn btn-editar-modal">
+                                <i class="fas fa-check"></i>
+                                Actualizar
+                            </button>
+                            <button type="button" class="btn btn-cancelar" onclick="cerrarModal()">
+                                <i class="fas fa-times"></i>
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            setTimeout(function() {
+                var input = document.getElementById('descripcionGastoInput');
+                if (input) input.focus();
+            }, 100);
+
+            document.getElementById('formGastoModal').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                var fecha = document.getElementById('fechaGastoInput').value;
+                var descripcion = document.getElementById('descripcionGastoInput').value.trim();
+                var monto = parseFloat(document.getElementById('montoGastoInput').value);
+
+                if (!fecha || !descripcion || !monto || monto <= 0) {
+                    alert('⚠️ Completa todos los campos correctamente');
+                    return;
+                }
+
+                gasto.fecha = fecha;
+                gasto.descripcion = descripcion;
+                gasto.monto = monto;
+
+                guardarGastosDirectos(gastos);
+                renderizarTodo();
+                cerrarModal();
+                alert('✅ Gasto actualizado correctamente');
+            });
+        }
+
+        // ============================================
+        // ELIMINAR GASTO
+        // ============================================
+        function eliminarGasto(id) {
+            var gasto = gastos.find(function(g) { return g.id === id; });
+            if (!gasto) return;
+
+            cerrarModalDetalle();
+
+            if (confirm('⚠️ ¿Eliminar el gasto "' + gasto.descripcion + '" por $' + gasto.monto.toFixed(2) + '?')) {
+                gastos = gastos.filter(function(g) { return g.id !== id; });
+                guardarGastosDirectos(gastos);
+                renderizarTodo();
+                alert('✅ Gasto eliminado');
+            }
+        }
+
+        // ============================================
+        // VER DETALLE DEL GASTO
+        // ============================================
+        function verDetalleGasto(id) {
+            var gasto = gastos.find(function(g) { return g.id === id; });
+            if (!gasto) return;
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay modal-detalle';
+            overlay.id = 'modalDetalleOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono gasto-icono">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="modal-titulo">${gasto.descripcion}</div>
+                    <div class="modal-subtitulo">Detalle del gasto directo</div>
+
+                    <div class="detalle-item">
+                        <span class="etiqueta">📅 Fecha</span>
+                        <span class="valor">${gasto.fecha}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">💰 Monto</span>
+                        <span class="valor rojo">-$${gasto.monto.toFixed(2)}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="etiqueta">🏷️ Tipo</span>
+                        <span class="valor">Gasto Directo</span>
+                    </div>
+
+                    <div class="detalle-acciones">
+                        <button class="btn btn-editar-detalle" onclick="cerrarModalDetalle();mostrarModalEditarGasto(${gasto.id})">
+                            <i class="fas fa-pencil-alt"></i>
+                            Editar
+                        </button>
+                        <button class="btn btn-eliminar-detalle" onclick="cerrarModalDetalle();eliminarGasto(${gasto.id})">
+                            <i class="fas fa-trash-alt"></i>
+                            Eliminar
+                        </button>
+                        <button class="btn btn-cerrar-detalle" onclick="cerrarModalDetalle()">
+                            <i class="fas fa-times"></i>
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function cerrarModalDetalle() {
+            var modal = document.getElementById('modalDetalleOverlay');
+            if (modal) modal.remove();
         }
 
         // ============================================
@@ -898,26 +1387,266 @@
             if (modal && e.target === modal) {
                 cerrarModal();
             }
+            var modalDetalle = document.getElementById('modalDetalleOverlay');
+            if (modalDetalle && e.target === modalDetalle) {
+                cerrarModalDetalle();
+            }
         });
+
+        // ============================================
+        // MODAL PDF - GASTOS DIRECTOS
+        // ============================================
+        function mostrarModalPDF() {
+            if (gastos.length === 0) {
+                alert('⚠️ No hay gastos directos para imprimir');
+                return;
+            }
+
+            var hoy = new Date();
+            var primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+
+            var overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.id = 'modalPDFOverlay';
+            overlay.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-icono" style="background:linear-gradient(135deg,#dc2626,#b91c1c);">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div class="modal-titulo">Imprimir Gastos Directos</div>
+                    <div class="modal-subtitulo">Selecciona el rango de fechas</div>
+
+                    <div class="modal-grupo">
+                        <label>Fecha inicio <span class="obligatorio">*</span></label>
+                        <input type="date" id="pdfFechaInicio" value="${primerDiaMes.toISOString().split('T')[0]}" required>
+                    </div>
+                    <div class="modal-grupo">
+                        <label>Fecha fin <span class="obligatorio">*</span></label>
+                        <input type="date" id="pdfFechaFin" value="${hoy.toISOString().split('T')[0]}" required>
+                    </div>
+
+                    <div class="modal-acciones">
+                        <button type="button" class="btn btn-guardar-gasto" onclick="generarPDFGastosDirectos()">
+                            <i class="fas fa-file-pdf"></i>
+                            Generar PDF
+                        </button>
+                        <button type="button" class="btn btn-cancelar" onclick="cerrarModalPDF()">
+                            <i class="fas fa-times"></i>
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+
+        function cerrarModalPDF() {
+            var modal = document.getElementById('modalPDFOverlay');
+            if (modal) modal.remove();
+        }
+
+        // ============================================
+        // GENERAR PDF - GASTOS DIRECTOS
+        // ============================================
+        function generarPDFGastosDirectos() {
+            var fechaInicio = document.getElementById('pdfFechaInicio').value;
+            var fechaFin = document.getElementById('pdfFechaFin').value;
+
+            if (!fechaInicio || !fechaFin) {
+                alert('⚠️ Selecciona el rango de fechas');
+                return;
+            }
+
+            cerrarModalPDF();
+
+            var gastosFiltrados = gastos.filter(function(g) {
+                return g.fecha >= fechaInicio && g.fecha <= fechaFin;
+            });
+
+            if (gastosFiltrados.length === 0) {
+                alert('⚠️ No hay gastos en ese rango de fechas');
+                return;
+            }
+
+            gastosFiltrados.sort(function(a, b) { return new Date(b.fecha) - new Date(a.fecha); });
+
+            var fechaActual = new Date().toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            var totalGastos = gastosFiltrados.reduce(function(sum, g) { return sum + (g.monto || 0); }, 0);
+
+            // Crear PDF
+            var { jsPDF } = window.jspdf;
+            var doc = new jsPDF('p', 'mm', 'letter');
+            var margin = 15;
+            var pageWidth = doc.internal.pageSize.getWidth();
+
+            // ===== ESCUDO =====
+            var escudoWidth = 15;
+            var escudoHeight = 15;
+            var imgData = null;
+
+            function dibujarEncabezado() {
+                if (imgData) {
+                    try {
+                        doc.addImage(imgData, 'PNG', margin, margin, escudoWidth, escudoHeight);
+                    } catch(e) {
+                        doc.setFillColor(124, 58, 237);
+                        doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                        doc.setTextColor(255, 255, 255);
+                        doc.setFontSize(10);
+                        doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                    }
+                } else {
+                    doc.setFillColor(124, 58, 237);
+                    doc.circle(margin + escudoWidth/2, margin + escudoHeight/2, escudoWidth/2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(10);
+                    doc.text('E', margin + escudoWidth/2, margin + escudoHeight/2 + 3.5, { align: 'center' });
+                }
+
+                var tituloX = pageWidth / 2;
+                var tituloY = margin + 3;
+                doc.setFontSize(18);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Gastos Directos', tituloX, tituloY, { align: 'center' });
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Del ' + fechaInicio + ' al ' + fechaFin, tituloX, tituloY + 6, { align: 'center' });
+
+                doc.setFontSize(9);
+                doc.text('Fecha: ' + fechaActual, pageWidth - margin, tituloY, { align: 'right' });
+
+                return tituloY + 12;
+            }
+
+            // Cargar escudo
+            var loadImg = new Image();
+            loadImg.crossOrigin = 'Anonymous';
+            loadImg.src = 'assets/escuela.png';
+
+            var pdfGenerado = false;
+
+            loadImg.onload = function() {
+                try {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = loadImg.width;
+                    canvas.height = loadImg.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(loadImg, 0, 0);
+                    imgData = canvas.toDataURL('image/png');
+                } catch(e) {}
+                if (!pdfGenerado) {
+                    pdfGenerado = true;
+                    generarPDFConImagen();
+                }
+            };
+
+            loadImg.onerror = function() {
+                if (!pdfGenerado) {
+                    pdfGenerado = true;
+                    generarPDFConImagen();
+                }
+            };
+
+            setTimeout(function() {
+                if (!pdfGenerado) {
+                    pdfGenerado = true;
+                    generarPDFConImagen();
+                }
+            }, 500);
+
+            function generarPDFConImagen() {
+                var yStart = dibujarEncabezado();
+
+                var headRow = ['Fecha', 'Descripción', 'Monto'];
+                var columnStyles = {
+                    0: { halign: 'center', cellWidth: 25 },
+                    1: { cellWidth: 'auto' },
+                    2: { halign: 'right', cellWidth: 25 }
+                };
+
+                var bodyRows = [];
+                gastosFiltrados.forEach(function(gasto) {
+                    bodyRows.push([
+                        gasto.fecha,
+                        gasto.descripcion,
+                        '$' + gasto.monto.toFixed(2)
+                    ]);
+                });
+
+                doc.autoTable({
+                    head: [headRow],
+                    body: bodyRows,
+                    startY: yStart,
+                    margin: { left: margin, right: margin },
+                    tableWidth: 'auto',
+                    styles: {
+                        fontSize: 8,
+                        cellPadding: 1.5,
+                        valign: 'middle',
+                        fillColor: [255, 255, 255],
+                        textColor: [0, 0, 0],
+                        lineColor: [0, 0, 0],
+                        lineWidth: 0.2
+                    },
+                    headStyles: {
+                        fillColor: [255, 255, 255],
+                        textColor: [0, 0, 0],
+                        fontStyle: 'bold',
+                        fontSize: 7,
+                        halign: 'left',
+                        lineColor: [0, 0, 0],
+                        lineWidth: 0.3
+                    },
+                    columnStyles: columnStyles
+                });
+
+                var finalY = doc.internal.pageSize.getHeight() - 20;
+
+                doc.setLineWidth(0.3);
+                doc.line(margin, finalY - 2, pageWidth - margin, finalY - 2);
+
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Total Gastos Directos: $' + totalGastos.toFixed(2), margin, finalY + 4);
+
+                var footerY = doc.internal.pageSize.getHeight() - 10;
+                doc.setFontSize(8);
+                doc.setFont('helvetica', 'normal');
+                doc.text(gastosFiltrados.length + ' registros', margin, footerY);
+                doc.text('Total: $' + totalGastos.toFixed(2), pageWidth - margin, footerY, { align: 'right' });
+
+                doc.save('Gastos_Directos_' + fechaInicio + '_al_' + fechaFin + '.pdf');
+            }
+        }
 
         // ============================================
         // INICIALIZAR
         // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            renderizarIngresos();
+            renderizarTodo();
         });
 
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
-            renderizarIngresos();
+            renderizarTodo();
         }
 
+        // Exponer funciones
         window.abrirSidebar = abrirSidebar;
         window.cerrarSidebar = cerrarSidebar;
         window.logout = logout;
-        window.mostrarModalCrear = mostrarModalCrear;
-        window.mostrarModalEditar = mostrarModalEditar;
+        window.mostrarModalCrearIngreso = mostrarModalCrearIngreso;
+        window.mostrarModalEditarIngreso = mostrarModalEditarIngreso;
         window.eliminarIngreso = eliminarIngreso;
+        window.mostrarModalCrearGasto = mostrarModalCrearGasto;
+        window.mostrarModalEditarGasto = mostrarModalEditarGasto;
+        window.eliminarGasto = eliminarGasto;
+        window.verDetalleGasto = verDetalleGasto;
         window.cerrarModal = cerrarModal;
+        window.cerrarModalDetalle = cerrarModalDetalle;
+        window.mostrarModalPDF = mostrarModalPDF;
+        window.cerrarModalPDF = cerrarModalPDF;
+        window.generarPDFGastosDirectos = generarPDFGastosDirectos;
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
