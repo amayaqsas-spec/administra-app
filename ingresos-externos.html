@@ -766,7 +766,7 @@
                         </button>
                         <button class="btn-pdf" onclick="mostrarModalPDF()">
                             <i class="fas fa-file-pdf"></i>
-                            Imprimir Gastos Directos
+                            Imprimir Gastos
                         </button>
                     </div>
                 </div>
@@ -1394,7 +1394,7 @@
         });
 
         // ============================================
-        // MODAL PDF - GASTOS DIRECTOS
+        // MODAL PDF - GASTOS DIRECTOS (CON TÍTULO EDITABLE)
         // ============================================
         function mostrarModalPDF() {
             if (gastos.length === 0) {
@@ -1414,12 +1414,18 @@
                         <i class="fas fa-file-pdf"></i>
                     </div>
                     <div class="modal-titulo">Imprimir Gastos Directos</div>
-                    <div class="modal-subtitulo">Selecciona el rango de fechas</div>
+                    <div class="modal-subtitulo">Personaliza el título y selecciona el rango de fechas</div>
+
+                    <div class="modal-grupo">
+                        <label>Título del reporte <span class="obligatorio">*</span></label>
+                        <input type="text" id="pdfTitulo" value="Gastos Directos" placeholder="Ej: Gastos Directos Enero" required>
+                    </div>
 
                     <div class="modal-grupo">
                         <label>Fecha inicio <span class="obligatorio">*</span></label>
                         <input type="date" id="pdfFechaInicio" value="${primerDiaMes.toISOString().split('T')[0]}" required>
                     </div>
+
                     <div class="modal-grupo">
                         <label>Fecha fin <span class="obligatorio">*</span></label>
                         <input type="date" id="pdfFechaFin" value="${hoy.toISOString().split('T')[0]}" required>
@@ -1438,6 +1444,11 @@
                 </div>
             `;
             document.body.appendChild(overlay);
+
+            setTimeout(function() {
+                var input = document.getElementById('pdfTitulo');
+                if (input) input.focus();
+            }, 100);
         }
 
         function cerrarModalPDF() {
@@ -1446,9 +1457,10 @@
         }
 
         // ============================================
-        // GENERAR PDF - GASTOS DIRECTOS
+        // GENERAR PDF - GASTOS DIRECTOS (CON TÍTULO PERSONALIZADO)
         // ============================================
         function generarPDFGastosDirectos() {
+            var titulo = document.getElementById('pdfTitulo').value.trim() || 'Gastos Directos';
             var fechaInicio = document.getElementById('pdfFechaInicio').value;
             var fechaFin = document.getElementById('pdfFechaFin').value;
 
@@ -1507,7 +1519,7 @@
                 var tituloY = margin + 3;
                 doc.setFontSize(18);
                 doc.setFont('helvetica', 'bold');
-                doc.text('Gastos Directos', tituloX, tituloY, { align: 'center' });
+                doc.text(titulo, tituloX, tituloY, { align: 'center' });
 
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'normal');
@@ -1616,7 +1628,9 @@
                 doc.text(gastosFiltrados.length + ' registros', margin, footerY);
                 doc.text('Total: $' + totalGastos.toFixed(2), pageWidth - margin, footerY, { align: 'right' });
 
-                doc.save('Gastos_Directos_' + fechaInicio + '_al_' + fechaFin + '.pdf');
+                // Guardar con el nombre del título personalizado
+                var nombreArchivo = titulo.replace(/\s+/g, '_') + '_' + fechaInicio + '_al_' + fechaFin + '.pdf';
+                doc.save(nombreArchivo);
             }
         }
 
