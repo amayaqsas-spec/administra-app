@@ -246,11 +246,7 @@
             align-items: center;
             margin-bottom: 10px;
         }
-        .top-bar h2 {
-            font-size: 16px;
-            color: #1e1b4b;
-            font-weight: 700;
-        }
+        .top-bar h2 { font-size: 16px; color: #1e1b4b; font-weight: 700; }
         .btn-nuevo {
             border: none;
             border-radius: 30px;
@@ -340,6 +336,11 @@
             border-radius: 10px;
             margin-top: 4px;
             display: inline-block;
+        }
+        .gasto-item .gasto-nota.deuda {
+            color: #991b1b;
+            background: rgba(220,38,38,0.12);
+            border-left: 3px solid #dc2626;
         }
         .gasto-item .gasto-actions {
             display: flex;
@@ -552,17 +553,25 @@
             line-height: 1.5;
         }
         .modal-detalle .detalle-nota i { color: #d97706; margin-right: 4px; }
-        .modal-detalle .detalle-excluidos {
+        .modal-detalle .detalle-deudores {
             margin-top: 8px;
-            padding: 8px 12px;
-            background: rgba(239,68,68,0.08);
+            padding: 10px 12px;
+            background: rgba(220,38,38,0.08);
             border-radius: 12px;
-            border-left: 3px solid #ef4444;
+            border-left: 3px solid #dc2626;
             font-size: 11px;
             color: #991b1b;
-            line-height: 1.5;
+            line-height: 1.6;
         }
-        .modal-detalle .detalle-excluidos i { color: #ef4444; margin-right: 4px; }
+        .modal-detalle .detalle-deudores i { color: #dc2626; margin-right: 4px; }
+        .modal-detalle .detalle-deudores strong { display: block; margin-bottom: 4px; }
+        .modal-detalle .detalle-deudores ul {
+            padding-left: 16px;
+            margin: 4px 0;
+        }
+        .modal-detalle .detalle-deudores li {
+            margin-bottom: 2px;
+        }
         .modal-detalle .detalle-acciones {
             display: flex;
             gap: 8px;
@@ -873,7 +882,7 @@
             var html = '';
             filtrados.forEach(function(gasto) {
                 var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
-                var excluidos = gasto.excluidos || [];
+                var deudores = gasto.deudores || [];
                 var nota = gasto.nota || '';
                 
                 html += `
@@ -888,7 +897,7 @@
                                 <div class="per">$${porNiño} c/u • ${gasto.participantes} niños</div>
                             </div>
                         </div>
-                        ${excluidos.length > 0 ? '<div class="gasto-nota"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i> ⚠️ ' + excluidos.length + ' alumno(s) excluido(s)</div>' : ''}
+                        ${deudores.length > 0 ? '<div class="gasto-nota deuda"><i class="fas fa-exclamation-triangle"></i> ⚠️ ' + deudores.length + ' alumno(s) deben cubrir su parte</div>' : ''}
                         ${nota && !nota.includes('AJUSTE AUTOMÁTICO') ? '<div class="gasto-nota"><i class="fas fa-pen"></i> ' + nota + '</div>' : ''}
                         <div class="gasto-actions" onclick="event.stopPropagation();">
                             <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${gasto.id})">
@@ -915,8 +924,24 @@
 
             var grupoNombre = getNombreGrupo(gasto.grupoId);
             var porNiño = (gasto.monto / gasto.participantes).toFixed(2);
-            var excluidos = gasto.excluidos || [];
+            var deudores = gasto.deudores || [];
             var nota = gasto.nota || '';
+
+            var deudoresHtml = '';
+            if (deudores.length > 0) {
+                var listaDeudores = '';
+                deudores.forEach(function(d) {
+                    listaDeudores += `<li><strong>${d.nombre}</strong> debe <strong>$${d.deuda.toFixed(2)}</strong></li>`;
+                });
+                deudoresHtml = `
+                    <div class="detalle-deudores">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>⚠️ ALUMNOS QUE DEBEN CUBRIR SU PARTE:</strong>
+                        <ul>${listaDeudores}</ul>
+                        Informar al director y a los padres de familia para cubrir esos montos.
+                    </div>
+                `;
+            }
 
             var overlay = document.createElement('div');
             overlay.className = 'modal-overlay modal-detalle';
@@ -954,12 +979,7 @@
                         <span class="valor">$${porNiño}</span>
                     </div>
 
-                    ${excluidos.length > 0 ? `
-                        <div class="detalle-excluidos">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <strong>Alumnos excluidos:</strong> ${excluidos.join(', ')}
-                        </div>
-                    ` : ''}
+                    ${deudoresHtml}
 
                     ${nota ? `
                         <div class="detalle-nota">
@@ -992,6 +1012,9 @@
             if (modal) modal.remove();
         }
 
+        // ============================================
+        // MOSTRAR MODAL CREAR - NUEVA LÓGICA
+        // ============================================
         function mostrarModalCrear() {
             if (grupos.length === 0) {
                 alert('⚠️ Primero debes crear un grupo');
@@ -1049,9 +1072,10 @@
                         <div class="modal-grupo">
                             <div class="explicacion-descuento">
                                 <i class="fas fa-info-circle"></i>
-                                <strong>¿Cómo funciona?</strong> El gasto se divide entre los niños del grupo.
+                                <strong>¿Cómo funciona?</strong> El gasto se divide entre <strong>TODOS</strong> los niños del grupo.
                                 A cada niño se le descuenta su parte de su <strong>Disponible</strong>.
-                                Si un niño no tiene suficiente, se excluye y se reajusta el gasto.
+                                Si un niño no tiene suficiente, <strong>NO se le descuenta</strong> y se registra 
+                                su deuda en la nota del gasto para informar al director y padres.
                             </div>
                         </div>
                         <div class="modal-grupo" id="infoSaldos" style="display:none;">
@@ -1091,6 +1115,8 @@
                     return;
                 }
 
+                // Recargar alumnos
+                alumnos = getAlumnos();
                 var alumnosGrupo = getAlumnosDelGrupo(grupoId);
 
                 if (alumnosGrupo.length === 0) {
@@ -1110,16 +1136,16 @@
                 if (sinSaldo.length > 0) {
                     var detalles = sinSaldo.map(function(a) {
                         var disponible = a.disponible || 0;
-                        var falta = (montoPorNino - disponible).toFixed(2);
-                        return a.nombre + ' (Disponible: $' + disponible.toFixed(2) + ', falta: $' + falta + ')';
+                        var deuda = (montoPorNino - disponible).toFixed(2);
+                        return '• ' + a.nombre + ' debe $' + deuda + ' (tiene $' + disponible.toFixed(2) + ')';
                     }).join('\n');
 
                     infoDiv.style.display = 'block';
-                    infoContent.innerHTML = '❌ Los siguientes alumnos NO tienen suficiente disponible:\n\n' + detalles + '\n\n💰 Monto por niño: $' + montoPorNino.toFixed(2) + '\n⚠️ Se reajustará el gasto excluyendo a estos alumnos.';
+                    infoContent.innerHTML = '⚠️ ATENCIÓN - Alumnos que NO tienen suficiente disponible:\n\n' + detalles + '\n\n💰 Monto por niño: $' + montoPorNino.toFixed(2) + '\n\n📝 A estos alumnos NO se les descontará nada.\nSe registrará su deuda en la nota del gasto para informar al director y padres.';
                     infoContent.className = 'modal-info rojo';
                 } else {
                     infoDiv.style.display = 'block';
-                    infoContent.innerHTML = '✅ ' + alumnosGrupo.length + ' niños participarán\n💰 $' + montoPorNino.toFixed(2) + ' por niño (se descuenta de su Disponible)';
+                    infoContent.innerHTML = '✅ ' + alumnosGrupo.length + ' niños participarán\n💰 $' + montoPorNino.toFixed(2) + ' por niño (se descuenta de su Disponible)\n\n✅ Todos tienen suficiente saldo.';
                     infoContent.className = 'modal-info verde';
                 }
             }
@@ -1147,6 +1173,8 @@
                     return;
                 }
 
+                // Recargar alumnos
+                alumnos = getAlumnos();
                 var alumnosGrupo = getAlumnosDelGrupo(grupoId);
 
                 if (alumnosGrupo.length === 0) {
@@ -1154,94 +1182,78 @@
                     return;
                 }
 
-                var montoPorNinoOriginal = monto / alumnosGrupo.length;
+                // ============================================
+                // NUEVA LÓGICA: TODOS participan
+                // ============================================
+                var montoPorNino = monto / alumnosGrupo.length;
+                var deudores = [];
+                var notaFinal = notaManual || '';
 
-                var sinSaldo = alumnosGrupo.filter(function(a) {
-                    var disponible = a.disponible || 0;
-                    return disponible < montoPorNinoOriginal;
+                // Recorrer TODOS los alumnos
+                alumnosGrupo.forEach(function(alumno) {
+                    var disponible = alumno.disponible || 0;
+                    
+                    if (disponible >= montoPorNino) {
+                        // Tiene suficiente: descontar
+                        var alumnoEnArray = alumnos.find(function(al) { return al.id === alumno.id; });
+                        if (alumnoEnArray) {
+                            alumnoEnArray.disponible = disponible - montoPorNino;
+                            actualizarAlumno(alumnoEnArray);
+                        }
+                    } else {
+                        // NO tiene suficiente: registrar deuda en la nota
+                        var deuda = montoPorNino - disponible;
+                        deudores.push({
+                            id: alumno.id,
+                            nombre: alumno.nombre,
+                            deuda: deuda,
+                            disponible: disponible
+                        });
+                        // NO se le descuenta nada
+                    }
                 });
 
-                var participantes = alumnosGrupo;
-                var montoPorNino = montoPorNinoOriginal;
-                var montoTotal = monto;
-                var notaFinal = notaManual || '';
-                var excluidos = [];
+                // ============================================
+                // CONSTRUIR NOTA CON DEUDORES
+                // ============================================
+                if (deudores.length > 0) {
+                    var listaDeudores = '';
+                    deudores.forEach(function(d) {
+                        listaDeudores += '• ' + d.nombre + ' debe su parte proporcional del gasto de ' + descripcion.toLowerCase() + ' que son $' + d.deuda.toFixed(2) + ' pero ya no tiene dinero para cubrirlo.\n';
+                    });
 
-                if (sinSaldo.length > 0) {
-                    var nombresExcluidos = sinSaldo.map(function(a) { return a.nombre; }).join(', ');
+                    var notaAutomatica = '⚠️ ALUMNOS QUE DEBEN CUBRIR SU PARTE:\n\n' + listaDeudores + '\n📢 Informar al director y a los padres de familia para cubrir esos montos.\n💰 Total pendiente de cobro: $' + deudores.reduce(function(s, d) { return s + d.deuda; }, 0).toFixed(2) + '\n\nEl alumno tendrá que cubrir el monto de algún modo para ser equitativo.';
 
-                    var mensaje = '❌ Los siguientes alumnos NO tienen suficiente Disponible:\n\n' + sinSaldo.map(function(a) {
-                        var disponible = a.disponible || 0;
-                        return a.nombre + ' (Disponible: $' + disponible.toFixed(2) + ', necesita: $' + montoPorNinoOriginal.toFixed(2) + ')';
-                    }).join('\n') + '\n\nSe reajustará el gasto excluyendo a estos alumnos.';
-
-                    var reajustar = confirm(mensaje + '\n\n¿Deseas reajustar el gasto excluyendo a los que no alcanzan?');
-
-                    if (!reajustar) {
-                        return;
-                    }
-
-                    var sinSaldoIds = sinSaldo.map(function(a) { return a.id; });
-                    participantes = alumnosGrupo.filter(function(a) { return !sinSaldoIds.includes(a.id); });
-
-                    if (participantes.length === 0) {
-                        alert('❌ No hay alumnos con suficiente Disponible para cubrir este gasto');
-                        return;
-                    }
-
-                    montoPorNino = monto / participantes.length;
-                    montoTotal = montoPorNino * participantes.length;
-                    excluidos = sinSaldo.map(function(a) { return a.nombre; });
-
-                    var confirmar2 = confirm(
-                        '🔄 REAJUSTE PROPUESTO:\n\n' +
-                        'Total original: $' + monto.toFixed(2) + '\n' +
-                        'Niños que participan: ' + participantes.length + '\n' +
-                        'Nuevo monto por niño: $' + montoPorNino.toFixed(2) + '\n' +
-                        'Nuevo total: $' + montoTotal.toFixed(2) + '\n\n' +
-                        '🚫 Excluidos: ' + nombresExcluidos + '\n\n' +
-                        '⚠️ ¿Confirmas este ajuste?'
-                    );
-
-                    if (!confirmar2) {
-                        return;
-                    }
-
-                    var notaAutomatica = '⚠️ AJUSTE AUTOMÁTICO: ' + sinSaldo.length + ' alumno(s) excluido(s) por falta de Disponible: ' + nombresExcluidos + '. Se reajustó el gasto a $' + montoPorNino.toFixed(2) + ' por niño (' + participantes.length + ' niños participaron). Total ajustado: $' + montoTotal.toFixed(2) + '. Informar a los padres/tutores de los alumnos excluidos para cubrir el monto faltante.';
-                    notaFinal = notaManual ? notaManual + ' | ' + notaAutomatica : notaAutomatica;
+                    notaFinal = notaManual ? notaManual + '\n\n' + notaAutomatica : notaAutomatica;
                 }
 
+                // ============================================
+                // GUARDAR GASTO
+                // ============================================
                 var nuevoGasto = {
                     id: nextId++,
                     grupoId: grupoId,
                     fecha: fecha,
                     descripcion: descripcion,
                     tipo: tipo,
-                    monto: montoTotal,
-                    participantes: participantes.length,
+                    monto: monto,
+                    participantes: alumnosGrupo.length,
                     nota: notaFinal,
-                    excluidos: excluidos
+                    deudores: deudores
                 };
 
                 var result = crearGasto(nuevoGasto);
                 if (result.success) {
-                    participantes.forEach(function(a) {
-                        var alumno = alumnos.find(function(al) { return al.id === a.id; });
-                        if (alumno) {
-                            alumno.disponible = Math.max(0, (alumno.disponible || 0) - montoPorNino);
-                            actualizarAlumno(alumno);
-                        }
-                    });
-
                     todosLosGastos = getGastos();
-                    alumnos = getAlumnos();
                     renderizarGastos();
                     cerrarModal();
 
-                    var mensajeFinal = '✅ Gasto registrado exitosamente\n\nTotal: $' + montoTotal.toFixed(2) + '\nParticipan: ' + participantes.length + ' niños\n$' + montoPorNino.toFixed(2) + ' por niño';
-                    if (excluidos.length > 0) {
-                        mensajeFinal += '\n\n🚫 Excluidos: ' + excluidos.join(', ') + '\n📝 Se generó nota automática en el registro.';
+                    var mensajeFinal = '✅ Gasto registrado exitosamente\n\nTotal: $' + monto.toFixed(2) + '\nParticipan: ' + alumnosGrupo.length + ' niños\n$' + montoPorNino.toFixed(2) + ' por niño';
+                    
+                    if (deudores.length > 0) {
+                        mensajeFinal += '\n\n⚠️ ' + deudores.length + ' alumno(s) no pudieron cubrir su parte.\n📝 Se registró la deuda en la nota del gasto.\n📢 Informar al director y padres de familia.';
                     }
+                    
                     alert(mensajeFinal);
                 } else {
                     alert('❌ Error al registrar gasto: ' + result.error);

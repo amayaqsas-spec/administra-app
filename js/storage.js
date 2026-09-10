@@ -1,7 +1,7 @@
 // js/storage.js - Gestión de datos LOCAL (LocalStorage)
 
 // ============================================
-// FUNCIONES CRUD - GRUPOS (CON TELÉFONO)
+// FUNCIONES CRUD - GRUPOS
 // ============================================
 function getGrupos() {
     const data = localStorage.getItem('grupos');
@@ -46,7 +46,7 @@ function eliminarGrupoLocal(id) {
 }
 
 // ============================================
-// FUNCIONES CRUD - ALUMNOS (CON FECHA PAGO)
+// FUNCIONES CRUD - ALUMNOS
 // ============================================
 function getAlumnos() {
     const data = localStorage.getItem('alumnos');
@@ -127,7 +127,7 @@ function crearGastoLocal(gasto) {
         monto: gasto.monto || 0,
         participantes: gasto.participantes || 0,
         nota: gasto.nota || '',
-        excluidos: gasto.excluidos || []
+        deudores: gasto.deudores || []
     };
     gastos.push(nuevoGasto);
     guardarGastos(gastos);
@@ -311,4 +311,4 @@ window.crearIngresoExterno = crearIngresoExternoLocal;
 window.actualizarIngresoExterno = actualizarIngresoExternoLocal;
 window.eliminarIngresoExterno = eliminarIngresoExternoLocal;
 
-console.log('[Storage] Modo LOCAL activado - Sin Supabase');
+console.log('[Storage] Modo LOCAL activado');
