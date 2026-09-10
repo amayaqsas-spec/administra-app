@@ -586,28 +586,39 @@
             }
         }
 
-        var grupos = getGrupos();
-        var alumnos = getAlumnos();
-        var gastos = getGastos();
-        var gastosDirectos = getGastosDirectos();
+        // ============================================
+        // OBTENER DATOS - FUNCIONES GLOBALES
+        // ============================================
+        var grupos = [];
+        var alumnos = [];
+        var gastos = [];
+        var gastosDirectos = [];
 
-        document.addEventListener('DOMContentLoaded', function() {
-            cargarGrupos();
-            establecerFechas();
-        });
-
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        function cargarDatos() {
+            grupos = getGrupos();
+            alumnos = getAlumnos();
+            gastos = getGastos();
+            gastosDirectos = getGastosDirectos();
+            
+            console.log('[Reportes] Grupos cargados:', grupos);
+            console.log('[Reportes] Gastos Directos:', gastosDirectos);
+            
             cargarGrupos();
             establecerFechas();
         }
 
+        // ============================================
+        // CARGAR GRUPOS EN EL SELECTOR
+        // ============================================
         function cargarGrupos() {
             var select = document.getElementById('grupoReporte');
+            
             // Limpiar opciones excepto la primera
             while (select.options.length > 1) {
                 select.remove(1);
             }
 
+            // Agregar cada grupo como opción
             grupos.forEach(function(grupo) {
                 var option = document.createElement('option');
                 option.value = 'grupo_' + grupo.id;
@@ -620,8 +631,13 @@
             optionDirectos.value = 'directos';
             optionDirectos.textContent = '📌 Gastos Directos';
             select.appendChild(optionDirectos);
+
+            console.log('[Reportes] Selector actualizado con ' + grupos.length + ' grupos y Gastos Directos');
         }
 
+        // ============================================
+        // ESTABLECER FECHAS POR DEFECTO
+        // ============================================
         function establecerFechas() {
             var hoy = new Date();
             var primerDiaMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -630,6 +646,9 @@
             document.getElementById('fechaFin').value = hoy.toISOString().split('T')[0];
         }
 
+        // ============================================
+        // LOADING
+        // ============================================
         function mostrarLoading() {
             var overlay = document.createElement('div');
             overlay.className = 'loading-overlay';
@@ -646,6 +665,20 @@
             if (overlay) overlay.remove();
         }
 
+        // ============================================
+        // INICIALIZAR AL CARGAR LA PÁGINA
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatos();
+        });
+
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            cargarDatos();
+        }
+
+        // ============================================
+        // ENVIAR FORMULARIO
+        // ============================================
         document.getElementById('formReporte').addEventListener('submit', function(e) {
             e.preventDefault();
 
