@@ -22,6 +22,7 @@ const STATIC_ASSETS = [
     '/js/offline-manager.js',
     '/js/splash.js',
     '/js/storage.js',
+    '/js/temas.js',
     '/assets/icon.png',
     '/assets/logo.png',
     '/assets/escuela.png'

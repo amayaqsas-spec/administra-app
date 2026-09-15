@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="css/styles.css">
     
+    <!-- Script del sistema de temas festivos -->
+    <script src="js/temas.js"></script>
+    
     <!-- Librerías para PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -999,7 +1002,7 @@
                             <button class="btn-sm btn-editar" onclick="event.stopPropagation();mostrarModalEditar(${alumno.id})">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button class="btn-sm btn-eliminar" onclick="event.stopPropagation();eliminarAlumno(${alumno.id})">
+                            <button class="btn-sm btn-eliminar" onclick="event.stopPropagation();confirmarEliminarAlumno(${alumno.id})">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -1404,20 +1407,24 @@
             });
         }
 
-        function eliminarAlumno(id) {
+        // ==========================================
+        // CORRECCIÓN APLICADA AQUÍ
+        // ==========================================
+        function confirmarEliminarAlumno(id) {
             var alumno = todosLosAlumnos.find(function(a) { return a.id === id; });
             if (!alumno) return;
 
-            if (confirm('⚠️ ¿Eliminar a "' + alumno.nombre + '"?')) {
-                var result = eliminarAlumno(id);
+            if (confirm('⚠️ ¿Eliminar a "' + alumno.nombre + '"?\n\nEsta acción no se puede deshacer.')) {
+                // Ahora llama correctamente a la función de storage.js (window.eliminarAlumno)
+                var result = window.eliminarAlumno(id);
                 if (result.success) {
                     todosLosAlumnos = getAlumnos();
                     actualizarGrupo();
                     renderizarAlumnos();
                     actualizarDashboard();
-                    alert('✅ Alumno eliminado');
+                    alert('✅ Alumno eliminado correctamente');
                 } else {
-                    alert('❌ Error al eliminar alumno: ' + result.error);
+                    alert('❌ Error al eliminar alumno: ' + (result.error || 'Desconocido'));
                 }
             }
         }
@@ -1806,7 +1813,7 @@
         window.cerrarSidebar = cerrarSidebar;
         window.mostrarModalCrear = mostrarModalCrear;
         window.mostrarModalEditar = mostrarModalEditar;
-        window.eliminarAlumno = eliminarAlumno;
+        window.confirmarEliminarAlumno = confirmarEliminarAlumno; // <-- CORREGIDO: Ya no sobrescribe la función de storage.js
         window.cerrarModal = cerrarModal;
         window.filtrarAlumnos = filtrarAlumnos;
         window.toggleColumna = toggleColumna;

@@ -10,6 +10,10 @@
 
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="assets/icon.png" type="image/png">
+    
+    <!-- Script del sistema de temas festivos (en el head para evitar parpadeos) -->
+    <script src="js/temas.js"></script>
+    
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -666,6 +670,58 @@
             margin-top: 4px;
         }
 
+        /* ============================================
+           SISTEMA DE TEMAS FESTIVOS
+           ============================================ */
+        .tema-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 8px 0 0 0;
+        }
+
+        .tema-card {
+            padding: 16px;
+            border-radius: 16px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .tema-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+
+        .tema-card.activo {
+            border-color: var(--color-primario, #7c3aed);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+
+        .tema-card-icono {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .tema-card-nombre {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-texto, #1e1b4b);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
         @media (max-width: 380px) {
             .main-content { padding: 10px; }
             .opcion-card { padding: 12px; }
@@ -727,6 +783,11 @@
                 Extra Notas
             </button>
 
+            <button class="menu-item" onclick="cerrarSidebar(); location.href='ingresos-externos.html'">
+                <i class="fas fa-coins"></i>
+                Ingresos Externos
+            </button>
+
             <div class="divider"></div>
 
             <div class="menu-label">Sistema</div>
@@ -774,6 +835,24 @@
             </div>
 
             <div class="clay clay-md">
+                <!-- NUEVA SECCIÓN: TEMAS FESTIVOS -->
+                <div class="opcion-card">
+                    <div class="card-header">
+                        <div class="icono" style="background: linear-gradient(135deg, #ec4899, #8b5cf6);">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <h3>Temas Festivos</h3>
+                    </div>
+                    <div class="card-desc">
+                        Personaliza la apariencia de la app. Los temas se activan automáticamente según el mes del año.
+                    </div>
+                    <div class="card-actions" style="margin-left: 0; margin-top: 8px;">
+                        <div class="tema-selector" id="selectorTemas">
+                            <!-- Se genera dinámicamente con JS -->
+                        </div>
+                    </div>
+                </div>
+
                 <div class="opcion-card">
                     <div class="card-header">
                         <div class="icono exportar">
@@ -1067,12 +1146,50 @@
             }, 3000);
         }
 
+        // ============================================
+        // SISTEMA DE TEMAS FESTIVOS
+        // ============================================
+        function renderizarSelectorTemas() {
+            const contenedor = document.getElementById('selectorTemas');
+            if (!contenedor || typeof TemasManager === 'undefined') return;
+            
+            const temas = TemasManager.getTemasDisponibles();
+            const iconos = {
+                'default': '🎨',
+                'enero': '🎊',
+                'septiembre': '🇲🇽',
+                'octubre': '🎃',
+                'dia-muertos': '💀',
+                'navidad': '🎄'
+            };
+            
+            contenedor.innerHTML = temas.map(tema => `
+                <div class="tema-card ${tema.activo ? 'activo' : ''}" 
+                     onclick="cambiarTemaManual('${tema.key}')"
+                     style="background: ${tema.activo ? 'rgba(124,58,237,0.1)' : 'rgba(255,255,255,0.5)'}">
+                    <div class="tema-card-icono">${iconos[tema.key] || '🎨'}</div>
+                    <div class="tema-card-nombre">${tema.nombre}</div>
+                    ${tema.activo ? '<div style="font-size:10px;color:#059669;margin-top:4px;">✓ Activo</div>' : ''}
+                </div>
+            `).join('');
+        }
+
+        function cambiarTemaManual(temaKey) {
+            if (window.TemasManager) {
+                TemasManager.cambiarTema(temaKey);
+                renderizarSelectorTemas();
+                mostrarToast('✅ Tema aplicado correctamente', 'success');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             actualizarInfoExportacion();
+            renderizarSelectorTemas();
         });
 
         if (document.readyState === 'complete' || document.readyState === 'interactive') {
             actualizarInfoExportacion();
+            renderizarSelectorTemas();
         }
 
         window.abrirSidebar = abrirSidebar;
