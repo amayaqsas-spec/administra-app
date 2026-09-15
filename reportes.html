@@ -611,7 +611,6 @@
         // ============================================
         function cargarGrupos() {
             var select = document.getElementById('grupoReporte');
-            // Limpiar opciones excepto la primera
             while (select.options.length > 1) {
                 select.remove(1);
             }
@@ -655,6 +654,49 @@
         }
 
         // ============================================
+        // FUNCIÓN PARA LIMPIAR EMOJIS Y CARACTERES ESPECIALES
+        // ============================================
+        function limpiarTextoParaPDF(texto) {
+            if (!texto) return '';
+            
+            // Reemplazar emojis comunes por texto equivalente o eliminarlos
+            var reemplazos = {
+                '️': '[!]',
+                '📢': '[INFO]',
+                '💰': '$',
+                '📅': '',
+                '👨‍': '',
+                '👨‍': '',
+                '✅': '',
+                '❌': '',
+                '🔄': '',
+                '📊': '',
+                '📝': '',
+                '💵': '',
+                '💳': '',
+                '📞': '',
+                '': '',
+                '➡️': '->',
+                '←': '<-',
+                '•': '-',
+                '\n': ' '
+            };
+            
+            var textoLimpio = texto;
+            for (var emoji in reemplazos) {
+                textoLimpio = textoLimpio.split(emoji).join(reemplazos[emoji]);
+            }
+            
+            // Eliminar cualquier otro emoji o carácter no ASCII
+            textoLimpio = textoLimpio.replace(/[^\x20-\x7E\xA0-\xFF]/g, '');
+            
+            // Eliminar múltiples espacios
+            textoLimpio = textoLimpio.replace(/\s+/g, ' ').trim();
+            
+            return textoLimpio;
+        }
+
+        // ============================================
         // ENVIAR FORMULARIO
         // ============================================
         document.getElementById('formReporte').addEventListener('submit', function(e) {
@@ -693,7 +735,7 @@
             try {
                 var grupo = grupos.find(function(g) { return g.id === grupoId; });
                 if (!grupo) {
-                    alert('⚠️ Grupo no encontrado');
+                    alert('️ Grupo no encontrado');
                     ocultarLoading();
                     return;
                 }
@@ -796,26 +838,23 @@
                 function generarPDFConImagen() {
                     var yStart = dibujarEncabezado();
 
-                    var headRow = ['Fecha', 'Descripción', 'Tipo'];
+                    // Ancho disponible: página (215.9mm) - márgenes (30mm) = 185.9mm
+                    // Fecha: 20mm, Tipo: 18mm, Monto: 22mm = 60mm fijos
+                    // Descripción y Nota se reparten el resto: 185.9 - 60 = 125.9mm
+                    // Cada una: ~63mm (usamos 62mm para dejar margen)
+                    
+                    var headRow = ['Fecha', 'Descripción', 'Tipo', 'Nota', 'Monto'];
                     var columnStyles = {
-                        0: { halign: 'center', cellWidth: 20 },
-                        1: { cellWidth: 'auto' },
-                        2: { halign: 'center', cellWidth: 18 }
+                        0: { halign: 'center', cellWidth: 20 },      // Fecha
+                        1: { cellWidth: 62 },                         // Descripción (igual que Nota)
+                        2: { halign: 'center', cellWidth: 18 },      // Tipo
+                        3: { cellWidth: 62 },                         // Nota (igual que Descripción)
+                        4: { halign: 'right', cellWidth: 22 }        // Monto
                     };
-                    var colIndex = 3;
-
-                    if (opciones.notas) {
-                        headRow.push('Nota');
-                        columnStyles[colIndex] = { cellWidth: 30 };
-                        colIndex++;
-                    }
-
-                    headRow.push('Monto');
-                    columnStyles[colIndex] = { halign: 'right', cellWidth: 22 };
 
                     var bodyRows = [];
                     if (gastosFiltrados.length === 0) {
-                        bodyRows.push(['No hay gastos en el período seleccionado', '', '', '', '']);
+                        bodyRows.push(['', 'No hay gastos en el período seleccionado', '', '', '']);
                     } else {
                         gastosFiltrados.forEach(function(gasto) {
                             var row = [
@@ -823,9 +862,14 @@
                                 gasto.descripcion,
                                 gasto.tipo
                             ];
-                            if (opciones.notas) {
-                                row.push(gasto.nota || '-');
+                            
+                            // Limpiar la nota de emojis y caracteres especiales
+                            var notaLimpia = '';
+                            if (opciones.notas && gasto.nota) {
+                                notaLimpia = limpiarTextoParaPDF(gasto.nota);
                             }
+                            row.push(notaLimpia);
+                            
                             row.push('$' + gasto.monto.toLocaleString());
                             bodyRows.push(row);
                         });
