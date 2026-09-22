@@ -907,7 +907,7 @@
                             <button class="btn-sm btn-editar" onclick="mostrarModalEditar(${gasto.id})">
                                 <i class="fas fa-pencil-alt"></i>
                             </button>
-                            <button class="btn-sm btn-eliminar" onclick="eliminarGasto(${gasto.id})">
+                            <button class="btn-sm btn-eliminar" onclick="eliminarGastoUI(${gasto.id})">
                                 <i class="fas fa-trash-alt"></i>
                             </button>
                         </div>
@@ -997,7 +997,7 @@
                             <i class="fas fa-pencil-alt"></i>
                             Editar
                         </button>
-                        <button class="btn btn-eliminar-detalle" onclick="cerrarModalDetalle();eliminarGasto(${gasto.id})">
+                        <button class="btn btn-eliminar-detalle" onclick="cerrarModalDetalle();eliminarGastoUI(${gasto.id})">
                             <i class="fas fa-trash-alt"></i>
                             Eliminar
                         </button>
@@ -1374,20 +1374,25 @@
             });
         }
 
-        function eliminarGasto(id) {
+        // ============================================
+        // ELIMINAR GASTO (UI) - Corregido
+        // Se renombró a eliminarGastoUI para no chocar
+        // con la función eliminarGasto de storage.js
+        // ============================================
+        function eliminarGastoUI(id) {
             var gasto = todosLosGastos.find(function(g) { return g.id === id; });
             if (!gasto) return;
 
             cerrarModalDetalle();
 
             if (confirm('⚠️ ¿Eliminar el gasto "' + gasto.descripcion + '" por $' + gasto.monto.toFixed(2) + '?')) {
-                var result = eliminarGasto(id);
+                var result = eliminarGasto(id); // función de storage.js
                 if (result.success) {
                     todosLosGastos = getGastos();
                     renderizarGastos();
                     alert('✅ Gasto eliminado');
                 } else {
-                    alert('❌ Error al eliminar gasto: ' + result.error);
+                    alert('❌ Error al eliminar gasto: ' + (result.error || 'desconocido'));
                 }
             }
         }
@@ -1413,7 +1418,7 @@
         window.logout = logout;
         window.mostrarModalCrear = mostrarModalCrear;
         window.mostrarModalEditar = mostrarModalEditar;
-        window.eliminarGasto = eliminarGasto;
+        window.eliminarGastoUI = eliminarGastoUI;
         window.cerrarModal = cerrarModal;
         window.verDetalleGasto = verDetalleGasto;
         window.filtrarGastos = filtrarGastos;
